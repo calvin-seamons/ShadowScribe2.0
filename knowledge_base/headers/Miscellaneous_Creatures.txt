@@ -1,0 +1,197 @@
+# Miscellaneous Creatures {#chapter-miscellaneous-creatures}
+## Creature Descriptions {#section-creature-descriptions}
+#### Ape
+##### Actions
+#### Awakened Shrub
+##### Actions
+#### Awakened Tree
+##### Actions
+#### Axe Beak
+##### Actions
+#### Baboon
+##### Actions
+#### Badger
+##### Actions
+#### Bat
+##### Actions
+#### Black Bear
+##### Actions
+#### Blink Dog
+##### Actions
+#### Blood Hawk
+##### Actions
+#### Boar
+##### Actions
+#### Brown Bear
+##### Actions
+#### Camel
+##### Actions
+#### Cat
+##### Actions
+#### Constrictor Snake
+##### Actions
+#### Crab
+##### Actions
+#### Crocodile
+##### Actions
+#### Death Dog
+##### Actions
+#### Deer
+##### Actions
+#### Dire Wolf
+##### Actions
+#### Draft Horse
+##### Actions
+#### Eagle
+##### Actions
+#### Elephant
+##### Actions
+#### Elk
+##### Actions
+#### Flying Snake
+##### Actions
+#### Frog
+#### Giant Ape
+##### Actions
+#### Giant Badger
+##### Actions
+#### Giant Bat
+##### Actions
+#### Giant Boar
+##### Actions
+#### Giant Centipede
+##### Actions
+#### Giant Constrictor Snake
+##### Actions
+#### Giant Crab
+##### Actions
+#### Giant Crocodile
+##### Actions
+#### Giant Eagle
+##### Actions
+#### Giant Elk
+##### Actions
+#### Giant Fire Beetle
+##### Actions
+#### Giant Fly
+#### Giant Frog
+##### Actions
+#### Giant Goat
+##### Actions
+#### Giant Hyena
+##### Actions
+#### Giant Lizard
+##### Actions
+#### Giant Octopus
+##### Actions
+#### Giant Owl
+##### Actions
+#### Giant Poisonous Snake
+##### Actions
+#### Giant Rat
+##### Actions
+##### Variant: Diseased Giant Rats
+#### Giant Scorpion
+##### Actions
+#### Giant Sea Horse
+##### Actions
+#### Giant Shark
+##### Actions
+#### Giant Spider
+##### Actions
+#### Giant Toad
+##### Actions
+#### Giant Vulture
+##### Actions
+#### Giant Wasp
+##### Actions
+#### Giant Weasel
+##### Actions
+#### Giant Wolf Spider
+##### Actions
+#### Goat
+##### Actions
+#### Hawk
+##### Actions
+#### Hunter Shark
+##### Actions
+#### Hyena
+##### Actions
+#### Jackal
+##### Actions
+#### Killer Whale
+##### Actions
+#### Lion
+##### Actions
+#### Lizard
+##### Actions
+#### Mammoth
+##### Actions
+#### Mastiff
+##### Actions
+#### Mule
+##### Actions
+#### Octopus
+##### Actions
+#### Owl
+##### Actions
+#### Panther
+##### Actions
+#### Phase Spider
+##### Actions
+#### Poisonous Snake
+##### Actions
+#### Polar Bear
+##### Actions
+#### Pony
+##### Actions
+#### Quipper
+##### Actions
+#### Rat
+##### Actions
+#### Raven
+##### Actions
+#### Reef Shark
+##### Actions
+#### Rhinoceros
+##### Actions
+#### Riding Horse
+##### Actions
+#### Saber-Toothed Tiger
+##### Actions
+#### Scorpion
+##### Actions
+#### Sea Horse
+#### Spider
+##### Actions
+#### Swarm of Bats
+##### Actions
+#### Swarm of Insects
+##### Actions
+#### Variant: Insect Swarms
+##### Swarm of Beetles
+##### Swarm of Centipedes
+##### Swarm of Spiders
+##### Swarm of Wasps
+#### Swarm of Poisonous Snakes
+##### Actions
+#### Swarm of Quippers
+##### Actions
+#### Swarm of Rats
+##### Actions
+#### Swarm of Ravens
+##### Actions
+#### Tiger
+##### Actions
+#### Vulture
+##### Actions
+#### Warhorse
+##### Actions
+#### Weasel
+##### Actions
+#### Winter Wolf
+##### Actions
+#### Wolf
+##### Actions
+#### Worg
+##### Actions

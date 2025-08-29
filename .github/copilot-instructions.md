@@ -7,6 +7,38 @@ ShadowScribe2.0 is a comprehensive D&D/RPG character management system built aro
 - **`src/utils/`**: Business logic for character persistence, inspection, and data conversion
 - **`scripts/`**: Entry point modules that handle the import complexity
 
+## Environment Setup
+
+### API Keys Configuration
+The project includes a `.env` file with API keys for external services:
+
+- **OpenAI API Key**: `OPENAI_API_KEY` - Used for OpenAI GPT models and embeddings
+- **Anthropic API Key**: `ANTHROPIC_API_KEY` - Used for Claude models
+
+**CRITICAL**: When writing tests or running code that requires API calls, **ALWAYS use the actual API keys from the .env file**. Never simulate API responses or use mock data unless explicitly requested. The project is designed to work with real API integrations.
+
+**API Key Loading Pattern**:
+```python
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Access API keys
+openai_key = os.getenv('OPENAI_API_KEY')
+anthropic_key = os.getenv('ANTHROPIC_API_KEY')
+
+# Initialize clients
+if openai_key:
+    import openai
+    openai.api_key = openai_key
+
+if anthropic_key:
+    from anthropic import Anthropic
+    client = Anthropic(api_key=anthropic_key)
+```
+
 ## Critical Development Patterns
 
 ### Import System (ESSENTIAL)
@@ -130,9 +162,69 @@ python -c "import sys; sys.path.insert(0, '.'); from src.utils.character_manager
 python -m scripts.run_manager
 ```
 
+## Test File Management
+**Important**: When creating test scripts for experimentation or one-time verification:
+
+1. **Use descriptive names** - prefix with `test_` for easy identification
+2. **Document purpose** - include a docstring explaining what the test validates
+3. **Clean up afterward** - delete temporary test files that won't be used again
+4. **Keep essential tests** - preserve tests that validate core functionality or might be reused
+
+**Test File Cleanup Pattern**:
+```bash
+# After successful testing, remove one-time test files
+rm scripts/test_embeddings.py  # If no longer needed
+rm scripts/test_temporary_feature.py
+
+# Keep essential tests in place
+# Keep: scripts/test_rag_system.py (core functionality)
+# Keep: any test that validates API integrations or main features
+```
+
+## Code Modernization & Legacy Management
+**Critical Philosophy**: This project prioritizes clean, modern code over backward compatibility.
+
+### Legacy Code Removal
+1. **Always delete obsolete code** - don't comment out or leave unused functions/classes
+2. **Remove deprecated patterns** - replace old implementations entirely
+3. **Clean up imports** - remove unused imports after code changes
+4. **Delete dead files** - remove entire files that are no longer needed
+
+### Backward Compatibility Rules
+**NEVER maintain backward compatibility unless:**
+- It's required for external API contracts (rare in this project)
+- The change would break critical user data persistence (character saves)
+- There's a compelling business reason documented in code
+
+### Let things fail! 
+**Don't put so many safeguards in place that you prevent failures from happening.**
+- Embrace failure as a learning opportunity
+- Simplify error handling to focus on critical issues
+- Let failures happen and learn from them
+
+**Default approach**: Break things and fix them properly rather than maintaining legacy cruft.
+
+**Legacy Cleanup Pattern**:
+```python
+# BAD - leaving old code commented out
+def new_implementation():
+    pass
+    
+# def old_implementation():  # TODO: remove
+#     legacy_code()
+
+# GOOD - clean replacement
+def new_implementation():
+    pass
+```
+
 ## Common Pitfalls to Avoid
 1. **Don't run scripts directly** - always use `python -m scripts.script_name`
 2. **Don't use relative imports** - always use `from src.utils.module import Class`
 3. **Check for None on optional Character fields** before accessing nested attributes
 4. **Use `character.character_base.total_level`** not `.level` for character level access
 5. **Access inventory as `character.inventory.backpack`** and `character.inventory.equipped_items`**
+6. **Clean up test files** - remove temporary test scripts after use to avoid clutter
+7. **Delete legacy code** - never leave commented-out code or obsolete implementations
+8. **Avoid backward compatibility** - break and fix cleanly rather than maintaining cruft
+9. **Let things fail!** - Don't put so many safeguards in place that you prevent failures from happening.

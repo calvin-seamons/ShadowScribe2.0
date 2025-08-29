@@ -1,0 +1,373 @@
+# Classes {#chapter-classes}
+## Barbarian {#section-barbarian}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Rage
+### Unarmored Defense
+### Reckless Attack
+### Danger Sense
+### Primal Path
+### Ability Score Improvement
+### Extra Attack
+### Fast Movement
+### Feral Instinct
+### Brutal Critical
+### Relentless Rage
+### Persistent Rage
+### Indomitable Might
+### Primal Champion
+## Barbarian Paths {#section-barbarian-paths}
+### Path of the Berserker
+#### Frenzy
+#### Mindless Rage
+#### Intimidating Presence
+#### Retaliation
+## Bard {#section-bard}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Spellcasting
+#### Cantrips
+#### Spell Slots
+#### Spells Known of 1st Level and Higher
+#### Spellcasting Ability
+#### Ritual Casting
+#### Spellcasting Focus
+### Bardic Inspiration
+### Jack of All Trades
+### Song of Rest
+### Bard College
+### Expertise
+### Ability Score Improvement
+### Font of Inspiration
+### Countercharm
+### Magical Secrets
+### Superior Inspiration
+## Bard Colleges {#section-bard-colleges}
+### College of Lore
+#### Bonus Proficiencies
+#### Cutting Words
+#### Additional Magical Secrets
+#### Peerless Skill
+## Cleric {#section-cleric}
+### Class Features
+#### Hit Points
+#### Proficiencies
+### Equipment
+### Spellcasting
+#### Cantrips
+#### Preparing and Casting Spells
+#### Spellcasting Ability
+#### Ritual Casting
+#### Spellcasting Focus
+### Divine Domain
+#### Domain Spells
+### Channel Divinity
+#### Channel Divinity: Turn Undead
+### Ability Score Improvement
+### Destroy Undead
+### Divine Intervention
+## Domains {#section-domains}
+### Life Domain
+#### Bonus Proficiency
+#### Disciple of Life
+#### Channel Divinity: Preserve Life
+#### Blessed Healer
+#### Divine Strike
+#### Supreme Healing
+## Druid {#section-druid}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Druidic
+### Spellcasting
+#### Cantrips
+#### Preparing and Casting Spells
+#### Spellcasting Ability
+#### Ritual Casting
+#### Spellcasting Focus
+### Wild Shape
+### Druid Circle
+### Timeless Body
+### Ability Score Improvement
+### Beast Spells
+### Archdruid
+## Druid Circles {#section-druid-circles}
+### Circle of the Land
+#### Bonus Cantrip
+#### Natural Recovery
+#### Circle Spells
+#### Land's Stride
+#### Nature's Ward
+#### Nature's Sanctuary
+## Fighter {#section-fighter}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Fighting Style
+#### Archery
+#### Defense
+#### Dueling
+#### Great Weapon Fighting
+#### Protection
+#### Two-Weapon Fighting
+### Second Wind
+### Action Surge
+### Martial Archetype
+### Ability Score Improvement
+### Extra Attack
+### Indomitable
+## Martial Archetypes {#section-martial-archetypes}
+### Champion
+#### Improved Critical
+#### Remarkable Athlete
+#### Additional Fighting Style
+#### Superior Critical
+#### Survivor
+## Monk {#section-monk}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Unarmored Defense
+### Martial Arts
+### Ki
+#### Flurry of Blows
+#### Patient Defense
+#### Step of the Wind
+### Unarmored Movement
+### Monastic Tradition
+### Deflect Missiles
+### Ability Score Improvement
+### Slow Fall
+### Extra Attack
+### Timeless Body
+### Stunning Strike
+### Ki-Empowered Strikes
+### Evasion
+### Stillness of Mind
+### Purity of Body
+### Tongue of the Sun and Moon
+### Diamond Soul
+### Empty Body
+### Perfect Self
+## Monastic Traditions {#section-monastic-traditions}
+### Way of the Open Hand
+#### Open Hand Technique
+#### Wholeness of Body
+#### Tranquility
+#### Quivering Palm
+## Paladin {#section-paladin}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Divine Sense
+### Lay on Hands
+### Fighting Style
+#### Defense
+#### Dueling
+#### Great Weapon Fighting
+#### Protection
+### Spellcasting
+#### Preparing and Casting Spells
+#### Spellcasting Ability
+### Spellcasting Focus
+### Divine Smite
+### Divine Health
+### Sacred Oath
+#### Oath Spells
+#### Channel Divinity
+### Ability Score Improvement
+### Extra Attack
+### Aura of Protection
+### Aura of Courage
+### Improved Divine Smite
+### Cleansing Touch
+## Sacred Oaths {#section-sacred-oaths}
+### Oath of Devotion
+#### Tenets of Devotion
+#### Oath Spells
+#### Channel Divinity
+#### Aura of Devotion
+#### Purity of Spirit
+#### Holy Nimbus
+## Ranger {#section-ranger}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Favored Enemy
+### Natural Explorer
+### Fighting Style
+#### Archery
+#### Defense
+#### Dueling
+#### Two-Weapon Fighting
+### Spellcasting
+#### Spell Slots
+#### Spells Known of 1st Level and Higher
+#### Spellcasting Ability
+### Ranger Archetype
+### Primeval Awareness
+### Ability Score Improvement
+### Extra Attack
+### Land's Stride
+### Hide in Plain Sight
+### Vanish
+### Feral Senses
+### Foe Slayer
+## Ranger Archetypes {#section-ranger-archetypes}
+### Hunter
+#### Hunter's Prey
+#### Defensive Tactics
+#### Multiattack
+#### Superior Hunter's Defense
+## Rogue {#section-rogue}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Expertise
+### Sneak Attack
+### Thieves' Cant
+### Cunning Action
+### Roguish Archetype
+### Ability Score Improvement
+### Uncanny Dodge
+### Evasion
+### Reliable Talent
+### Blindsense
+### Slippery Mind
+### Elusive
+### Stroke of Luck
+## Roguish Archetypes {#section-roguish-archetypes}
+### Thief
+#### Fast Hands
+#### Second-Story Work
+#### Supreme Sneak
+#### Use Magic Device
+#### Thief's Reflexes
+## Sorcerer {#section-sorcerer}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Spellcasting
+#### Cantrips
+#### Spell Slots
+#### Spells Known of 1st Level and Higher
+#### Spellcasting Ability
+#### Spellcasting Focus
+### Sorcerous Origin
+### Font of Magic
+#### Sorcery Points
+#### Flexible Casting
+### Metamagic
+#### Careful Spell
+#### Distant Spell
+#### Empowered Spell
+#### Extended Spell
+#### Heightened Spell
+#### Quickened Spell
+#### Subtle Spell
+#### Twinned Spell
+### Ability Score Improvement
+### Sorcerous Restoration
+## Sorcerous Origins {#section-sorcerous-origins}
+### Draconic Bloodline
+#### Dragon Ancestor
+#### Draconic Resilience
+#### Elemental Affinity
+#### Dragon Wings
+#### Draconic Presence
+## Warlock {#section-warlock}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Otherworldly Patron
+### Pact Magic
+#### Cantrips
+#### Spell Slots
+#### Spells Known of 1st Level and Higher
+#### Spellcasting Ability
+#### Spellcasting Focus
+### Eldritch Invocations
+### Pact Boon
+#### Pact of the Chain
+#### Pact of the Blade
+#### Pact of the Tome
+### Ability Score Improvement
+### Mystic Arcanum
+### Eldritch Master
+## Eldritch Invocations {#section-eldritch-invocations}
+#### Agonizing Blast
+#### Armor of Shadows
+#### Ascendant Step
+#### Beast Speech
+#### Beguiling Influence
+#### Bewitching Whispers
+#### Book of Ancient Secrets
+#### Chains of the Deodand
+#### Devil's Sight
+#### Dreadful Word
+#### Eldritch Sight
+#### Eldritch Spear
+#### Eyes of the Rune Keeper
+#### Fiendish Vigor
+#### Gaze of Two Minds
+#### Lifedrinker
+#### Mask of Many Faces
+#### Master of Myriad Forms
+#### Minions of Chaos
+#### Mire the Mind
+#### Misty Visions
+#### One with Shadows
+#### Otherworldly Leap
+#### Repelling Blast
+#### Sculptor of Flesh
+#### Sign of Ill Omen
+#### Thief of Five Fates
+#### Thirsting Blade
+#### Visions of Distant Realms
+#### Voice of the Chain Master
+#### Whispers of the Grave
+#### Witch Sight
+## Otherworldly Patrons {#section-otherworldly-patrons}
+### The Fiend
+#### Expanded Spell List
+#### Dark One's Blessing
+#### Dark One's Own Luck
+#### Fiendish Resilience
+#### Hurl Through Hell
+## Wizard {#section-wizard}
+### Class Features
+#### Hit Points
+#### Proficiencies
+#### Equipment
+### Spellcasting
+#### Cantrips
+#### Spellbook
+#### Preparing and Casting Spells
+#### Spellcasting Ability
+#### Ritual Casting
+#### Spellcasting Focus
+#### Learning Spells of 1st Level and Higher
+### Arcane Recovery
+### Arcane Tradition
+### Ability Score Improvement
+### Spell Mastery
+### Signature Spells
+## Arcane Traditions {#section-arcane-traditions}
+### School of Evocation
+#### Evocation Savant
+#### Sculpt Spells
+#### Potent Cantrip
+#### Empowered Evocation
+#### Overchannel

@@ -1,0 +1,509 @@
+# Monsters {#chapter-monsters}
+## Monster Construction {#section-monster-construction}
+### Size
+### Type
+#### Tags
+#### Alignment
+### Armor Class
+### Hit Points
+### Speed
+#### Burrow
+#### Climb
+#### Fly
+#### Swim
+### Ability Scores
+### Saving Throws
+### Skills
+### Vulnerabilities, Resistances, and Immunities
+### Senses
+#### Blindsight
+#### Darkvision
+#### Tremorsense
+#### Truesight
+### Languages
+#### Telepathy
+### Challenge
+#### Experience Points
+### Special Traits
+#### Innate Spellcasting
+#### Spellcasting
+#### Psionics
+### Actions
+#### Melee and Ranged Attacks
+#### Multiattack
+#### Ammunition
+#### Reactions
+### Limited Usage
+### Equipment
+## Legendary Creatures {#section-legendary-creatures}
+### Legendary Actions
+### A Legendary Creature's Lair
+#### Lair Actions
+#### Regional Effects
+## Monster Descriptions {#section-monster-descriptions}
+### Uncategorized
+#### Aboleth
+##### Actions
+##### Legendary Actions
+#### Ankheg
+##### Actions
+#### Avatar of Death
+##### Actions
+#### Azer
+##### Actions
+#### Basilisk
+##### Actions
+#### Behir
+##### Actions
+#### Bugbear
+##### Actions
+#### Bulette
+##### Actions
+#### Centaur
+##### Actions
+#### Chimera
+##### Actions
+#### Chuul
+##### Actions
+#### Cloaker
+##### Actions
+#### Cockatrice
+##### Actions
+#### Couatl
+##### Actions
+#### Darkmantle
+##### Actions
+#### Doppelganger
+##### Actions
+#### Dragon Turtle
+##### Actions
+#### Drider
+##### Actions
+#### Dryad
+##### Actions
+#### Duergar
+##### Actions
+#### Elf, Drow
+##### Actions
+#### Ettercap
+##### Actions
+#### Ettin
+##### Actions
+#### Gargoyle
+##### Actions
+#### Ghost
+##### Actions
+#### Gibbering Mouther
+##### Actions
+#### Gnoll
+##### Actions
+#### Gnome, Deep (Svirfneblin)
+##### Actions
+#### Goblin
+##### Actions
+#### Gorgon
+##### Actions
+#### Grick
+##### Actions
+#### Griffon
+##### Actions
+#### Grimlock
+##### Actions
+#### Harpy
+##### Actions
+#### Hell Hound
+##### Actions
+#### Hippogriff
+##### Actions
+#### Hobgoblin
+##### Actions
+#### Homunculus
+##### Actions
+#### Hydra
+##### Actions
+#### Invisible Stalker
+##### Actions
+#### Kobold
+##### Actions
+#### Kraken
+##### Actions
+##### Legendary Actions
+#### Lamia
+##### Actions
+#### Lich
+##### Actions
+##### Legendary Actions
+#### Lizardfolk
+##### Actions
+#### Magmin
+##### Actions
+#### Manticore
+##### Actions
+#### Medusa
+##### Actions
+#### Merfolk
+##### Actions
+#### Merrow
+##### Actions
+#### Mimic
+##### Actions
+#### Minotaur
+##### Actions
+#### Nightmare
+##### Actions
+#### Ogre
+##### Actions
+#### Oni
+##### Actions
+#### Orc
+##### Actions
+#### Otyugh
+##### Actions
+#### Owlbear
+##### Actions
+#### Pegasus
+##### Actions
+#### Pseudodragon
+##### Actions
+#### Purple Worm
+##### Actions
+#### Rakshasa
+##### Actions
+#### Remorhaz
+##### Actions
+#### Roc
+##### Actions
+#### Roper
+##### Actions
+#### Rust Monster
+##### Actions
+#### Sahuagin
+##### Actions
+#### Salamander
+##### Actions
+#### Satyr
+##### Actions
+#### Shadow
+##### Actions
+#### Shambling Mound
+##### Actions
+#### Shield Guardian
+##### Actions
+##### Reactions
+#### Specter
+##### Actions
+#### Sprite
+##### Actions
+#### Stirge
+##### Actions
+#### Succubus/Incubus
+##### Actions
+#### Tarrasque
+##### Actions
+##### Legendary Actions
+#### Treant
+##### Actions
+#### Troll
+##### Actions
+#### Unicorn
+##### Actions
+##### Legendary Actions
+#### Wight
+##### Actions
+#### Will-o'-Wisp
+##### Actions
+#### Wraith
+##### Actions
+#### Wyvern
+##### Actions
+#### Xorn
+##### Actions
+### Angels
+#### Deva
+##### Actions
+#### Planetar
+##### Actions
+#### Solar
+##### Actions
+##### Legendary Actions
+### Animated Objects
+#### Animated Armor
+##### Actions
+#### Flying Sword
+##### Actions
+#### Rug of Smothering
+##### Actions
+### Demons
+#### Balor
+##### Actions
+#### Dretch
+##### Actions
+#### Glabrezu
+##### Actions
+#### Hezrou
+##### Actions
+#### Marilith
+##### Actions
+##### Reactions
+#### Nalfeshnee
+##### Actions
+#### Quasit
+##### Actions
+#### Vrock
+##### Actions
+### Devils
+#### Barbed Devil
+##### Actions
+#### Bearded Devil
+##### Actions
+#### Bone Devil
+##### Actions
+#### Chain Devil
+##### Actions
+##### Reactions
+#### Erinyes
+##### Actions
+##### Reactions
+#### Horned Devil
+##### Actions
+#### Ice Devil
+##### Actions
+#### Imp
+##### Actions
+#### Lemure
+##### Actions
+#### Pit Fiend
+##### Actions
+### Dinosaurs
+#### Plesiosaurus
+##### Actions
+#### Triceratops
+##### Actions
+#### Tyrannosaurus Rex
+##### Actions
+### Dragons, Chromatic
+#### Adult Black Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Black Dragon
+##### Actions
+##### Legendary Actions
+#### Black Dragon Wyrmling
+##### Actions
+#### Young Black Dragon
+##### Actions
+#### Adult Blue Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Blue Dragon
+##### Actions
+##### Legendary Actions
+#### Blue Dragon Wyrmling
+##### Actions
+#### Young Blue Dragon
+##### Actions
+#### Adult Green Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Green Dragon
+##### Actions
+##### Legendary Actions
+#### Green Dragon Wyrmling
+##### Actions
+#### Young Green Dragon
+##### Actions
+#### Adult Red Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Red Dragon
+##### Actions
+##### Legendary Actions
+#### Red Dragon Wyrmling
+##### Actions
+#### Young Red Dragon
+##### Actions
+#### Adult White Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient White Dragon
+##### Actions
+##### Legendary Actions
+#### White Dragon Wyrmling
+##### Actions
+#### Young White Dragon
+##### Actions
+### Dragons, Metallic
+#### Adult Brass Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Brass Dragon
+##### Actions
+##### Legendary Actions
+#### Brass Dragon Wyrmling
+##### Actions
+#### Young Brass Dragon
+##### Actions
+#### Adult Bronze Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Bronze Dragon
+##### Actions
+##### Legendary Actions
+#### Bronze Dragon Wyrmling
+##### Actions
+#### Young Bronze Dragon
+##### Actions
+#### Adult Copper Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Copper Dragon
+##### Actions
+##### Legendary Actions
+#### Copper Dragon Wyrmling
+##### Actions
+#### Young Copper Dragon
+##### Actions
+#### Adult Gold Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Gold Dragon
+##### Actions
+##### Legendary Actions
+#### Gold Dragon Wyrmling
+##### Actions
+#### Young Gold Dragon
+##### Actions
+#### Adult Silver Dragon
+##### Actions
+##### Legendary Actions
+#### Ancient Silver Dragon
+##### Actions
+##### Legendary Actions
+#### Silver Dragon Wyrmling
+##### Actions
+#### Young Silver Dragon
+##### Actions
+### Elementals
+#### Air Elemental
+##### Actions
+#### Earth Elemental
+##### Actions
+#### Fire Elemental
+##### Actions
+#### Water Elemental
+##### Actions
+### Fungi
+#### Shrieker
+##### Reactions
+#### Violet Fungus
+##### Actions
+### Genies
+#### Djinni
+##### Actions
+#### Efreeti
+##### Actions
+### Ghouls
+#### Ghast
+##### Actions
+#### Ghoul
+##### Actions
+### Giants
+#### Cloud Giant
+##### Actions
+#### Fire Giant
+##### Actions
+#### Frost Giant
+##### Actions
+#### Hill Giant
+##### Actions
+#### Stone Giant
+##### Actions
+##### Reactions
+#### Storm Giant
+##### Actions
+### Golems
+#### Clay Golem
+##### Actions
+#### Flesh Golem
+##### Actions
+#### Iron Golem
+##### Actions
+#### Stone Golem
+##### Actions
+### Hags
+#### Green Hag
+##### Actions
+#### Night Hag
+##### Actions
+#### Sea Hag
+##### Actions
+### Half-Dragon Template
+#### Half-Red Dragon Veteran
+##### Actions
+### Lycanthropes
+#### Werebear
+##### Actions
+#### Wereboar
+##### Actions
+#### Wererat
+##### Actions
+#### Weretiger
+##### Actions
+#### Werewolf
+##### Actions
+### Mephits
+#### Dust Mephit
+##### Actions
+#### Ice Mephit
+##### Actions
+#### Magma Mephit
+##### Actions
+#### Steam Mephit
+##### Actions
+### Mummies
+#### Mummy
+##### Actions
+#### Mummy Lord
+##### Actions
+##### Legendary Actions
+### Nagas
+#### Guardian Naga
+##### Actions
+#### Spirit Naga
+##### Actions
+### Oozes
+#### Black Pudding
+##### Actions
+##### Reactions
+#### Gelatinous Cube
+##### Actions
+#### Gray Ooze
+##### Actions
+#### Ochre Jelly
+##### Actions
+##### Reactions
+### Skeletons
+#### Minotaur Skeleton
+##### Actions
+#### Skeleton
+##### Actions
+#### Warhorse Skeleton
+##### Actions
+### Sphinxes
+#### Androsphinx
+##### Actions
+##### Legendary Actions
+#### Gynosphinx
+##### Actions
+##### Legendary Actions
+### Vampires
+#### Vampire
+##### Actions
+##### Legendary Actions
+#### Vampire Spawn
+##### Actions
+### Zombies
+#### Ogre Zombie
+##### Actions
+#### Zombie
+##### Actions

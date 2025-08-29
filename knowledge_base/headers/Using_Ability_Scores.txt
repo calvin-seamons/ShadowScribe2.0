@@ -1,0 +1,40 @@
+# Using Ability Scores {#chapter-using-ability-scores}
+## Ability Scores and Modifiers {#section-ability-scores-and-modifiers}
+## Advantage and Disadvantage {#section-advantage-and-disadvantage}
+## Proficiency Bonus {#section-proficiency-bonus}
+## Ability Checks {#section-ability-checks}
+### Contests
+### Skills
+#### Strength
+#### Dexterity
+#### Intelligence
+#### Wisdom
+#### Charisma
+#### Variant: Skills with Different Abilities
+### Passive Checks
+### Working Together
+#### Group Checks
+## Using Each Ability {#section-using-each-ability}
+### Strength
+#### Strength Checks
+#### Attack Rolls and Damage
+#### Lifting and Carrying
+#### Variant: Encumbrance
+### Dexterity
+#### Dexterity Checks
+#### Attack Rolls and Damage
+#### Armor Class
+#### Initiative
+### Constitution
+#### Constitution Checks
+#### Hit Points
+### Intelligence
+#### Intelligence Checks
+#### Spellcasting Ability
+### Wisdom
+#### Wisdom Checks
+#### Spellcasting Ability
+### Charisma
+#### Charisma Checks
+#### Spellcasting Ability
+## Saving Throws {#section-saving-throws}

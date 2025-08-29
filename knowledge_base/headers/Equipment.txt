@@ -1,0 +1,23 @@
+# Equipment {#chapter-equipment}
+## Currency {#section-currency}
+## Selling Treasure {#section-selling-treasure}
+## Adventuring Gear {#section-adventuring-gear}
+## Tools {#section-tools}
+## Mounts and Vehicles {#section-mounts-and-vehicles}
+## Trade Goods {#section-trade-goods}
+## Expenses {#section-expenses}
+### Lifestyle Expenses
+### Food, Drink, and Lodging
+## Services {#section-services}
+### Spellcasting Services
+## Armor {#section-armor}
+### Light Armor
+### Medium Armor
+### Heavy Armor
+### Getting Into and Out of Armor
+## Weapons {#section-weapons}
+### Weapon Proficiency
+### Weapon Properties
+#### Improvised Weapons
+#### Silvered Weapons
+#### Special Weapons

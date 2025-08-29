@@ -1,0 +1,49 @@
+# Nonplayer Characters {#chapter-nonplayer-characters}
+## Customizing NPCs {#section-customizing-npcs}
+## Nonplayer Character Descriptions {#section-nonplayer-character-descriptions}
+#### Acolyte
+##### Actions
+#### Archmage
+##### Actions
+#### Assassin
+##### Actions
+#### Bandit
+##### Actions
+#### Bandit Captain
+##### Actions
+##### Reactions
+#### Berserker
+##### Actions
+#### Commoner
+##### Actions
+#### Cult Fanatic
+##### Actions
+#### Cultist
+##### Actions
+#### Druid
+##### Actions
+#### Gladiator
+##### Actions
+##### Reactions
+#### Guard
+##### Actions
+#### Knight
+##### Actions
+##### Reactions
+#### Mage
+##### Actions
+#### Noble
+##### Actions
+##### Reactions
+#### Priest
+##### Actions
+#### Scout
+##### Actions
+#### Spy
+##### Actions
+#### Thug
+##### Actions
+#### Tribal Warrior
+##### Actions
+#### Veteran
+##### Actions

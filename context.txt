@@ -1,0 +1,223 @@
+## Basic model info
+
+Model name: yorickvp/llava-13b
+Model description: Visual instruction tuning towards large language and vision models with GPT-4 level capabilities
+
+
+## Model inputs
+
+- image (required): Input image (string)
+- prompt (required): Prompt to use for text generation (string)
+- top_p (optional): When decoding text, samples from the top p percentage of most likely tokens; lower to ignore less likely tokens (number)
+- temperature (optional): Adjusts randomness of outputs, greater than 1 is random and 0 is deterministic (number)
+- max_tokens (optional): Maximum number of tokens to generate. A word is generally 2-3 tokens (integer)
+
+
+## Model output schema
+
+{
+  "type": "array",
+  "items": {
+    "type": "string"
+  },
+  "title": "Output",
+  "x-cog-array-type": "iterator",
+  "x-cog-array-display": "concatenate"
+}
+
+If the input or output schema includes a format of URI, it is referring to a file.
+
+
+## Example inputs and outputs
+
+Use these example outputs to better understand the types of inputs the model accepts, and the types of outputs the model returns:
+
+### Example (https://replicate.com/p/x5pthttb2mghadkxlvymeprkce)
+
+#### Input
+
+```json
+{
+  "image": "https://replicate.delivery/pbxt/KRULC43USWlEx4ZNkXltJqvYaHpEx2uJ4IyUQPRPwYb8SzPf/view.jpg",
+  "top_p": 1,
+  "prompt": "Are you allowed to swim here?",
+  "max_tokens": 1024,
+  "temperature": 0.2
+}
+```
+
+#### Output
+
+```json
+[
+  "Yes, ",
+  "you ",
+  "are ",
+  "allowed ",
+  "to ",
+  "swim ",
+  "in ",
+  "the ",
+  "lake ",
+  "near ",
+  "the ",
+  "pier. ",
+  "The ",
+  "image ",
+  "shows ",
+  "a ",
+  "pier ",
+  "extending ",
+  "out ",
+  "into ",
+  "the ",
+  "water, ",
+  "and ",
+  "the ",
+  "water ",
+  "appears ",
+  "to ",
+  "be ",
+  "calm, ",
+  "making ",
+  "it ",
+  "a ",
+  "suitable ",
+  "spot ",
+  "for ",
+  "swimming. ",
+  "However, ",
+  "it ",
+  "is ",
+  "always ",
+  "important ",
+  "to ",
+  "be ",
+  "cautious ",
+  "and ",
+  "aware ",
+  "of ",
+  "any ",
+  "potential ",
+  "hazards ",
+  "or ",
+  "regulations ",
+  "in ",
+  "the ",
+  "area ",
+  "before ",
+  "swimming."
+]
+```
+
+
+## Model readme
+
+> Check out the different LLaVA's on Replicate:
+> 
+> | Name | Version | Base | Size  | Finetunable |
+> |-- |-- |--|--|--|
+> | [v1.5 - Vicuna-13B](https://replicate.com/yorickvp/llava-13b) | v1.5  | Vicuna | 13B | Yes  |
+> | [v1.6 - Vicuna-13B](https://replicate.com/yorickvp/llava-v1.6-vicuna-13b)  | v1.6 | Vicuna | 13B | No |
+> | [v1.6 - Vicuna-7B](https://replicate.com/yorickvp/llava-v1.6-vicuna-7b) | v1.6 | Vicuna | 7B | No |
+> | [v1.6 - Mistral-7B](https://replicate.com/yorickvp/llava-v1.6-mistral-7b)  | v1.6 | Mistral | 7B | No |
+> | [v1.6 - Nous-Hermes-2-34B](https://replicate.com/yorickvp/llava-v1.6-34b) | v1.6 | Nous-Hermes-2 | 34B | No |
+> 
+> # 🌋 LLaVA v1.5: Large Language and Vision Assistant
+> 
+> *Visual instruction tuning towards large language and vision models with GPT-4 level capabilities.*
+> 
+> [[Project Page](https://llava-vl.github.io/)] [[Demo](https://llava.hliu.cc/)]  [[Data](https://github.com/haotian-liu/LLaVA/blob/main/docs/Data.md)] [[Model Zoo](https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md)]
+> 
+> **Improved Baselines with Visual Instruction Tuning** [[Paper](https://arxiv.org/abs/2310.03744)] <br>
+> [Haotian Liu](https://hliu.cc), [Chunyuan Li](https://chunyuan.li/), [Yuheng Li](https://yuheng-li.github.io/), [Yong Jae Lee](https://pages.cs.wisc.edu/~yongjaelee/)
+> 
+> **Visual Instruction Tuning** (NeurIPS 2023, **Oral**) [[Paper](https://arxiv.org/abs/2304.08485)]<br>
+> [Haotian Liu*](https://hliu.cc), [Chunyuan Li*](https://chunyuan.li/), [Qingyang Wu](https://scholar.google.ca/citations?user=HDiw-TsAAAAJ&hl=en/), [Yong Jae Lee](https://pages.cs.wisc.edu/~yongjaelee/) (*Equal Contribution)
+> 
+> # Summary
+> LLaVA represents a novel end-to-end trained large multimodal model that combines a vision encoder and Vicuna for general-purpose visual and language understanding, achieving impressive chat capabilities mimicking spirits of the multimodal GPT-4 and setting a new state-of-the-art accuracy on Science QA.
+> 
+> # Fine-tuning
+> You can finetune LLaVA with your own dataset, using LoRA techniques! Training data can be passed to `cog train` with the `train_data` parameter. Your training dataset should be a zip-file with the following structure:
+> 
+> - ./images/: A folder with training data images.
+> - ./data.json: A JSON file that links images to conversations. For details, see the [dataset format instructions](https://github.com/yorickvP/LLaVA/blob/main/docs/Finetune_Custom_Data.md#dataset-format) in the github repository.
+> 
+> Example contents of data.zip:
+> ```
+> ./images
+> ./images/76969503-464d-47bc-bc38-08236d746c36.webp
+> ./images/2b0c1c1a-b833-4fc5-b24e-2bab721ea403.webp
+> ./images/17446aea-fd1c-4be5-914a-2d9063a79696.webp
+> ./data.json
+> ```
+> 
+> Example data.json:
+> ```
+> [
+>     {
+>         "image": "76969503-464d-47bc-bc38-08236d746c36.webp",
+>         "id": "76969503-464d-47bc-bc38-08236d746c36",
+>         "conversations": [
+>             {
+>                 "from": "human",
+>                 "value": "<image>\nWrite a prompt for Stable Diffusion to generate this image."
+>             },
+>             {
+>                 "from": "gpt",
+>                 "value": "portrait of beautiful female warrior by irakli nadar with intricate detailed wearing heavy armor dress designed by alexander mcqueen and rocky gathercole, perfect symmetrical pose, haunting, elite, elegant, ruan jia, dark, hyper detailed, concept art, by gustav klimt, "
+>             }
+>         ]
+>     },
+>     {
+>         "image": "2b0c1c1a-b833-4fc5-b24e-2bab721ea403.webp",
+>         "id": "2b0c1c1a-b833-4fc5-b24e-2bab721ea403",
+>         "conversations": [
+>             {
+>                 "from": "human",
+>                 "value": "<image>\nWrite a prompt for Stable Diffusion to generate this image."
+>             },
+>             {
+>                 "from": "gpt",
+>                 "value": "floating heads in the sky, one line drawing, monochrome, magritte, jack gaughan, hyperrealism "
+>             }
+>         ]
+>     },
+>     {
+>         "image": "17446aea-fd1c-4be5-914a-2d9063a79696.webp",
+>         "id": "17446aea-fd1c-4be5-914a-2d9063a79696",
+>         "conversations": [
+>             {
+>                 "from": "human",
+>                 "value": "<image>\nWrite a prompt for Stable Diffusion to generate this image."
+>             },
+>             {
+>                 "from": "gpt",
+>                 "value": "commissioned fursona portrait of a humanoid red panda wearing a victorian dress, painting by fernand toussaint, trending on artstation, "
+>             }
+>         ]
+>     }
+> ]
+> 
+> ```
+> 
+> Example code for training:
+> 
+> ```python
+> import replicate
+> 
+> training = replicate.trainings.create(
+>     version="yorickvp/llava-13b:[version_id]",
+>     input={
+>         "train_data": "https://my-domain/my-input-images.zip",
+>     },
+>     destination="my-name/my-model"
+> )
+> print(training)
+> ```
+> 
+> You can find [more information about finetuning image models](https://replicate.com/docs/guides/fine-tune-an-image-model) in the Replicate docs. The tutorial on [finetuning SDXL](https://replicate.com/blog/fine-tune-sdxl) with your own images is a good starting point.
+
+
+
