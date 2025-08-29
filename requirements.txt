@@ -1,0 +1,22 @@
+# ShadowScribe 2.0 Requirements
+# Core Python packages for RPG character management
+
+# Type checking and development
+typing-extensions>=4.0.0
+
+# Data handling
+dataclasses-json>=0.6.0
+
+# Optional: For future JSON schema validation
+# jsonschema>=4.0.0
+
+# Optional: For future testing
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+
+# Optional: For future CLI development
+# click>=8.0.0
+
+# Optional: For future data export formats
+# pyyaml>=6.0.0
+# openpyxl>=3.1.0
