@@ -73,7 +73,7 @@ class RulebookSection:
     metadata: Dict[str, Any] = field(default_factory=dict)
     vector: Optional[List[float]] = None  # Embedding vector
     
-    def get_full_content(self, include_children: bool = False, storage: Optional[RulebookStorage] = None) -> str:
+    def get_full_content(self, include_children: bool = False, storage: Optional['RulebookStorage'] = None) -> str:
         """Get content including optional children sections"""
         if not include_children:
             return self.content

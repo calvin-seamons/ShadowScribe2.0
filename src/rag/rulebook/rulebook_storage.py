@@ -13,14 +13,12 @@ from dataclasses import dataclass, field
 import time
 
 import openai
-from dotenv import load_dotenv
 
 from .rulebook_types import RulebookSection, RulebookCategory, SearchResult, RULEBOOK_CATEGORY_ASSIGNMENTS, MULTI_CATEGORY_SECTIONS
 from .categorizer import RulebookCategorizer
+from ..config import get_config
 
-
-# Load environment variables
-load_dotenv()
+# Note: dotenv is loaded in config.py
 
 
 class RulebookStorage:
@@ -30,18 +28,21 @@ class RulebookStorage:
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
         
+        # Get configuration
+        self.config = get_config()
+        
         # Core data structures
         self.sections: Dict[str, RulebookSection] = {}
         self.category_index: Dict[RulebookCategory, Set[str]] = {cat: set() for cat in RulebookCategory}
-        self.embedding_model = "text-embedding-3-large"
+        self.embedding_model = self.config.embedding_model
         
         # Initialize categorizer with the same logic as check_category_coverage.py
         self.categorizer = RulebookCategorizer()
         
-        # Initialize OpenAI
-        openai.api_key = os.getenv('OPENAI_API_KEY')
-        if not openai.api_key:
-            raise ValueError("OPENAI_API_KEY not found in environment variables")
+        # Initialize OpenAI with API key from config
+        openai.api_key = self.config.openai_api_key
+        if not self.config.validate_openai_key():
+            raise ValueError("Invalid or missing OpenAI API key in configuration")
     
     def parse_markdown(self, markdown_path: str) -> None:
         """Parse the D&D 5e rulebook markdown into sections using two-phase approach"""
@@ -262,6 +263,14 @@ class RulebookStorage:
             self.category_index[category] = set(section_ids)
         
         self.embedding_model = save_data.get('embedding_model', 'text-embedding-3-large')
+        
+        # Check for embedding model mismatch
+        if self.embedding_model != self.config.embedding_model:
+            print(f"⚠️  Embedding model mismatch!")
+            print(f"   Stored model: {self.embedding_model}")
+            print(f"   Config model: {self.config.embedding_model}")
+            print(f"   You may want to regenerate embeddings for optimal performance.")
+            print(f"   Use: python -m scripts.rebuild_embeddings")
         
         print(f"Loaded {len(self.sections)} sections from disk")
         return True

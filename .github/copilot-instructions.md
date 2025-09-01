@@ -41,10 +41,25 @@ if anthropic_key:
 
 ## Critical Development Patterns
 
+### Virtual Environment (ESSENTIAL)
+**ALWAYS activate the virtual environment before running any Python scripts**:
+```bash
+# On Windows (PowerShell)
+.\.venv\Scripts\Activate.ps1
+
+# On Windows (Command Prompt)
+.venv\Scripts\activate.bat
+
+# On Linux/Mac
+source .venv/bin/activate
+
+# Verify activation - you should see (.venv) in your prompt
+```
+
 ### Import System (ESSENTIAL)
 **Always run from project root** and use module execution to avoid import issues:
 ```bash
-# Correct way to run scripts
+# Correct way to run scripts (with venv activated)
 python -m scripts.run_inspector --list
 python -m scripts.run_manager
 
@@ -149,6 +164,11 @@ if __name__ == "__main__":
 
 ## Testing & Debugging Commands
 ```bash
+# ALWAYS activate virtual environment FIRST
+.\.venv\Scripts\Activate.ps1  # Windows PowerShell
+# OR .venv\Scripts\activate.bat  # Windows Command Prompt
+# OR source .venv/bin/activate  # Linux/Mac
+
 # List all saved characters
 python -m scripts.run_inspector --list
 
@@ -219,11 +239,12 @@ def new_implementation():
 ```
 
 ## Common Pitfalls to Avoid
-1. **Don't run scripts directly** - always use `python -m scripts.script_name`
-2. **Don't use relative imports** - always use `from src.utils.module import Class`
-3. **Check for None on optional Character fields** before accessing nested attributes
-4. **Use `character.character_base.total_level`** not `.level` for character level access
-5. **Access inventory as `character.inventory.backpack`** and `character.inventory.equipped_items`**
+1. **ALWAYS activate virtual environment FIRST** - use `.\.venv\Scripts\Activate.ps1` before running any Python code
+2. **Don't run scripts directly** - always use `python -m scripts.script_name`
+3. **Don't use relative imports** - always use `from src.utils.module import Class`
+4. **Check for None on optional Character fields** before accessing nested attributes
+5. **Use `character.character_base.total_level`** not `.level` for character level access
+6. **Access inventory as `character.inventory.backpack`** and `character.inventory.equipped_items`**
 6. **Clean up test files** - remove temporary test scripts after use to avoid clutter
 7. **Delete legacy code** - never leave commented-out code or obsolete implementations
 8. **Avoid backward compatibility** - break and fix cleanly rather than maintaining cruft

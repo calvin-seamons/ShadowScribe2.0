@@ -13,6 +13,7 @@ from .rulebook_types import (
 )
 from .rulebook_storage import RulebookStorage
 from .categorizer import RulebookCategorizer
+from .query_engine import RulebookQueryEngine
 
 __all__ = [
     'RulebookCategory',
@@ -25,5 +26,6 @@ __all__ = [
     'PATTERN_RULES',
     'MULTI_CATEGORY_SECTIONS',
     'RulebookStorage',
-    'RulebookCategorizer'
+    'RulebookCategorizer',
+    'RulebookQueryEngine'
 ]
