@@ -1,0 +1,2136 @@
+================================================================================
+COMPLETE CATEGORIZATION REPORT
+================================================================================
+
+Total headers: 2098
+Categorized: 2097 (100.0%)
+Uncategorized: 1 (0.0%)
+
+================================================================================
+ALL SECTIONS WITH ASSIGNED CATEGORIES:
+================================================================================
+# [legal-information] Legal Information → UNCATEGORIZED
+# [chapter-races] Races → CHARACTER_CREATION
+## [section-racial-traits] Racial Traits → CHARACTER_CREATION
+### [ability-score-increase] Ability Score Increase → CHARACTER_CREATION
+### [age] Age → CHARACTER_CREATION
+### [alignment] Alignment → CHARACTER_CREATION
+### [size] Size → CHARACTER_CREATION
+### [speed] Speed → CHARACTER_CREATION
+### [languages] Languages → CHARACTER_CREATION
+### [subraces] Subraces → CHARACTER_CREATION
+## [section-dragonborn] Dragonborn → CHARACTER_CREATION
+### [dragonborn-traits] Dragonborn Traits → CHARACTER_CREATION
+## [section-dwarf] Dwarf → CHARACTER_CREATION
+### [dwarf-traits] Dwarf Traits → CHARACTER_CREATION
+#### [hill-dwarf] Hill Dwarf → CHARACTER_CREATION
+## [section-elf] Elf → CHARACTER_CREATION
+### [elf-traits] Elf Traits → CHARACTER_CREATION
+#### [high-elf] High Elf → CHARACTER_CREATION
+## [section-gnome] Gnome → CHARACTER_CREATION
+### [gnome-traits] Gnome Traits → CHARACTER_CREATION
+#### [rock-gnome] Rock Gnome → CHARACTER_CREATION
+## [section-half-elf] Half-Elf → CHARACTER_CREATION
+### [half-elf-traits] Half-Elf Traits → CHARACTER_CREATION
+## [section-half-orc] Half-Orc → CHARACTER_CREATION
+### [half-orc-traits] Half-Orc Traits → CHARACTER_CREATION
+## [section-halfling] Halfling → CHARACTER_CREATION
+### [halfling-traits] Halfling Traits → CHARACTER_CREATION
+#### [lightfoot] Lightfoot → CHARACTER_CREATION
+## [section-human] Human → CHARACTER_CREATION
+### [human-traits] Human Traits → CHARACTER_CREATION
+## [section-tiefling] Tiefling → CHARACTER_CREATION
+### [tiefling-traits] Tiefling Traits → CHARACTER_CREATION
+# [chapter-classes] Classes → CHARACTER_CREATION, CLASS_FEATURES
+## [section-barbarian] Barbarian → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [rage] Rage → CHARACTER_CREATION, CLASS_FEATURES
+### [unarmored-defense] Unarmored Defense → CHARACTER_CREATION, CLASS_FEATURES
+### [reckless-attack] Reckless Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+### [danger-sense] Danger Sense → CHARACTER_CREATION, CLASS_FEATURES
+### [primal-path] Primal Path → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [extra-attack] Extra Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+### [fast-movement] Fast Movement → CHARACTER_CREATION, CLASS_FEATURES
+### [feral-instinct] Feral Instinct → CHARACTER_CREATION, CLASS_FEATURES
+### [brutal-critical] Brutal Critical → CHARACTER_CREATION, CLASS_FEATURES
+### [relentless-rage] Relentless Rage → CHARACTER_CREATION, CLASS_FEATURES
+### [persistent-rage] Persistent Rage → CHARACTER_CREATION, CLASS_FEATURES
+### [indomitable-might] Indomitable Might → CHARACTER_CREATION, CLASS_FEATURES
+### [primal-champion] Primal Champion → CHARACTER_CREATION, CLASS_FEATURES
+## [section-barbarian-paths] Barbarian Paths → CHARACTER_CREATION, CLASS_FEATURES
+### [path-of-the-berserker] Path of the Berserker → CHARACTER_CREATION, CLASS_FEATURES
+#### [frenzy] Frenzy → CHARACTER_CREATION, CLASS_FEATURES
+#### [mindless-rage] Mindless Rage → CHARACTER_CREATION, CLASS_FEATURES
+#### [intimidating-presence] Intimidating Presence → CHARACTER_CREATION, CLASS_FEATURES
+#### [retaliation] Retaliation → CHARACTER_CREATION, CLASS_FEATURES
+## [section-bard] Bard → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spell-slots] Spell Slots → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spells-known-of-1st-level-and-higher] Spells Known of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [ritual-casting] Ritual Casting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [bardic-inspiration] Bardic Inspiration → CHARACTER_CREATION, CLASS_FEATURES
+### [jack-of-all-trades] Jack of All Trades → CHARACTER_CREATION, CLASS_FEATURES
+### [song-of-rest] Song of Rest → CHARACTER_CREATION, CLASS_FEATURES, EXPLORATION
+### [bard-college] Bard College → CHARACTER_CREATION, CLASS_FEATURES
+### [expertise] Expertise → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [font-of-inspiration] Font of Inspiration → CHARACTER_CREATION, CLASS_FEATURES
+### [countercharm] Countercharm → CHARACTER_CREATION, CLASS_FEATURES
+### [magical-secrets] Magical Secrets → CHARACTER_CREATION, CLASS_FEATURES
+### [superior-inspiration] Superior Inspiration → CHARACTER_CREATION, CLASS_FEATURES
+## [section-bard-colleges] Bard Colleges → CHARACTER_CREATION, CLASS_FEATURES
+### [college-of-lore] College of Lore → CHARACTER_CREATION, CLASS_FEATURES
+#### [bonus-proficiencies] Bonus Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [cutting-words] Cutting Words → CHARACTER_CREATION, CLASS_FEATURES
+#### [additional-magical-secrets] Additional Magical Secrets → CHARACTER_CREATION, CLASS_FEATURES
+#### [peerless-skill] Peerless Skill → CHARACTER_CREATION, CLASS_FEATURES
+## [section-cleric] Cleric → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [preparing-and-casting-spells] Preparing and Casting Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [ritual-casting] Ritual Casting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [divine-domain] Divine Domain → CHARACTER_CREATION, CLASS_FEATURES
+#### [domain-spells] Domain Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [channel-divinity] Channel Divinity → CHARACTER_CREATION, CLASS_FEATURES
+#### [channel-divinity-turn-undead] Channel Divinity: Turn Undead → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [destroy-undead] Destroy Undead → CHARACTER_CREATION, CLASS_FEATURES
+### [divine-intervention] Divine Intervention → CHARACTER_CREATION, CLASS_FEATURES
+## [section-domains] Domains → CHARACTER_CREATION, CLASS_FEATURES
+### [life-domain] Life Domain → CHARACTER_CREATION, CLASS_FEATURES
+#### [bonus-proficiency] Bonus Proficiency → CHARACTER_CREATION, CLASS_FEATURES
+#### [disciple-of-life] Disciple of Life → CHARACTER_CREATION, CLASS_FEATURES
+#### [channel-divinity-preserve-life] Channel Divinity: Preserve Life → CHARACTER_CREATION, CLASS_FEATURES
+#### [blessed-healer] Blessed Healer → CHARACTER_CREATION, CLASS_FEATURES
+#### [divine-strike] Divine Strike → CHARACTER_CREATION, CLASS_FEATURES
+#### [supreme-healing] Supreme Healing → CHARACTER_CREATION, CLASS_FEATURES
+## [section-druid] Druid → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [druidic] Druidic → CHARACTER_CREATION, CLASS_FEATURES
+### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [preparing-and-casting-spells] Preparing and Casting Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [ritual-casting] Ritual Casting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [wild-shape] Wild Shape → CHARACTER_CREATION, CLASS_FEATURES
+### [druid-circle] Druid Circle → CHARACTER_CREATION, CLASS_FEATURES
+### [timeless-body] Timeless Body → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [beast-spells] Beast Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [archdruid] Archdruid → CHARACTER_CREATION, CLASS_FEATURES
+## [section-druid-circles] Druid Circles → CHARACTER_CREATION, CLASS_FEATURES
+### [circle-of-the-land] Circle of the Land → CHARACTER_CREATION, CLASS_FEATURES
+#### [bonus-cantrip] Bonus Cantrip → CHARACTER_CREATION, CLASS_FEATURES
+#### [natural-recovery] Natural Recovery → CHARACTER_CREATION, CLASS_FEATURES
+#### [circle-spells] Circle Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [lands-stride] Land's Stride → CHARACTER_CREATION, CLASS_FEATURES
+#### [natures-ward] Nature's Ward → CHARACTER_CREATION, CLASS_FEATURES
+#### [natures-sanctuary] Nature's Sanctuary → CHARACTER_CREATION, CLASS_FEATURES
+## [section-fighter] Fighter → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [fighting-style] Fighting Style → CHARACTER_CREATION, CLASS_FEATURES
+#### [archery] Archery → CHARACTER_CREATION, CLASS_FEATURES
+#### [defense] Defense → CHARACTER_CREATION, CLASS_FEATURES
+#### [dueling] Dueling → CHARACTER_CREATION, CLASS_FEATURES
+#### [great-weapon-fighting] Great Weapon Fighting → CHARACTER_CREATION, CLASS_FEATURES
+#### [protection] Protection → CHARACTER_CREATION, CLASS_FEATURES
+#### [two-weapon-fighting] Two-Weapon Fighting → CHARACTER_CREATION, CLASS_FEATURES
+### [second-wind] Second Wind → CHARACTER_CREATION, CLASS_FEATURES
+### [action-surge] Action Surge → CHARACTER_CREATION, CLASS_FEATURES
+### [martial-archetype] Martial Archetype → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [extra-attack] Extra Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+### [indomitable] Indomitable → CHARACTER_CREATION, CLASS_FEATURES
+## [section-martial-archetypes] Martial Archetypes → CHARACTER_CREATION, CLASS_FEATURES
+### [champion] Champion → CHARACTER_CREATION, CLASS_FEATURES
+#### [improved-critical] Improved Critical → CHARACTER_CREATION, CLASS_FEATURES
+#### [remarkable-athlete] Remarkable Athlete → CHARACTER_CREATION, CLASS_FEATURES
+#### [additional-fighting-style] Additional Fighting Style → CHARACTER_CREATION, CLASS_FEATURES
+#### [superior-critical] Superior Critical → CHARACTER_CREATION, CLASS_FEATURES
+#### [survivor] Survivor → CHARACTER_CREATION, CLASS_FEATURES
+## [section-monk] Monk → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [unarmored-defense] Unarmored Defense → CHARACTER_CREATION, CLASS_FEATURES
+### [martial-arts] Martial Arts → CHARACTER_CREATION, CLASS_FEATURES
+### [ki] Ki → CHARACTER_CREATION, CLASS_FEATURES
+#### [flurry-of-blows] Flurry of Blows → CHARACTER_CREATION, CLASS_FEATURES
+#### [patient-defense] Patient Defense → CHARACTER_CREATION, CLASS_FEATURES
+#### [step-of-the-wind] Step of the Wind → CHARACTER_CREATION, CLASS_FEATURES
+### [unarmored-movement] Unarmored Movement → CHARACTER_CREATION, CLASS_FEATURES
+### [monastic-tradition] Monastic Tradition → CHARACTER_CREATION, CLASS_FEATURES
+### [deflect-missiles] Deflect Missiles → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [slow-fall] Slow Fall → CHARACTER_CREATION, CLASS_FEATURES
+### [extra-attack] Extra Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+### [timeless-body] Timeless Body → CHARACTER_CREATION, CLASS_FEATURES
+### [stunning-strike] Stunning Strike → CHARACTER_CREATION, CLASS_FEATURES
+### [ki-empowered-strikes] Ki-Empowered Strikes → CHARACTER_CREATION, CLASS_FEATURES
+### [evasion] Evasion → CHARACTER_CREATION, CLASS_FEATURES
+### [stillness-of-mind] Stillness of Mind → CHARACTER_CREATION, CLASS_FEATURES
+### [purity-of-body] Purity of Body → CHARACTER_CREATION, CLASS_FEATURES
+### [tongue-of-the-sun-and-moon] Tongue of the Sun and Moon → CHARACTER_CREATION, CLASS_FEATURES
+### [diamond-soul] Diamond Soul → CHARACTER_CREATION, CLASS_FEATURES
+### [empty-body] Empty Body → CHARACTER_CREATION, CLASS_FEATURES
+### [perfect-self] Perfect Self → CHARACTER_CREATION, CLASS_FEATURES
+## [section-monastic-traditions] Monastic Traditions → CHARACTER_CREATION, CLASS_FEATURES
+### [way-of-the-open-hand] Way of the Open Hand → CHARACTER_CREATION, CLASS_FEATURES
+#### [open-hand-technique] Open Hand Technique → CHARACTER_CREATION, CLASS_FEATURES
+#### [wholeness-of-body] Wholeness of Body → CHARACTER_CREATION, CLASS_FEATURES
+#### [tranquility] Tranquility → CHARACTER_CREATION, CLASS_FEATURES
+#### [quivering-palm] Quivering Palm → CHARACTER_CREATION, CLASS_FEATURES
+## [section-paladin] Paladin → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [divine-sense] Divine Sense → CHARACTER_CREATION, CLASS_FEATURES
+### [lay-on-hands] Lay on Hands → CHARACTER_CREATION, CLASS_FEATURES
+### [fighting-style] Fighting Style → CHARACTER_CREATION, CLASS_FEATURES
+#### [defense] Defense → CHARACTER_CREATION, CLASS_FEATURES
+#### [dueling] Dueling → CHARACTER_CREATION, CLASS_FEATURES
+#### [great-weapon-fighting] Great Weapon Fighting → CHARACTER_CREATION, CLASS_FEATURES
+#### [protection] Protection → CHARACTER_CREATION, CLASS_FEATURES
+### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [preparing-and-casting-spells] Preparing and Casting Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [divine-smite] Divine Smite → CHARACTER_CREATION, CLASS_FEATURES
+### [divine-health] Divine Health → CHARACTER_CREATION, CLASS_FEATURES
+### [sacred-oath] Sacred Oath → CHARACTER_CREATION, CLASS_FEATURES
+#### [oath-spells] Oath Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [channel-divinity] Channel Divinity → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [extra-attack] Extra Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+### [aura-of-protection] Aura of Protection → CHARACTER_CREATION, CLASS_FEATURES
+### [aura-of-courage] Aura of Courage → CHARACTER_CREATION, CLASS_FEATURES
+### [improved-divine-smite] Improved Divine Smite → CHARACTER_CREATION, CLASS_FEATURES
+### [cleansing-touch] Cleansing Touch → CHARACTER_CREATION, CLASS_FEATURES
+## [section-sacred-oaths] Sacred Oaths → CHARACTER_CREATION, CLASS_FEATURES
+### [oath-of-devotion] Oath of Devotion → CHARACTER_CREATION, CLASS_FEATURES
+#### [tenets-of-devotion] Tenets of Devotion → CHARACTER_CREATION, CLASS_FEATURES
+#### [oath-spells] Oath Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [channel-divinity] Channel Divinity → CHARACTER_CREATION, CLASS_FEATURES
+#### [aura-of-devotion] Aura of Devotion → CHARACTER_CREATION, CLASS_FEATURES
+#### [purity-of-spirit] Purity of Spirit → CHARACTER_CREATION, CLASS_FEATURES
+#### [holy-nimbus] Holy Nimbus → CHARACTER_CREATION, CLASS_FEATURES
+## [section-ranger] Ranger → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [favored-enemy] Favored Enemy → CHARACTER_CREATION, CLASS_FEATURES
+### [natural-explorer] Natural Explorer → CHARACTER_CREATION, CLASS_FEATURES
+### [fighting-style] Fighting Style → CHARACTER_CREATION, CLASS_FEATURES
+#### [archery] Archery → CHARACTER_CREATION, CLASS_FEATURES
+#### [defense] Defense → CHARACTER_CREATION, CLASS_FEATURES
+#### [dueling] Dueling → CHARACTER_CREATION, CLASS_FEATURES
+#### [two-weapon-fighting] Two-Weapon Fighting → CHARACTER_CREATION, CLASS_FEATURES
+### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spell-slots] Spell Slots → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spells-known-of-1st-level-and-higher] Spells Known of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [ranger-archetype] Ranger Archetype → CHARACTER_CREATION, CLASS_FEATURES
+### [primeval-awareness] Primeval Awareness → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [extra-attack] Extra Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+### [lands-stride] Land's Stride → CHARACTER_CREATION, CLASS_FEATURES
+### [hide-in-plain-sight] Hide in Plain Sight → CHARACTER_CREATION, CLASS_FEATURES
+### [vanish] Vanish → CHARACTER_CREATION, CLASS_FEATURES
+### [feral-senses] Feral Senses → CHARACTER_CREATION, CLASS_FEATURES
+### [foe-slayer] Foe Slayer → CHARACTER_CREATION, CLASS_FEATURES
+## [section-ranger-archetypes] Ranger Archetypes → CHARACTER_CREATION, CLASS_FEATURES
+### [hunter] Hunter → CHARACTER_CREATION, CLASS_FEATURES
+#### [hunters-prey] Hunter's Prey → CHARACTER_CREATION, CLASS_FEATURES
+#### [defensive-tactics] Defensive Tactics → CHARACTER_CREATION, CLASS_FEATURES
+#### [multiattack] Multiattack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+#### [superior-hunters-defense] Superior Hunter's Defense → CHARACTER_CREATION, CLASS_FEATURES
+## [section-rogue] Rogue → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [expertise] Expertise → CHARACTER_CREATION, CLASS_FEATURES
+### [sneak-attack] Sneak Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+### [thieves-cant] Thieves' Cant → CHARACTER_CREATION, CLASS_FEATURES
+### [cunning-action] Cunning Action → CHARACTER_CREATION, CLASS_FEATURES
+### [roguish-archetype] Roguish Archetype → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [uncanny-dodge] Uncanny Dodge → CHARACTER_CREATION, CLASS_FEATURES
+### [evasion] Evasion → CHARACTER_CREATION, CLASS_FEATURES
+### [reliable-talent] Reliable Talent → CHARACTER_CREATION, CLASS_FEATURES
+### [blindsense] Blindsense → CHARACTER_CREATION, CLASS_FEATURES
+### [slippery-mind] Slippery Mind → CHARACTER_CREATION, CLASS_FEATURES
+### [elusive] Elusive → CHARACTER_CREATION, CLASS_FEATURES
+### [stroke-of-luck] Stroke of Luck → CHARACTER_CREATION, CLASS_FEATURES
+## [section-roguish-archetypes] Roguish Archetypes → CHARACTER_CREATION, CLASS_FEATURES
+### [thief] Thief → CHARACTER_CREATION, CLASS_FEATURES
+#### [fast-hands] Fast Hands → CHARACTER_CREATION, CLASS_FEATURES
+#### [second-story-work] Second-Story Work → CHARACTER_CREATION, CLASS_FEATURES
+#### [supreme-sneak] Supreme Sneak → CHARACTER_CREATION, CLASS_FEATURES
+#### [use-magic-device] Use Magic Device → CHARACTER_CREATION, CLASS_FEATURES
+#### [thiefs-reflexes] Thief's Reflexes → CHARACTER_CREATION, CLASS_FEATURES
+## [section-sorcerer] Sorcerer → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spell-slots] Spell Slots → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spells-known-of-1st-level-and-higher] Spells Known of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [sorcerous-origin] Sorcerous Origin → CHARACTER_CREATION, CLASS_FEATURES
+### [font-of-magic] Font of Magic → CHARACTER_CREATION, CLASS_FEATURES
+#### [sorcery-points] Sorcery Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [flexible-casting] Flexible Casting → CHARACTER_CREATION, CLASS_FEATURES
+### [metamagic] Metamagic → CHARACTER_CREATION, CLASS_FEATURES
+#### [careful-spell] Careful Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [distant-spell] Distant Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [empowered-spell] Empowered Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [extended-spell] Extended Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [heightened-spell] Heightened Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [quickened-spell] Quickened Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [subtle-spell] Subtle Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [twinned-spell] Twinned Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [sorcerous-restoration] Sorcerous Restoration → CHARACTER_CREATION, CLASS_FEATURES, EXPLORATION
+## [section-sorcerous-origins] Sorcerous Origins → CHARACTER_CREATION, CLASS_FEATURES
+### [draconic-bloodline] Draconic Bloodline → CHARACTER_CREATION, CLASS_FEATURES
+#### [dragon-ancestor] Dragon Ancestor → CHARACTER_CREATION, CLASS_FEATURES
+#### [draconic-resilience] Draconic Resilience → CHARACTER_CREATION, CLASS_FEATURES
+#### [elemental-affinity] Elemental Affinity → CHARACTER_CREATION, CLASS_FEATURES
+#### [dragon-wings] Dragon Wings → CHARACTER_CREATION, CLASS_FEATURES
+#### [draconic-presence] Draconic Presence → CHARACTER_CREATION, CLASS_FEATURES
+## [section-warlock] Warlock → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [otherworldly-patron] Otherworldly Patron → CHARACTER_CREATION, CLASS_FEATURES
+### [pact-magic] Pact Magic → CHARACTER_CREATION, CLASS_FEATURES
+#### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES
+#### [spell-slots] Spell Slots → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spells-known-of-1st-level-and-higher] Spells Known of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [eldritch-invocations] Eldritch Invocations → CHARACTER_CREATION, CLASS_FEATURES
+### [pact-boon] Pact Boon → CHARACTER_CREATION, CLASS_FEATURES
+#### [pact-of-the-chain] Pact of the Chain → CHARACTER_CREATION, CLASS_FEATURES
+#### [pact-of-the-blade] Pact of the Blade → CHARACTER_CREATION, CLASS_FEATURES
+#### [pact-of-the-tome] Pact of the Tome → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [mystic-arcanum] Mystic Arcanum → CHARACTER_CREATION, CLASS_FEATURES
+### [eldritch-master] Eldritch Master → CHARACTER_CREATION, CLASS_FEATURES
+## [section-eldritch-invocations] Eldritch Invocations → CHARACTER_CREATION, CLASS_FEATURES
+#### [agonizing-blast] Agonizing Blast → CHARACTER_CREATION, CLASS_FEATURES
+#### [armor-of-shadows] Armor of Shadows → CHARACTER_CREATION, CLASS_FEATURES
+#### [ascendant-step] Ascendant Step → CHARACTER_CREATION, CLASS_FEATURES
+#### [beast-speech] Beast Speech → CHARACTER_CREATION, CLASS_FEATURES
+#### [beguiling-influence] Beguiling Influence → CHARACTER_CREATION, CLASS_FEATURES
+#### [bewitching-whispers] Bewitching Whispers → CHARACTER_CREATION, CLASS_FEATURES
+#### [book-of-ancient-secrets] Book of Ancient Secrets → CHARACTER_CREATION, CLASS_FEATURES
+#### [chains-of-the-deodand] Chains of the Deodand → CHARACTER_CREATION, CLASS_FEATURES
+#### [devils-sight] Devil's Sight → CHARACTER_CREATION, CLASS_FEATURES
+#### [dreadful-word] Dreadful Word → CHARACTER_CREATION, CLASS_FEATURES
+#### [eldritch-sight] Eldritch Sight → CHARACTER_CREATION, CLASS_FEATURES
+#### [eldritch-spear] Eldritch Spear → CHARACTER_CREATION, CLASS_FEATURES
+#### [eyes-of-the-rune-keeper] Eyes of the Rune Keeper → CHARACTER_CREATION, CLASS_FEATURES
+#### [fiendish-vigor] Fiendish Vigor → CHARACTER_CREATION, CLASS_FEATURES
+#### [gaze-of-two-minds] Gaze of Two Minds → CHARACTER_CREATION, CLASS_FEATURES
+#### [lifedrinker] Lifedrinker → CHARACTER_CREATION, CLASS_FEATURES
+#### [mask-of-many-faces] Mask of Many Faces → CHARACTER_CREATION, CLASS_FEATURES
+#### [master-of-myriad-forms] Master of Myriad Forms → CHARACTER_CREATION, CLASS_FEATURES
+#### [minions-of-chaos] Minions of Chaos → CHARACTER_CREATION, CLASS_FEATURES
+#### [mire-the-mind] Mire the Mind → CHARACTER_CREATION, CLASS_FEATURES
+#### [misty-visions] Misty Visions → CHARACTER_CREATION, CLASS_FEATURES
+#### [one-with-shadows] One with Shadows → CHARACTER_CREATION, CLASS_FEATURES
+#### [otherworldly-leap] Otherworldly Leap → CHARACTER_CREATION, CLASS_FEATURES
+#### [repelling-blast] Repelling Blast → CHARACTER_CREATION, CLASS_FEATURES
+#### [sculptor-of-flesh] Sculptor of Flesh → CHARACTER_CREATION, CLASS_FEATURES
+#### [sign-of-ill-omen] Sign of Ill Omen → CHARACTER_CREATION, CLASS_FEATURES
+#### [thief-of-five-fates] Thief of Five Fates → CHARACTER_CREATION, CLASS_FEATURES
+#### [thirsting-blade] Thirsting Blade → CHARACTER_CREATION, CLASS_FEATURES
+#### [visions-of-distant-realms] Visions of Distant Realms → CHARACTER_CREATION, CLASS_FEATURES
+#### [voice-of-the-chain-master] Voice of the Chain Master → CHARACTER_CREATION, CLASS_FEATURES
+#### [whispers-of-the-grave] Whispers of the Grave → CHARACTER_CREATION, CLASS_FEATURES
+#### [witch-sight] Witch Sight → CHARACTER_CREATION, CLASS_FEATURES
+## [section-otherworldly-patrons] Otherworldly Patrons → CHARACTER_CREATION, CLASS_FEATURES
+### [the-fiend] The Fiend → CHARACTER_CREATION, CLASS_FEATURES
+#### [expanded-spell-list] Expanded Spell List → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [dark-ones-blessing] Dark One's Blessing → CHARACTER_CREATION, CLASS_FEATURES
+#### [dark-ones-own-luck] Dark One's Own Luck → CHARACTER_CREATION, CLASS_FEATURES
+#### [fiendish-resilience] Fiendish Resilience → CHARACTER_CREATION, CLASS_FEATURES
+#### [hurl-through-hell] Hurl Through Hell → CHARACTER_CREATION, CLASS_FEATURES
+## [section-wizard] Wizard → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
+#### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+#### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
+### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellbook] Spellbook → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [preparing-and-casting-spells] Preparing and Casting Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [ritual-casting] Ritual Casting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [learning-spells-of-1st-level-and-higher] Learning Spells of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [arcane-recovery] Arcane Recovery → CHARACTER_CREATION, CLASS_FEATURES
+### [arcane-tradition] Arcane Tradition → CHARACTER_CREATION, CLASS_FEATURES
+### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
+### [spell-mastery] Spell Mastery → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [signature-spells] Signature Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+## [section-arcane-traditions] Arcane Traditions → CHARACTER_CREATION, CLASS_FEATURES
+### [school-of-evocation] School of Evocation → CHARACTER_CREATION, CLASS_FEATURES
+#### [evocation-savant] Evocation Savant → CHARACTER_CREATION, CLASS_FEATURES
+#### [sculpt-spells] Sculpt Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [potent-cantrip] Potent Cantrip → CHARACTER_CREATION, CLASS_FEATURES
+#### [empowered-evocation] Empowered Evocation → CHARACTER_CREATION, CLASS_FEATURES
+#### [overchannel] Overchannel → CHARACTER_CREATION, CLASS_FEATURES
+# [chapter-using-ability-scores] Using Ability Scores → CORE_MECHANICS
+## [section-ability-scores-and-modifiers] Ability Scores and Modifiers → CORE_MECHANICS
+## [section-advantage-and-disadvantage] Advantage and Disadvantage → CORE_MECHANICS
+## [section-proficiency-bonus] Proficiency Bonus → CORE_MECHANICS
+## [section-ability-checks] Ability Checks → CORE_MECHANICS
+### [contests] Contests → CORE_MECHANICS
+### [skills] Skills → CORE_MECHANICS
+#### [strength] Strength → CORE_MECHANICS
+#### [dexterity] Dexterity → CORE_MECHANICS
+#### [intelligence] Intelligence → CORE_MECHANICS
+#### [wisdom] Wisdom → CORE_MECHANICS
+#### [charisma] Charisma → CORE_MECHANICS
+#### [variant-skills-with-different-abilities] Variant: Skills with Different Abilities → CORE_MECHANICS
+### [passive-checks] Passive Checks → CORE_MECHANICS
+### [working-together] Working Together → CORE_MECHANICS
+#### [group-checks] Group Checks → CORE_MECHANICS
+## [section-using-each-ability] Using Each Ability → CORE_MECHANICS
+### [strength] Strength → CORE_MECHANICS
+#### [strength-checks] Strength Checks → CORE_MECHANICS
+#### [attack-rolls-and-damage] Attack Rolls and Damage → COMBAT, CORE_MECHANICS
+#### [lifting-and-carrying] Lifting and Carrying → CORE_MECHANICS
+#### [variant-encumbrance] Variant: Encumbrance → CORE_MECHANICS
+### [dexterity] Dexterity → CORE_MECHANICS
+#### [dexterity-checks] Dexterity Checks → CORE_MECHANICS
+#### [attack-rolls-and-damage] Attack Rolls and Damage → COMBAT, CORE_MECHANICS
+#### [armor-class] Armor Class → CORE_MECHANICS
+#### [initiative] Initiative → COMBAT, CORE_MECHANICS
+### [constitution] Constitution → CORE_MECHANICS
+#### [constitution-checks] Constitution Checks → CORE_MECHANICS
+#### [hit-points] Hit Points → CORE_MECHANICS
+### [intelligence] Intelligence → CORE_MECHANICS
+#### [intelligence-checks] Intelligence Checks → CORE_MECHANICS
+#### [spellcasting-ability] Spellcasting Ability → SPELLCASTING, CORE_MECHANICS
+### [wisdom] Wisdom → CORE_MECHANICS
+#### [wisdom-checks] Wisdom Checks → CORE_MECHANICS
+#### [spellcasting-ability] Spellcasting Ability → SPELLCASTING, CORE_MECHANICS
+### [charisma] Charisma → CORE_MECHANICS
+#### [charisma-checks] Charisma Checks → CORE_MECHANICS
+#### [spellcasting-ability] Spellcasting Ability → SPELLCASTING, CORE_MECHANICS
+## [section-saving-throws] Saving Throws → COMBAT, CORE_MECHANICS
+# [chapter-beyond-1st-level] Beyond 1st Level → CHARACTER_CREATION
+## [section-character-advancement] Character Advancement → CHARACTER_CREATION, CORE_MECHANICS
+## [section-multiclassing] Multiclassing → CHARACTER_CREATION, CLASS_FEATURES
+### [prerequisites] Prerequisites → CHARACTER_CREATION, CLASS_FEATURES
+### [experience-points] Experience Points → CHARACTER_CREATION, CLASS_FEATURES
+### [hit-points-and-hit-dice] Hit Points and Hit Dice → CHARACTER_CREATION, CLASS_FEATURES
+### [proficiency-bonus] Proficiency Bonus → CHARACTER_CREATION, CLASS_FEATURES
+### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
+### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
+#### [channel-divinity] Channel Divinity → CHARACTER_CREATION, CLASS_FEATURES
+#### [extra-attack] Extra Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+#### [unarmored-defense] Unarmored Defense → CHARACTER_CREATION, CLASS_FEATURES
+#### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+## [section-alignment] Alignment → CHARACTER_CREATION
+### [alignment-in-the-multiverse] Alignment in the Multiverse → CHARACTER_CREATION
+## [section-languages] Languages → CHARACTER_CREATION
+## [section-backgrounds] Backgrounds → CHARACTER_CREATION
+### [components-of-a-background] Components of a Background → CHARACTER_CREATION
+#### [proficiencies] Proficiencies → CHARACTER_CREATION
+#### [languages] Languages → CHARACTER_CREATION
+#### [equipment] Equipment → CHARACTER_CREATION
+#### [suggested-characteristics] Suggested Characteristics → CHARACTER_CREATION
+#### [customizing-a-background] Customizing a Background → CHARACTER_CREATION
+### [acolyte] Acolyte → CHARACTER_CREATION
+#### [feature-shelter-of-the-faithful] Feature: Shelter of the Faithful → CHARACTER_CREATION
+#### [suggested-characteristics] Suggested Characteristics → CHARACTER_CREATION
+# [chapter-feats] Feats → CHARACTER_CREATION, CLASS_FEATURES
+## [section-grappler] Grappler → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
+## [section-inspiration] Inspiration → CHARACTER_CREATION, CLASS_FEATURES, CORE_MECHANICS
+### [gaining-inspiration] Gaining Inspiration → CHARACTER_CREATION, CLASS_FEATURES, CORE_MECHANICS
+### [using-inspiration] Using Inspiration → CHARACTER_CREATION, CLASS_FEATURES, CORE_MECHANICS
+# [chapter-the-planes-of-existence] The Planes of Existence → WORLD_LORE
+## [section-the-material-plane] The Material Plane → WORLD_LORE
+## [section-beyond-the-material] Beyond the Material → WORLD_LORE
+### [planar-travel] Planar Travel → EXPLORATION, WORLD_LORE
+### [transitive-planes] Transitive Planes → WORLD_LORE
+### [inner-planes] Inner Planes → WORLD_LORE
+### [outer-planes] Outer Planes → WORLD_LORE
+#### [planar-alignment] Planar Alignment → WORLD_LORE
+#### [demiplanes] Demiplanes → WORLD_LORE
+# [chapter-pantheons] Pantheons → WORLD_LORE
+## [section-the-celtic-pantheon] The Celtic Pantheon → WORLD_LORE
+## [section-the-egyptian-pantheon] The Egyptian Pantheon → WORLD_LORE
+## [section-the-greek-pantheon] The Greek Pantheon → WORLD_LORE
+## [section-the-norse-pantheon] The Norse Pantheon → WORLD_LORE
+# [chapter-adventuring] Adventuring → EXPLORATION
+## [section-time] Time → EXPLORATION
+## [section-movement] Movement → EXPLORATION
+### [speed] Speed → EXPLORATION
+#### [travel-pace] Travel Pace → EXPLORATION
+#### [difficult-terrain] Difficult Terrain → EXPLORATION
+### [special-types-of-movement] Special Types of Movement → EXPLORATION
+#### [climbing-swimming-and-crawling] Climbing, Swimming, and Crawling → EXPLORATION
+#### [jumping] Jumping → EXPLORATION
+## [section-environment] Environment → EXPLORATION
+### [falling] Falling → EXPLORATION
+### [suffocating] Suffocating → EXPLORATION
+### [vision-and-light] Vision and Light → EXPLORATION
+#### [blindsight] Blindsight → EXPLORATION
+#### [darkvision] Darkvision → EXPLORATION
+#### [truesight] Truesight → EXPLORATION
+### [food-and-water] Food and Water → EXPLORATION
+#### [food] Food → EXPLORATION
+#### [water] Water → EXPLORATION
+## [section-objects] Objects → CORE_MECHANICS, EXPLORATION
+### [breaking-objects] Breaking Objects → CORE_MECHANICS, EXPLORATION
+#### [statistics-for-objects] Statistics for Objects → CORE_MECHANICS, EXPLORATION
+## [section-resting] Resting → CORE_MECHANICS, EXPLORATION
+### [short-rest] Short Rest → CORE_MECHANICS, EXPLORATION
+### [long-rest] Long Rest → CORE_MECHANICS, EXPLORATION
+## [section-between-adventures] Between Adventures → EXPLORATION
+### [lifestyle-expenses] Lifestyle Expenses → EXPLORATION
+### [downtime-activities] Downtime Activities → EXPLORATION
+#### [crafting] Crafting → EXPLORATION
+#### [practicing-a-profession] Practicing a Profession → EXPLORATION
+#### [recuperating] Recuperating → EXPLORATION
+#### [researching] Researching → EXPLORATION
+#### [training] Training → EXPLORATION
+## [section-conditions] Conditions → CONDITIONS, EXPLORATION
+#### [blinded] Blinded → CONDITIONS, EXPLORATION
+#### [charmed] Charmed → CONDITIONS, EXPLORATION
+#### [deafened] Deafened → CONDITIONS, EXPLORATION
+#### [exhaustion] Exhaustion → CONDITIONS, EXPLORATION
+#### [frightened] Frightened → CONDITIONS, EXPLORATION
+#### [grappled] Grappled → CONDITIONS, EXPLORATION
+#### [incapacitated] Incapacitated → CONDITIONS, EXPLORATION
+#### [invisible] Invisible → CONDITIONS, EXPLORATION
+#### [paralyzed] Paralyzed → CONDITIONS, EXPLORATION
+#### [petrified] Petrified → CONDITIONS, EXPLORATION
+#### [poisoned] Poisoned → CONDITIONS, EXPLORATION
+#### [prone] Prone → CONDITIONS, EXPLORATION
+#### [restrained] Restrained → CONDITIONS, EXPLORATION
+#### [stunned] Stunned → CONDITIONS, EXPLORATION
+#### [unconscious] Unconscious → CONDITIONS, EXPLORATION
+## [section-poisons] Poisons → CONDITIONS, EXPLORATION
+### [sample-poisons] Sample Poisons → CONDITIONS, EXPLORATION
+## [section-diseases] Diseases → CONDITIONS, EXPLORATION
+### [sample-diseases] Sample Diseases → CONDITIONS, EXPLORATION
+#### [cackle-fever] Cackle Fever → CONDITIONS, EXPLORATION
+#### [sewer-plague] Sewer Plague → CONDITIONS, EXPLORATION
+#### [sight-rot] Sight Rot → CONDITIONS, EXPLORATION
+## [section-madness] Madness → CONDITIONS, EXPLORATION
+### [going-mad] Going Mad → CONDITIONS, EXPLORATION
+### [madness-effects] Madness Effects → CONDITIONS, EXPLORATION
+### [curing-madness] Curing Madness → CONDITIONS, EXPLORATION
+## [section-traps] Traps → COMBAT, EXPLORATION
+### [traps-in-play] Traps in Play → COMBAT, EXPLORATION
+#### [triggering-a-trap] Triggering a Trap → COMBAT, EXPLORATION
+#### [detecting-and-disabling-a-trap] Detecting and Disabling a Trap → COMBAT, EXPLORATION
+#### [trap-effects] Trap Effects → COMBAT, EXPLORATION
+#### [complex-traps] Complex Traps → COMBAT, EXPLORATION
+### [sample-traps] Sample Traps → COMBAT, EXPLORATION
+#### [collapsing-roof] Collapsing Roof → COMBAT, EXPLORATION
+#### [falling-net] Falling Net → COMBAT, EXPLORATION
+#### [fire-breathing-statue] Fire-Breathing Statue → COMBAT, EXPLORATION
+#### [pits] Pits → COMBAT, EXPLORATION
+#### [poison-darts] Poison Darts → COMBAT, EXPLORATION
+#### [poison-needle] Poison Needle → COMBAT, EXPLORATION
+#### [rolling-sphere] Rolling Sphere → COMBAT, EXPLORATION
+#### [trap-sphere-of-annihilation] Sphere of Annihilation → COMBAT, EXPLORATION
+# [chapter-combat] Combat → COMBAT
+## [section-the-order-of-combat] The Order of Combat → COMBAT
+### [surprise] Surprise → COMBAT
+### [initiative] Initiative → COMBAT
+### [your-turn] Your Turn → COMBAT
+#### [bonus-actions] Bonus Actions → COMBAT
+#### [other-activity-on-your-turn] Other Activity on Your Turn → COMBAT
+### [reactions] Reactions → COMBAT
+## [section-movement-and-position] Movement and Position → COMBAT
+### [breaking-up-your-move] Breaking Up Your Move → COMBAT
+#### [moving-between-attacks] Moving between Attacks → COMBAT
+#### [using-different-speeds] Using Different Speeds → COMBAT
+### [difficult-terrain] Difficult Terrain → COMBAT
+### [being-prone] Being Prone → COMBAT, CONDITIONS
+### [moving-around-other-creatures] Moving Around Other Creatures → COMBAT
+### [flying-movement] Flying Movement → COMBAT
+### [creature-size] Creature Size → COMBAT, CREATURES
+#### [space] Space → COMBAT, CREATURES
+#### [squeezing-into-a-smaller-space] Squeezing into a Smaller Space → COMBAT, CREATURES
+## [section-actions-in-combat] Actions in Combat → COMBAT
+### [attack] Attack → COMBAT
+### [cast-a-spell] Cast a Spell → SPELLCASTING, COMBAT
+### [dash] Dash → COMBAT
+### [disengage] Disengage → COMBAT
+### [dodge] Dodge → COMBAT
+### [help] Help → COMBAT
+### [hide] Hide → COMBAT
+### [ready] Ready → COMBAT
+### [search] Search → COMBAT
+### [use-an-object] Use an Object → COMBAT
+## [section-making-an-attack] Making an Attack → COMBAT
+### [attack-rolls] Attack Rolls → COMBAT
+#### [modifiers-to-the-roll] Modifiers to the Roll → COMBAT
+#### [rolling-1-or-20] Rolling 1 or 20 → COMBAT
+### [unseen-attackers-and-targets] Unseen Attackers and Targets → COMBAT
+### [ranged-attacks] Ranged Attacks → COMBAT
+#### [range] Range → COMBAT
+### [ranged-attacks-in-close-combat] Ranged Attacks in Close Combat → COMBAT
+### [melee-attacks] Melee Attacks → COMBAT
+#### [opportunity-attacks] Opportunity Attacks → COMBAT
+#### [two-weapon-fighting] Two-Weapon Fighting → COMBAT
+#### [grappling] Grappling → COMBAT
+#### [shoving-a-creature] Shoving a Creature → COMBAT
+## [section-cover] Cover → COMBAT
+## [section-damage-and-healing] Damage and Healing → COMBAT, CORE_MECHANICS
+### [hit-points] Hit Points → COMBAT, CORE_MECHANICS
+### [damage-rolls] Damage Rolls → COMBAT, CORE_MECHANICS
+#### [critical-hits] Critical Hits → COMBAT, CORE_MECHANICS
+#### [damage-types] Damage Types → COMBAT, CORE_MECHANICS
+### [damage-resistance-and-vulnerability] Damage Resistance and Vulnerability → COMBAT, CORE_MECHANICS
+### [healing] Healing → COMBAT, CORE_MECHANICS
+### [dropping-to-0-hit-points] Dropping to 0 Hit Points → COMBAT, CORE_MECHANICS
+#### [instant-death] Instant Death → COMBAT, CORE_MECHANICS
+#### [falling-unconscious] Falling Unconscious → COMBAT, CONDITIONS, CORE_MECHANICS
+#### [death-saving-throws] Death Saving Throws → COMBAT, CORE_MECHANICS
+#### [stabilizing-a-creature] Stabilizing a Creature → COMBAT, CORE_MECHANICS
+#### [monsters-and-death] Monsters and Death → COMBAT, CORE_MECHANICS
+### [knocking-a-creature-out] Knocking a Creature Out → COMBAT, CORE_MECHANICS, CREATURES
+### [temporary-hit-points] Temporary Hit Points → COMBAT, CORE_MECHANICS
+## [section-mounted-combat] Mounted Combat → COMBAT
+### [mounting-and-dismounting] Mounting and Dismounting → COMBAT
+### [controlling-a-mount] Controlling a Mount → COMBAT
+## [section-underwater-combat] Underwater Combat → COMBAT, EXPLORATION
+# [chapter-spellcasting] Spellcasting → SPELLCASTING
+## [section-what-is-a-spell] What Is a Spell? → SPELLCASTING
+### [spell-level] Spell Level → SPELLCASTING
+### [known-and-prepared-spells] Known and Prepared Spells → SPELLCASTING
+### [spell-slots] Spell Slots → SPELLCASTING
+#### [casting-a-spell-at-a-higher-level] Casting a Spell at a Higher Level → SPELLCASTING
+### [cantrips] Cantrips → SPELLCASTING
+### [rituals] Rituals → SPELLCASTING
+## [section-casting-a-spell] Casting a Spell → SPELLCASTING
+### [casting-time] Casting Time → SPELLCASTING
+#### [bonus-action] Bonus Action → SPELLCASTING, COMBAT
+#### [reactions] Reactions → SPELLCASTING, COMBAT
+#### [longer-casting-times] Longer Casting Times → SPELLCASTING
+### [range] Range → SPELLCASTING
+### [components] Components → SPELLCASTING
+#### [verbal-v] Verbal (V) → SPELLCASTING
+#### [somatic-s] Somatic (S) → SPELLCASTING
+#### [material-m] Material (M) → SPELLCASTING
+### [duration] Duration → SPELLCASTING
+#### [instantaneous] Instantaneous → SPELLCASTING
+#### [concentration] Concentration → SPELLCASTING
+### [targets] Targets → SPELLCASTING
+#### [a-clear-path-to-the-target] A Clear Path to the Target → SPELLCASTING
+#### [targeting-yourself] Targeting Yourself → SPELLCASTING
+### [areas-of-effect] Areas of Effect → SPELLCASTING
+#### [cone] Cone → SPELLCASTING
+#### [cube] Cube → SPELLCASTING
+#### [cylinder] Cylinder → SPELLCASTING
+#### [line] Line → SPELLCASTING
+#### [sphere] Sphere → SPELLCASTING
+### [saving-throws] Saving Throws → SPELLCASTING
+### [attack-rolls] Attack Rolls → SPELLCASTING, COMBAT
+### [combining-magical-effects] Combining Magical Effects → SPELLCASTING
+# [chapter-spell-lists] Spell Lists → SPELLCASTING
+## [section-bard-spells] Bard Spells → CLASS_FEATURES, SPELLCASTING
+### [cantrips-0-level] Cantrips (0 Level) → CLASS_FEATURES, SPELLCASTING
+### [1st-level] 1st Level → CLASS_FEATURES, SPELLCASTING
+### [2nd-level] 2nd Level → CLASS_FEATURES, SPELLCASTING
+### [3rd-level] 3rd Level → CLASS_FEATURES, SPELLCASTING
+### [4th-level] 4th Level → CLASS_FEATURES, SPELLCASTING
+### [5th-level] 5th Level → CLASS_FEATURES, SPELLCASTING
+### [6th-level] 6th Level → CLASS_FEATURES, SPELLCASTING
+### [7th-level] 7th Level → CLASS_FEATURES, SPELLCASTING
+### [8th-level] 8th Level → CLASS_FEATURES, SPELLCASTING
+### [9th-level] 9th Level → CLASS_FEATURES, SPELLCASTING
+## [section-cleric-spells] Cleric Spells → CLASS_FEATURES, SPELLCASTING
+### [cantrips-0-level] Cantrips (0 Level) → CLASS_FEATURES, SPELLCASTING
+### [1st-level] 1st Level → CLASS_FEATURES, SPELLCASTING
+### [2nd-level] 2nd Level → CLASS_FEATURES, SPELLCASTING
+### [3rd-level] 3rd Level → CLASS_FEATURES, SPELLCASTING
+### [4th-level] 4th Level → CLASS_FEATURES, SPELLCASTING
+### [5th-level] 5th Level → CLASS_FEATURES, SPELLCASTING
+### [6th-level] 6th Level → CLASS_FEATURES, SPELLCASTING
+### [7th-level] 7th Level → CLASS_FEATURES, SPELLCASTING
+### [8th-level] 8th Level → CLASS_FEATURES, SPELLCASTING
+### [9th-level] 9th Level → CLASS_FEATURES, SPELLCASTING
+## [section-druid-spells] Druid Spells → CLASS_FEATURES, SPELLCASTING
+### [cantrips-0-level] Cantrips (0 Level) → CLASS_FEATURES, SPELLCASTING
+### [1st-level] 1st Level → CLASS_FEATURES, SPELLCASTING
+### [2nd-level] 2nd Level → CLASS_FEATURES, SPELLCASTING
+### [3rd-level] 3rd Level → CLASS_FEATURES, SPELLCASTING
+### [4th-level] 4th Level → CLASS_FEATURES, SPELLCASTING
+### [5th-level] 5th Level → CLASS_FEATURES, SPELLCASTING
+### [6th-level] 6th Level → CLASS_FEATURES, SPELLCASTING
+### [7th-level] 7th Level → CLASS_FEATURES, SPELLCASTING
+### [8th-level] 8th Level → CLASS_FEATURES, SPELLCASTING
+### [9th-level] 9th Level → CLASS_FEATURES, SPELLCASTING
+## [section-paladin-spells] Paladin Spells → CLASS_FEATURES, SPELLCASTING
+### [1st-level] 1st Level → CLASS_FEATURES, SPELLCASTING
+### [2nd-level] 2nd Level → CLASS_FEATURES, SPELLCASTING
+### [3rd-level] 3rd Level → CLASS_FEATURES, SPELLCASTING
+### [4th-level] 4th Level → CLASS_FEATURES, SPELLCASTING
+### [5th-level] 5th Level → CLASS_FEATURES, SPELLCASTING
+## [section-ranger-spells] Ranger Spells → CLASS_FEATURES, SPELLCASTING
+### [1st-level] 1st Level → CLASS_FEATURES, SPELLCASTING
+### [2nd-level] 2nd Level → CLASS_FEATURES, SPELLCASTING
+### [3rd-level] 3rd Level → CLASS_FEATURES, SPELLCASTING
+### [4th-level] 4th Level → CLASS_FEATURES, SPELLCASTING
+### [5th-level] 5th Level → CLASS_FEATURES, SPELLCASTING
+## [section-sorcerer-spells] Sorcerer Spells → CLASS_FEATURES, SPELLCASTING
+### [cantrips-0-level] Cantrips (0 Level) → CLASS_FEATURES, SPELLCASTING
+### [1st-level] 1st Level → CLASS_FEATURES, SPELLCASTING
+### [2nd-level] 2nd Level → CLASS_FEATURES, SPELLCASTING
+### [3rd-level] 3rd Level → CLASS_FEATURES, SPELLCASTING
+### [4th-level] 4th Level → CLASS_FEATURES, SPELLCASTING
+### [5th-level] 5th Level → CLASS_FEATURES, SPELLCASTING
+### [6th-level] 6th Level → CLASS_FEATURES, SPELLCASTING
+### [7th-level] 7th Level → CLASS_FEATURES, SPELLCASTING
+### [8th-level] 8th Level → CLASS_FEATURES, SPELLCASTING
+### [9th-level] 9th Level → CLASS_FEATURES, SPELLCASTING
+## [section-warlock-spells] Warlock Spells → CLASS_FEATURES, SPELLCASTING
+### [cantrips-0-level] Cantrips (0 Level) → CLASS_FEATURES, SPELLCASTING
+### [1st-level] 1st Level → CLASS_FEATURES, SPELLCASTING
+### [2nd-level] 2nd Level → CLASS_FEATURES, SPELLCASTING
+### [3rd-level] 3rd Level → CLASS_FEATURES, SPELLCASTING
+### [4th-level] 4th Level → CLASS_FEATURES, SPELLCASTING
+### [5th-level] 5th Level → CLASS_FEATURES, SPELLCASTING
+### [6th-level] 6th Level → CLASS_FEATURES, SPELLCASTING
+### [7th-level] 7th Level → CLASS_FEATURES, SPELLCASTING
+### [8th-level] 8th Level → CLASS_FEATURES, SPELLCASTING
+### [9th-level] 9th Level → CLASS_FEATURES, SPELLCASTING
+## [section-wizard-spells] Wizard Spells → CLASS_FEATURES, SPELLCASTING
+### [cantrips-0-level] Cantrips (0 Level) → CLASS_FEATURES, SPELLCASTING
+### [1st-level] 1st Level → CLASS_FEATURES, SPELLCASTING
+### [2nd-level] 2nd Level → CLASS_FEATURES, SPELLCASTING
+### [3rd-level] 3rd Level → CLASS_FEATURES, SPELLCASTING
+### [4th-level] 4th Level → CLASS_FEATURES, SPELLCASTING
+### [5th-level] 5th Level → CLASS_FEATURES, SPELLCASTING
+### [6th-level] 6th Level → CLASS_FEATURES, SPELLCASTING
+### [7th-level] 7th Level → CLASS_FEATURES, SPELLCASTING
+### [8th-level] 8th Level → CLASS_FEATURES, SPELLCASTING
+### [9th-level] 9th Level → CLASS_FEATURES, SPELLCASTING
+## [section-spell-descriptions] Spell Descriptions → SPELLCASTING
+#### [acid-arrow] Acid Arrow → SPELLCASTING
+#### [acid-splash] Acid Splash → SPELLCASTING
+#### [aid] Aid → SPELLCASTING
+#### [alarm] Alarm → SPELLCASTING
+#### [alter-self] Alter Self → SPELLCASTING
+#### [animal-friendship] Animal Friendship → SPELLCASTING
+#### [animal-messenger] Animal Messenger → SPELLCASTING
+#### [animal-shapes] Animal Shapes → SPELLCASTING
+#### [animate-dead] Animate Dead → SPELLCASTING
+#### [animate-objects] Animate Objects → SPELLCASTING
+#### [antilife-shell] Antilife Shell → SPELLCASTING
+#### [antimagic-field] Antimagic Field → SPELLCASTING
+#### [antipathysympathy] Antipathy/Sympathy → SPELLCASTING
+#### [arcane-eye] Arcane Eye → SPELLCASTING
+#### [arcane-hand] Arcane Hand → SPELLCASTING
+#### [arcane-lock] Arcane Lock → SPELLCASTING
+#### [arcane-sword] Arcane Sword → SPELLCASTING
+#### [arcanists-magic-aura] Arcanist's Magic Aura → SPELLCASTING
+#### [astral-projection] Astral Projection → SPELLCASTING
+#### [augury] Augury → SPELLCASTING
+#### [awaken] Awaken → SPELLCASTING
+#### [bane] Bane → SPELLCASTING
+#### [banishment] Banishment → SPELLCASTING
+#### [barkskin] Barkskin → SPELLCASTING
+#### [beacon-of-hope] Beacon of Hope → SPELLCASTING
+#### [bestow-curse] Bestow Curse → SPELLCASTING
+#### [black-tentacles] Black Tentacles → SPELLCASTING
+#### [blade-barrier] Blade Barrier → SPELLCASTING
+#### [bless] Bless → SPELLCASTING
+#### [blight] Blight → SPELLCASTING
+#### [blindnessdeafness] Blindness/Deafness → SPELLCASTING
+#### [blink] Blink → SPELLCASTING
+#### [blur] Blur → SPELLCASTING
+#### [branding-smite] Branding Smite → SPELLCASTING
+#### [burning-hands] Burning Hands → SPELLCASTING
+#### [call-lightning] Call Lightning → SPELLCASTING
+#### [calm-emotions] Calm Emotions → SPELLCASTING
+#### [chain-lightning] Chain Lightning → SPELLCASTING
+#### [charm-person] Charm Person → SPELLCASTING
+#### [chill-touch] Chill Touch → SPELLCASTING
+#### [circle-of-death] Circle of Death → SPELLCASTING
+#### [clairvoyance] Clairvoyance → SPELLCASTING
+#### [clone] Clone → SPELLCASTING
+#### [cloudkill] Cloudkill → SPELLCASTING
+#### [color-spray] Color Spray → SPELLCASTING
+#### [command] Command → SPELLCASTING
+#### [commune] Commune → SPELLCASTING
+#### [commune-with-nature] Commune with Nature → SPELLCASTING
+#### [comprehend-languages] Comprehend Languages → SPELLCASTING
+#### [compulsion] Compulsion → SPELLCASTING
+#### [cone-of-cold] Cone of Cold → SPELLCASTING
+#### [confusion] Confusion → SPELLCASTING
+#### [conjure-animals] Conjure Animals → SPELLCASTING
+#### [conjure-celestial] Conjure Celestial → SPELLCASTING
+#### [conjure-elemental] Conjure Elemental → SPELLCASTING
+#### [conjure-fey] Conjure Fey → SPELLCASTING
+#### [conjure-minor-elementals] Conjure Minor Elementals → SPELLCASTING
+#### [conjure-woodland-beings] Conjure Woodland Beings → SPELLCASTING
+#### [contact-other-plane] Contact Other Plane → SPELLCASTING
+#### [contagion] Contagion → SPELLCASTING
+#### [contingency] Contingency → SPELLCASTING
+#### [continual-flame] Continual Flame → SPELLCASTING
+#### [control-water] Control Water → SPELLCASTING
+#### [control-weather] Control Weather → SPELLCASTING
+#### [counterspell] Counterspell → SPELLCASTING
+#### [create-food-and-water] Create Food and Water → SPELLCASTING
+#### [create-undead] Create Undead → SPELLCASTING
+#### [create-or-destroy-water] Create or Destroy Water → SPELLCASTING
+#### [creation] Creation → SPELLCASTING
+#### [cure-wounds] Cure Wounds → SPELLCASTING
+#### [dancing-lights] Dancing Lights → SPELLCASTING
+#### [darkness] Darkness → SPELLCASTING
+#### [darkvision] Darkvision → SPELLCASTING
+#### [daylight] Daylight → SPELLCASTING
+#### [death-ward] Death Ward → SPELLCASTING
+#### [delayed-blast-fireball] Delayed Blast Fireball → SPELLCASTING
+#### [demiplane] Demiplane → SPELLCASTING
+#### [detect-evil-and-good] Detect Evil and Good → SPELLCASTING
+#### [detect-magic] Detect Magic → SPELLCASTING
+#### [detect-poison-and-disease] Detect Poison and Disease → SPELLCASTING
+#### [detect-thoughts] Detect Thoughts → SPELLCASTING
+#### [dimension-door] Dimension Door → SPELLCASTING
+#### [disguise-self] Disguise Self → SPELLCASTING
+#### [disintegrate] Disintegrate → SPELLCASTING
+#### [dispel-evil-and-good] Dispel Evil and Good → SPELLCASTING
+#### [dispel-magic] Dispel Magic → SPELLCASTING
+#### [divination] Divination → SPELLCASTING
+#### [divine-favor] Divine Favor → SPELLCASTING
+#### [divine-word] Divine Word → SPELLCASTING
+#### [dominate-beast] Dominate Beast → SPELLCASTING
+#### [dominate-monster] Dominate Monster → SPELLCASTING
+#### [dominate-person] Dominate Person → SPELLCASTING
+#### [dream] Dream → SPELLCASTING
+#### [druidcraft] Druidcraft → CLASS_FEATURES, SPELLCASTING
+#### [earthquake] Earthquake → SPELLCASTING
+#### [eldritch-blast] Eldritch Blast → SPELLCASTING
+#### [enhance-ability] Enhance Ability → SPELLCASTING
+#### [enlargereduce] Enlarge/Reduce → SPELLCASTING
+#### [entangle] Entangle → SPELLCASTING
+#### [enthrall] Enthrall → SPELLCASTING
+#### [etherealness] Etherealness → SPELLCASTING
+#### [expeditious-retreat] Expeditious Retreat → SPELLCASTING
+#### [eyebite] Eyebite → SPELLCASTING
+#### [fabricate] Fabricate → SPELLCASTING
+#### [faerie-fire] Faerie Fire → SPELLCASTING
+#### [faithful-hound] Faithful Hound → SPELLCASTING
+#### [false-life] False Life → SPELLCASTING
+#### [fear] Fear → SPELLCASTING
+#### [feather-fall] Feather Fall → SPELLCASTING
+#### [feeblemind] Feeblemind → SPELLCASTING
+#### [find-familiar] Find Familiar → SPELLCASTING
+#### [find-steed] Find Steed → SPELLCASTING
+#### [find-traps] Find Traps → SPELLCASTING
+#### [find-the-path] Find the Path → SPELLCASTING
+#### [finger-of-death] Finger of Death → SPELLCASTING
+#### [fire-bolt] Fire Bolt → SPELLCASTING
+#### [fire-shield] Fire Shield → SPELLCASTING
+#### [fire-storm] Fire Storm → SPELLCASTING
+#### [fireball] Fireball → SPELLCASTING
+#### [flame-blade] Flame Blade → SPELLCASTING
+#### [flame-strike] Flame Strike → SPELLCASTING
+#### [flaming-sphere] Flaming Sphere → SPELLCASTING
+#### [flesh-to-stone] Flesh to Stone → SPELLCASTING
+#### [floating-disk] Floating Disk → SPELLCASTING
+#### [fly] Fly → SPELLCASTING
+#### [fog-cloud] Fog Cloud → SPELLCASTING
+#### [forbiddance] Forbiddance → SPELLCASTING
+#### [forcecage] Forcecage → SPELLCASTING
+#### [foresight] Foresight → SPELLCASTING
+#### [freedom-of-movement] Freedom of Movement → SPELLCASTING
+#### [freezing-sphere] Freezing Sphere → SPELLCASTING
+#### [gaseous-form] Gaseous Form → SPELLCASTING
+#### [gate] Gate → SPELLCASTING
+#### [geas] Geas → SPELLCASTING
+#### [gentle-repose] Gentle Repose → SPELLCASTING
+#### [giant-insect] Giant Insect → SPELLCASTING
+#### [glibness] Glibness → SPELLCASTING
+#### [globe-of-invulnerability] Globe of Invulnerability → SPELLCASTING
+#### [glyph-of-warding] Glyph of Warding → SPELLCASTING
+#### [goodberry] Goodberry → SPELLCASTING
+#### [grease] Grease → SPELLCASTING
+#### [greater-invisibility] Greater Invisibility → SPELLCASTING
+#### [greater-restoration] Greater Restoration → SPELLCASTING, EXPLORATION
+#### [guardian-of-faith] Guardian of Faith → SPELLCASTING
+#### [guards-and-wards] Guards and Wards → SPELLCASTING
+#### [guidance] Guidance → SPELLCASTING
+#### [guiding-bolt] Guiding Bolt → SPELLCASTING
+#### [gust-of-wind] Gust of Wind → SPELLCASTING
+#### [hallow] Hallow → SPELLCASTING
+#### [hallucinatory-terrain] Hallucinatory Terrain → SPELLCASTING
+#### [harm] Harm → SPELLCASTING
+#### [haste] Haste → SPELLCASTING
+#### [heal] Heal → SPELLCASTING
+#### [healing-word] Healing Word → SPELLCASTING
+#### [heat-metal] Heat Metal → SPELLCASTING
+#### [hellish-rebuke] Hellish Rebuke → SPELLCASTING
+#### [heroes-feast] Heroes' Feast → SPELLCASTING
+#### [heroism] Heroism → SPELLCASTING
+#### [hideous-laughter] Hideous Laughter → SPELLCASTING
+#### [hold-monster] Hold Monster → SPELLCASTING
+#### [hold-person] Hold Person → SPELLCASTING
+#### [holy-aura] Holy Aura → SPELLCASTING
+#### [hunters-mark] Hunter's Mark → SPELLCASTING
+#### [hypnotic-pattern] Hypnotic Pattern → SPELLCASTING
+#### [ice-storm] Ice Storm → SPELLCASTING
+#### [identify] Identify → SPELLCASTING
+#### [illusory-script] Illusory Script → SPELLCASTING
+#### [imprisonment] Imprisonment → SPELLCASTING
+#### [incendiary-cloud] Incendiary Cloud → SPELLCASTING
+#### [inflict-wounds] Inflict Wounds → SPELLCASTING
+#### [insect-plague] Insect Plague → SPELLCASTING
+#### [instant-summons] Instant Summons → SPELLCASTING
+#### [invisibility] Invisibility → SPELLCASTING
+#### [irresistible-dance] Irresistible Dance → SPELLCASTING
+#### [jump] Jump → SPELLCASTING
+#### [knock] Knock → SPELLCASTING
+#### [legend-lore] Legend Lore → SPELLCASTING
+#### [lesser-restoration] Lesser Restoration → SPELLCASTING, EXPLORATION
+#### [levitate] Levitate → SPELLCASTING
+#### [light] Light → SPELLCASTING
+#### [lightning-bolt] Lightning Bolt → SPELLCASTING
+#### [locate-animals-or-plants] Locate Animals or Plants → SPELLCASTING
+#### [locate-creature] Locate Creature → SPELLCASTING
+#### [locate-object] Locate Object → SPELLCASTING
+#### [longstrider] Longstrider → SPELLCASTING
+#### [mage-armor] Mage Armor → SPELLCASTING
+#### [mage-hand] Mage Hand → SPELLCASTING
+#### [magic-circle] Magic Circle → SPELLCASTING
+#### [magic-jar] Magic Jar → SPELLCASTING
+#### [magic-missile] Magic Missile → SPELLCASTING
+#### [magic-mouth] Magic Mouth → SPELLCASTING
+#### [magic-weapon] Magic Weapon → SPELLCASTING
+#### [magnificent-mansion] Magnificent Mansion → SPELLCASTING
+#### [major-image] Major Image → SPELLCASTING
+#### [mass-cure-wounds] Mass Cure Wounds → SPELLCASTING
+#### [mass-heal] Mass Heal → SPELLCASTING
+#### [mass-healing-word] Mass Healing Word → SPELLCASTING
+#### [mass-suggestion] Mass Suggestion → SPELLCASTING
+#### [maze] Maze → SPELLCASTING
+#### [meld-into-stone] Meld into Stone → SPELLCASTING
+#### [mending] Mending → SPELLCASTING
+#### [message] Message → SPELLCASTING
+#### [meteor-swarm] Meteor Swarm → SPELLCASTING
+#### [mind-blank] Mind Blank → SPELLCASTING
+#### [minor-illusion] Minor Illusion → SPELLCASTING
+#### [mirage-arcane] Mirage Arcane → SPELLCASTING
+#### [mirror-image] Mirror Image → SPELLCASTING
+#### [mislead] Mislead → SPELLCASTING
+#### [misty-step] Misty Step → SPELLCASTING
+#### [modify-memory] Modify Memory → SPELLCASTING
+#### [moonbeam] Moonbeam → SPELLCASTING
+#### [move-earth] Move Earth → SPELLCASTING
+#### [nondetection] Nondetection → SPELLCASTING
+#### [pass-without-trace] Pass without Trace → SPELLCASTING
+#### [passwall] Passwall → SPELLCASTING
+#### [phantasmal-killer] Phantasmal Killer → SPELLCASTING
+#### [phantom-steed] Phantom Steed → SPELLCASTING
+#### [planar-ally] Planar Ally → SPELLCASTING
+#### [planar-binding] Planar Binding → SPELLCASTING
+#### [plane-shift] Plane Shift → SPELLCASTING
+#### [plant-growth] Plant Growth → SPELLCASTING
+#### [poison-spray] Poison Spray → SPELLCASTING
+#### [polymorph] Polymorph → SPELLCASTING
+#### [power-word-kill] Power Word Kill → SPELLCASTING
+#### [power-word-stun] Power Word Stun → SPELLCASTING
+#### [prayer-of-healing] Prayer of Healing → SPELLCASTING
+#### [prestidigitation] Prestidigitation → SPELLCASTING, EXPLORATION
+#### [prismatic-spray] Prismatic Spray → SPELLCASTING
+#### [prismatic-wall] Prismatic Wall → SPELLCASTING
+#### [private-sanctum] Private Sanctum → SPELLCASTING
+#### [produce-flame] Produce Flame → SPELLCASTING
+#### [programmed-illusion] Programmed Illusion → SPELLCASTING
+#### [project-image] Project Image → SPELLCASTING
+#### [protection-from-energy] Protection from Energy → SPELLCASTING
+#### [protection-from-evil-and-good] Protection from Evil and Good → SPELLCASTING
+#### [protection-from-poison] Protection from Poison → SPELLCASTING
+#### [purify-food-and-drink] Purify Food and Drink → SPELLCASTING
+#### [raise-dead] Raise Dead → SPELLCASTING
+#### [ray-of-enfeeblement] Ray of Enfeeblement → SPELLCASTING
+#### [ray-of-frost] Ray of Frost → SPELLCASTING
+#### [regenerate] Regenerate → SPELLCASTING
+#### [reincarnate] Reincarnate → SPELLCASTING
+#### [remove-curse] Remove Curse → SPELLCASTING
+#### [resilient-sphere] Resilient Sphere → SPELLCASTING
+#### [resistance] Resistance → SPELLCASTING
+#### [resurrection] Resurrection → SPELLCASTING
+#### [reverse-gravity] Reverse Gravity → SPELLCASTING
+#### [revivify] Revivify → SPELLCASTING
+#### [rope-trick] Rope Trick → SPELLCASTING
+#### [sacred-flame] Sacred Flame → SPELLCASTING
+#### [sanctuary] Sanctuary → SPELLCASTING
+#### [scorching-ray] Scorching Ray → SPELLCASTING
+#### [scrying] Scrying → SPELLCASTING
+#### [secret-chest] Secret Chest → SPELLCASTING
+#### [see-invisibility] See Invisibility → SPELLCASTING
+#### [seeming] Seeming → SPELLCASTING
+#### [sending] Sending → SPELLCASTING
+#### [sequester] Sequester → SPELLCASTING
+#### [shapechange] Shapechange → SPELLCASTING
+#### [shatter] Shatter → SPELLCASTING
+#### [shield] Shield → SPELLCASTING
+#### [shield-of-faith] Shield of Faith → SPELLCASTING
+#### [shillelagh] Shillelagh → SPELLCASTING
+#### [shocking-grasp] Shocking Grasp → SPELLCASTING
+#### [silence] Silence → SPELLCASTING
+#### [silent-image] Silent Image → SPELLCASTING
+#### [simulacrum] Simulacrum → SPELLCASTING
+#### [sleep] Sleep → SPELLCASTING
+#### [sleet-storm] Sleet Storm → SPELLCASTING
+#### [slow] Slow → SPELLCASTING
+#### [spare-the-dying] Spare the Dying → SPELLCASTING
+#### [speak-with-animals] Speak with Animals → SPELLCASTING
+#### [speak-with-dead] Speak with Dead → SPELLCASTING
+#### [speak-with-plants] Speak with Plants → SPELLCASTING
+#### [spider-climb] Spider Climb → SPELLCASTING
+#### [spike-growth] Spike Growth → SPELLCASTING
+#### [spirit-guardians] Spirit Guardians → SPELLCASTING
+#### [spiritual-weapon] Spiritual Weapon → SPELLCASTING
+#### [stinking-cloud] Stinking Cloud → SPELLCASTING
+#### [stone-shape] Stone Shape → SPELLCASTING
+#### [stoneskin] Stoneskin → SPELLCASTING
+#### [storm-of-vengeance] Storm of Vengeance → SPELLCASTING
+#### [suggestion] Suggestion → SPELLCASTING
+#### [sunbeam] Sunbeam → SPELLCASTING
+#### [sunburst] Sunburst → SPELLCASTING
+#### [symbol] Symbol → SPELLCASTING
+#### [telekinesis] Telekinesis → SPELLCASTING
+#### [telepathic-bond] Telepathic Bond → SPELLCASTING
+#### [teleport] Teleport → SPELLCASTING
+#### [teleportation-circle] Teleportation Circle → SPELLCASTING
+#### [thaumaturgy] Thaumaturgy → SPELLCASTING
+#### [thunderwave] Thunderwave → SPELLCASTING
+#### [time-stop] Time Stop → SPELLCASTING
+#### [tiny-hut] Tiny Hut → SPELLCASTING
+#### [tongues] Tongues → SPELLCASTING
+#### [transport-via-plants] Transport via Plants → SPELLCASTING
+#### [tree-stride] Tree Stride → SPELLCASTING
+#### [true-polymorph] True Polymorph → SPELLCASTING
+#### [true-resurrection] True Resurrection → SPELLCASTING
+#### [true-seeing] True Seeing → SPELLCASTING
+#### [true-strike] True Strike → SPELLCASTING
+#### [unseen-servant] Unseen Servant → SPELLCASTING
+#### [vampiric-touch] Vampiric Touch → SPELLCASTING
+#### [vicious-mockery] Vicious Mockery → SPELLCASTING
+#### [wall-of-fire] Wall of Fire → SPELLCASTING
+#### [wall-of-force] Wall of Force → SPELLCASTING
+#### [wall-of-ice] Wall of Ice → SPELLCASTING
+#### [wall-of-stone] Wall of Stone → SPELLCASTING
+#### [wall-of-thorns] Wall of Thorns → SPELLCASTING
+#### [warding-bond] Warding Bond → SPELLCASTING
+#### [water-breathing] Water Breathing → SPELLCASTING
+#### [water-walk] Water Walk → SPELLCASTING
+#### [web] Web → SPELLCASTING
+#### [weird] Weird → SPELLCASTING
+#### [wind-walk] Wind Walk → SPELLCASTING
+#### [wind-wall] Wind Wall → SPELLCASTING
+#### [wish] Wish → SPELLCASTING
+#### [word-of-recall] Word of Recall → SPELLCASTING
+#### [zone-of-truth] Zone of Truth → SPELLCASTING
+# [chapter-equipment] Equipment → EQUIPMENT
+## [section-currency] Currency → EQUIPMENT
+## [section-selling-treasure] Selling Treasure → EQUIPMENT
+## [section-adventuring-gear] Adventuring Gear → EQUIPMENT
+## [section-tools] Tools → EQUIPMENT
+## [section-mounts-and-vehicles] Mounts and Vehicles → EQUIPMENT, EXPLORATION
+## [section-trade-goods] Trade Goods → EQUIPMENT
+## [section-expenses] Expenses → EQUIPMENT, EXPLORATION
+### [lifestyle-expenses] Lifestyle Expenses → EQUIPMENT, EXPLORATION
+### [food-drink-and-lodging] Food, Drink, and Lodging → EQUIPMENT, EXPLORATION
+## [section-services] Services → EQUIPMENT, EXPLORATION
+### [spellcasting-services] Spellcasting Services → SPELLCASTING, EQUIPMENT, EXPLORATION
+## [section-armor] Armor → EQUIPMENT
+### [light-armor] Light Armor → EQUIPMENT
+### [medium-armor] Medium Armor → EQUIPMENT
+### [heavy-armor] Heavy Armor → EQUIPMENT
+### [getting-into-and-out-of-armor] Getting Into and Out of Armor → EQUIPMENT
+## [section-weapons] Weapons → EQUIPMENT
+### [weapon-proficiency] Weapon Proficiency → EQUIPMENT
+### [weapon-properties] Weapon Properties → EQUIPMENT
+#### [improvised-weapons] Improvised Weapons → EQUIPMENT
+#### [silvered-weapons] Silvered Weapons → EQUIPMENT
+#### [special-weapons] Special Weapons → EQUIPMENT
+# [chapter-magic-items] Magic Items → EQUIPMENT
+## [section-attunement] Attunement → EQUIPMENT
+## [section-wearing-and-wielding-items] Wearing and Wielding Items → EQUIPMENT
+### [multiple-items-of-the-same-kind] Multiple Items of the Same Kind → EQUIPMENT
+### [paired-items] Paired Items → EQUIPMENT
+## [section-activating-an-item] Activating an Item → EQUIPMENT
+### [command-word] Command Word → EQUIPMENT
+### [consumables] Consumables → EQUIPMENT
+### [spells] Spells → SPELLCASTING, EQUIPMENT
+### [charges] Charges → EQUIPMENT
+## [section-magic-item-descriptions] Magic Item Descriptions → EQUIPMENT
+### [adamantine-armor] Adamantine Armor → EQUIPMENT
+### [ammunition-1-2-or-3] Ammunition, +1, +2, or +3 → EQUIPMENT
+### [amulet-of-health] Amulet of Health → EQUIPMENT
+### [amulet-of-proof-against-detection-and-location] Amulet of Proof against Detection and Location → EQUIPMENT
+### [amulet-of-the-planes] Amulet of the Planes → EQUIPMENT
+### [animated-shield] Animated Shield → EQUIPMENT
+### [apparatus-of-the-crab] Apparatus of the Crab → EQUIPMENT
+### [armor-1-2-or-3] Armor, +1, +2, or +3 → EQUIPMENT
+### [armor-of-invulnerability] Armor of Invulnerability → EQUIPMENT
+### [armor-of-resistance] Armor of Resistance → EQUIPMENT
+### [armor-of-vulnerability] Armor of Vulnerability → EQUIPMENT
+### [arrow-catching-shield] Arrow-Catching Shield → EQUIPMENT
+### [arrow-of-slaying] Arrow of Slaying → EQUIPMENT
+### [bag-of-beans] Bag of Beans → EQUIPMENT
+### [bag-of-devouring] Bag of Devouring → EQUIPMENT
+### [bag-of-holding] Bag of Holding → EQUIPMENT
+### [bag-of-tricks] Bag of Tricks → EQUIPMENT
+### [bead-of-force] Bead of Force → EQUIPMENT
+### [belt-of-dwarvenkind] Belt of Dwarvenkind → EQUIPMENT
+### [belt-of-giant-strength] Belt of Giant Strength → EQUIPMENT
+### [berserker-axe] Berserker Axe → EQUIPMENT
+### [boots-of-elvenkind] Boots of Elvenkind → EQUIPMENT
+### [boots-of-levitation] Boots of Levitation → EQUIPMENT
+### [boots-of-speed] Boots of Speed → EQUIPMENT
+### [boots-of-striding-and-springing] Boots of Striding and Springing → EQUIPMENT
+### [boots-of-the-winterlands] Boots of the Winterlands → EQUIPMENT
+### [bowl-of-commanding-water-elementals] Bowl of Commanding Water Elementals → EQUIPMENT
+### [bracers-of-archery] Bracers of Archery → EQUIPMENT
+### [bracers-of-defense] Bracers of Defense → EQUIPMENT
+### [brazier-of-commanding-fire-elementals] Brazier of Commanding Fire Elementals → EQUIPMENT
+### [brooch-of-shielding] Brooch of Shielding → EQUIPMENT
+### [broom-of-flying] Broom of Flying → EQUIPMENT
+### [candle-of-invocation] Candle of Invocation → EQUIPMENT
+### [cape-of-the-mountebank] Cape of the Mountebank → EQUIPMENT
+### [carpet-of-flying] Carpet of Flying → EQUIPMENT
+### [censer-of-controlling-air-elementals] Censer of Controlling Air Elementals → EQUIPMENT
+### [chime-of-opening] Chime of Opening → EQUIPMENT
+### [circlet-of-blasting] Circlet of Blasting → EQUIPMENT
+### [cloak-of-arachnida] Cloak of Arachnida → EQUIPMENT
+### [cloak-of-displacement] Cloak of Displacement → EQUIPMENT
+### [cloak-of-elvenkind] Cloak of Elvenkind → EQUIPMENT
+### [cloak-of-protection] Cloak of Protection → EQUIPMENT
+### [cloak-of-the-bat] Cloak of the Bat → EQUIPMENT
+### [cloak-of-the-manta-ray] Cloak of the Manta Ray → EQUIPMENT
+### [crystal-ball] Crystal Ball → EQUIPMENT
+### [cube-of-force] Cube of Force → EQUIPMENT
+### [cubic-gate] Cubic Gate → EQUIPMENT
+### [dagger-of-venom] Dagger of Venom → EQUIPMENT
+### [dancing-sword] Dancing Sword → EQUIPMENT
+### [decanter-of-endless-water] Decanter of Endless Water → EQUIPMENT
+### [deck-of-illusions] Deck of Illusions → EQUIPMENT
+### [deck-of-many-things] Deck of Many Things → EQUIPMENT
+### [defender] Defender → EQUIPMENT
+### [demon-armor] Demon Armor → EQUIPMENT
+### [dimensional-shackles] Dimensional Shackles → EQUIPMENT
+### [dragon-scale-mail] Dragon Scale Mail → EQUIPMENT
+### [dragon-slayer] Dragon Slayer → EQUIPMENT
+### [dust-of-disappearance] Dust of Disappearance → EQUIPMENT
+### [dust-of-dryness] Dust of Dryness → EQUIPMENT
+### [dust-of-sneezing-and-choking] Dust of Sneezing and Choking → EQUIPMENT
+### [dwarven-plate] Dwarven Plate → EQUIPMENT
+### [dwarven-thrower] Dwarven Thrower → EQUIPMENT
+### [efficient-quiver] Efficient Quiver → EQUIPMENT
+### [efreeti-bottle] Efreeti Bottle → EQUIPMENT
+### [elemental-gem] Elemental Gem → EQUIPMENT
+### [elven-chain] Elven Chain → EQUIPMENT
+### [eversmoking-bottle] Eversmoking Bottle → EQUIPMENT
+### [eyes-of-charming] Eyes of Charming → EQUIPMENT
+### [eyes-of-minute-seeing] Eyes of Minute Seeing → EQUIPMENT
+### [eyes-of-the-eagle] Eyes of the Eagle → EQUIPMENT
+### [feather-token] Feather Token → EQUIPMENT
+### [figurine-of-wondrous-power] Figurine of Wondrous Power → EQUIPMENT
+### [flame-tongue] Flame Tongue → EQUIPMENT
+### [folding-boat] Folding Boat → EQUIPMENT
+### [frost-brand] Frost Brand → EQUIPMENT
+### [gauntlets-of-ogre-power] Gauntlets of Ogre Power → EQUIPMENT
+### [gem-of-brightness] Gem of Brightness → EQUIPMENT
+### [gem-of-seeing] Gem of Seeing → EQUIPMENT
+### [giant-slayer] Giant Slayer → EQUIPMENT
+### [glamoured-studded-leather] Glamoured Studded Leather → EQUIPMENT
+### [gloves-of-missile-snaring] Gloves of Missile Snaring → EQUIPMENT
+### [gloves-of-swimming-and-climbing] Gloves of Swimming and Climbing → EQUIPMENT
+### [goggles-of-night] Goggles of Night → EQUIPMENT
+### [hammer-of-thunderbolts] Hammer of Thunderbolts → EQUIPMENT
+### [handy-haversack] Handy Haversack → EQUIPMENT
+### [hat-of-disguise] Hat of Disguise → EQUIPMENT
+### [headband-of-intellect] Headband of Intellect → EQUIPMENT
+### [helm-of-brilliance] Helm of Brilliance → EQUIPMENT
+### [helm-of-comprehending-languages] Helm of Comprehending Languages → EQUIPMENT
+### [helm-of-telepathy] Helm of Telepathy → EQUIPMENT
+### [helm-of-teleportation] Helm of Teleportation → EQUIPMENT
+### [holy-avenger] Holy Avenger → EQUIPMENT
+### [horn-of-blasting] Horn of Blasting → EQUIPMENT
+### [horn-of-valhalla] Horn of Valhalla → EQUIPMENT
+### [horseshoes-of-speed] Horseshoes of Speed → EQUIPMENT
+### [horseshoes-of-a-zephyr] Horseshoes of a Zephyr → EQUIPMENT
+### [immovable-rod] Immovable Rod → EQUIPMENT
+### [instant-fortress] Instant Fortress → EQUIPMENT
+### [ioun-stone] Ioun Stone → EQUIPMENT
+### [iron-bands-of-binding] Iron Bands of Binding → EQUIPMENT
+### [iron-flask] Iron Flask → EQUIPMENT
+### [javelin-of-lightning] Javelin of Lightning → EQUIPMENT
+### [lantern-of-revealing] Lantern of Revealing → EQUIPMENT
+### [luck-blade] Luck Blade → EQUIPMENT
+### [mace-of-disruption] Mace of Disruption → EQUIPMENT
+### [mace-of-smiting] Mace of Smiting → EQUIPMENT
+### [mace-of-terror] Mace of Terror → EQUIPMENT
+### [mantle-of-spell-resistance] Mantle of Spell Resistance → SPELLCASTING, EQUIPMENT
+### [manual-of-bodily-health] Manual of Bodily Health → EQUIPMENT
+### [manual-of-gainful-exercise] Manual of Gainful Exercise → EQUIPMENT
+### [manual-of-golems] Manual of Golems → EQUIPMENT
+### [manual-of-quickness-of-action] Manual of Quickness of Action → EQUIPMENT
+### [marvelous-pigments] Marvelous Pigments → EQUIPMENT
+### [medallion-of-thoughts] Medallion of Thoughts → EQUIPMENT
+### [mirror-of-life-trapping] Mirror of Life Trapping → EQUIPMENT
+### [mithral-armor] Mithral Armor → EQUIPMENT
+### [necklace-of-adaptation] Necklace of Adaptation → EQUIPMENT
+### [necklace-of-fireballs] Necklace of Fireballs → EQUIPMENT
+### [necklace-of-prayer-beads] Necklace of Prayer Beads → EQUIPMENT
+### [nine-lives-stealer] Nine Lives Stealer → EQUIPMENT
+### [oathbow] Oathbow → EQUIPMENT
+### [oil-of-etherealness] Oil of Etherealness → EQUIPMENT
+### [oil-of-sharpness] Oil of Sharpness → EQUIPMENT
+### [oil-of-slipperiness] Oil of Slipperiness → EQUIPMENT
+### [pearl-of-power] Pearl of Power → EQUIPMENT
+### [periapt-of-health] Periapt of Health → EQUIPMENT
+### [periapt-of-proof-against-poison] Periapt of Proof against Poison → EQUIPMENT
+### [periapt-of-wound-closure] Periapt of Wound Closure → EQUIPMENT
+### [philter-of-love] Philter of Love → EQUIPMENT
+### [pipes-of-haunting] Pipes of Haunting → EQUIPMENT
+### [pipes-of-the-sewers] Pipes of the Sewers → EQUIPMENT
+### [plate-armor-of-etherealness] Plate Armor of Etherealness → EQUIPMENT
+### [portable-hole] Portable Hole → EQUIPMENT
+### [potion-of-animal-friendship] Potion of Animal Friendship → EQUIPMENT
+### [potion-of-clairvoyance] Potion of Clairvoyance → EQUIPMENT
+### [potion-of-climbing] Potion of Climbing → EQUIPMENT
+### [potion-of-diminution] Potion of Diminution → EQUIPMENT
+### [potion-of-flying] Potion of Flying → EQUIPMENT
+### [potion-of-gaseous-form] Potion of Gaseous Form → EQUIPMENT
+### [potion-of-giant-strength] Potion of Giant Strength → EQUIPMENT
+### [potion-of-growth] Potion of Growth → EQUIPMENT
+### [potion-of-healing] Potion of Healing → EQUIPMENT
+### [potion-of-heroism] Potion of Heroism → EQUIPMENT
+### [potion-of-invisibility] Potion of Invisibility → EQUIPMENT
+### [potion-of-mind-reading] Potion of Mind Reading → EQUIPMENT
+### [potion-of-poison] Potion of Poison → EQUIPMENT
+### [potion-of-resistance] Potion of Resistance → EQUIPMENT
+### [potion-of-speed] Potion of Speed → EQUIPMENT
+### [potion-of-water-breathing] Potion of Water Breathing → EQUIPMENT
+### [restorative-ointment] Restorative Ointment → EQUIPMENT, EXPLORATION
+### [ring-of-animal-influence] Ring of Animal Influence → EQUIPMENT
+### [ring-of-djinni-summoning] Ring of Djinni Summoning → EQUIPMENT
+### [ring-of-elemental-command] Ring of Elemental Command → EQUIPMENT
+### [ring-of-evasion] Ring of Evasion → EQUIPMENT
+### [ring-of-feather-falling] Ring of Feather Falling → EQUIPMENT
+### [ring-of-free-action] Ring of Free Action → EQUIPMENT
+### [ring-of-invisibility] Ring of Invisibility → EQUIPMENT
+### [ring-of-jumping] Ring of Jumping → EQUIPMENT
+### [ring-of-mind-shielding] Ring of Mind Shielding → EQUIPMENT
+### [ring-of-protection] Ring of Protection → EQUIPMENT
+### [ring-of-regeneration] Ring of Regeneration → EQUIPMENT
+### [ring-of-resistance] Ring of Resistance → EQUIPMENT
+### [ring-of-shooting-stars] Ring of Shooting Stars → EQUIPMENT
+### [ring-of-spell-storing] Ring of Spell Storing → SPELLCASTING, EQUIPMENT
+### [ring-of-spell-turning] Ring of Spell Turning → SPELLCASTING, EQUIPMENT
+### [ring-of-swimming] Ring of Swimming → EQUIPMENT
+### [ring-of-telekinesis] Ring of Telekinesis → EQUIPMENT
+### [ring-of-three-wishes] Ring of Three Wishes → EQUIPMENT
+### [ring-of-warmth] Ring of Warmth → EQUIPMENT
+### [ring-of-water-walking] Ring of Water Walking → EQUIPMENT
+### [ring-of-x-ray-vision] Ring of X-ray Vision → EQUIPMENT
+### [ring-of-the-ram] Ring of the Ram → EQUIPMENT
+### [robe-of-eyes] Robe of Eyes → EQUIPMENT
+### [robe-of-scintillating-colors] Robe of Scintillating Colors → EQUIPMENT
+### [robe-of-stars] Robe of Stars → EQUIPMENT
+### [robe-of-useful-items] Robe of Useful Items → EQUIPMENT
+### [robe-of-the-archmagi] Robe of the Archmagi → EQUIPMENT
+### [rod-of-absorption] Rod of Absorption → EQUIPMENT
+### [rod-of-alertness] Rod of Alertness → EQUIPMENT
+### [rod-of-lordly-might] Rod of Lordly Might → EQUIPMENT
+### [rod-of-rulership] Rod of Rulership → EQUIPMENT
+### [rod-of-security] Rod of Security → EQUIPMENT
+### [rope-of-climbing] Rope of Climbing → EQUIPMENT
+### [rope-of-entanglement] Rope of Entanglement → EQUIPMENT
+### [scarab-of-protection] Scarab of Protection → EQUIPMENT
+### [scimitar-of-speed] Scimitar of Speed → EQUIPMENT
+### [shield-1-2-or-3] Shield, +1, +2, or +3 → EQUIPMENT
+### [shield-of-missile-attraction] Shield of Missile Attraction → EQUIPMENT
+### [slippers-of-spider-climbing] Slippers of Spider Climbing → EQUIPMENT
+### [sovereign-glue] Sovereign Glue → EQUIPMENT
+### [spell-scroll] Spell Scroll → SPELLCASTING, EQUIPMENT
+### [spellguard-shield] Spellguard Shield → SPELLCASTING, EQUIPMENT
+### [item-sphere-of-annihilation] Sphere of Annihilation → EQUIPMENT
+### [staff-of-charming] Staff of Charming → EQUIPMENT
+### [staff-of-fire] Staff of Fire → EQUIPMENT
+### [staff-of-frost] Staff of Frost → EQUIPMENT
+### [staff-of-healing] Staff of Healing → EQUIPMENT
+### [staff-of-power] Staff of Power → EQUIPMENT
+### [staff-of-striking] Staff of Striking → EQUIPMENT
+### [staff-of-swarming-insects] Staff of Swarming Insects → EQUIPMENT
+### [staff-of-thunder-and-lightning] Staff of Thunder and Lightning → EQUIPMENT
+### [staff-of-withering] Staff of Withering → EQUIPMENT
+### [staff-of-the-magi] Staff of the Magi → EQUIPMENT
+### [staff-of-the-python] Staff of the Python → EQUIPMENT
+### [staff-of-the-woodlands] Staff of the Woodlands → EQUIPMENT
+### [stone-of-controlling-earth-elementals] Stone of Controlling Earth Elementals → EQUIPMENT
+### [stone-of-good-luck-luckstone] Stone of Good Luck (Luckstone) → EQUIPMENT
+### [sun-blade] Sun Blade → EQUIPMENT
+### [sword-of-life-stealing] Sword of Life Stealing → EQUIPMENT
+### [sword-of-sharpness] Sword of Sharpness → EQUIPMENT
+### [sword-of-wounding] Sword of Wounding → EQUIPMENT
+### [talisman-of-pure-good] Talisman of Pure Good → EQUIPMENT
+### [talisman-of-ultimate-evil] Talisman of Ultimate Evil → EQUIPMENT
+### [talisman-of-the-sphere] Talisman of the Sphere → EQUIPMENT
+### [tome-of-clear-thought] Tome of Clear Thought → EQUIPMENT
+### [tome-of-leadership-and-influence] Tome of Leadership and Influence → EQUIPMENT
+### [tome-of-understanding] Tome of Understanding → EQUIPMENT
+### [trident-of-fish-command] Trident of Fish Command → EQUIPMENT
+### [universal-solvent] Universal Solvent → EQUIPMENT
+### [vicious-weapon] Vicious Weapon → EQUIPMENT
+### [vorpal-sword] Vorpal Sword → EQUIPMENT
+### [wand-of-binding] Wand of Binding → EQUIPMENT
+### [wand-of-enemy-detection] Wand of Enemy Detection → EQUIPMENT
+### [wand-of-fear] Wand of Fear → EQUIPMENT
+### [wand-of-fireballs] Wand of Fireballs → EQUIPMENT
+### [wand-of-lightning-bolts] Wand of Lightning Bolts → EQUIPMENT
+### [wand-of-magic-detection] Wand of Magic Detection → EQUIPMENT
+### [wand-of-magic-missiles] Wand of Magic Missiles → EQUIPMENT
+### [wand-of-paralysis] Wand of Paralysis → EQUIPMENT
+### [wand-of-polymorph] Wand of Polymorph → EQUIPMENT
+### [wand-of-secrets] Wand of Secrets → EQUIPMENT
+### [wand-of-web] Wand of Web → EQUIPMENT
+### [wand-of-wonder] Wand of Wonder → EQUIPMENT
+### [wand-of-the-war-mage-1-2-or-3] Wand of the War Mage, +1, +2, or +3 → EQUIPMENT
+### [weapon-1-2-or-3] Weapon, +1, +2, or +3 → EQUIPMENT
+### [well-of-many-worlds] Well of Many Worlds → EQUIPMENT
+### [wind-fan] Wind Fan → EQUIPMENT
+### [winged-boots] Winged Boots → EQUIPMENT
+### [wings-of-flying] Wings of Flying → EQUIPMENT
+## [section-sentient-magic-items] Sentient Magic Items → EQUIPMENT
+### [creating-sentient-magic-items] Creating Sentient Magic Items → EQUIPMENT
+#### [abilities] Abilities → EQUIPMENT
+#### [communication] Communication → EQUIPMENT
+#### [senses] Senses → EQUIPMENT
+#### [alignment] Alignment → EQUIPMENT
+#### [special-purpose] Special Purpose → EQUIPMENT
+### [conflict] Conflict → EQUIPMENT
+## [section-artifacts] Artifacts → EQUIPMENT
+### [orb-of-the-wyrm] Orb of the Wyrm → EQUIPMENT
+# [chapter-monsters] Monsters → CREATURES
+## [section-monster-construction] Monster Construction → CREATURES
+### [size] Size → CREATURES
+### [type] Type → CREATURES
+#### [tags] Tags → CREATURES
+#### [alignment] Alignment → CREATURES
+### [armor-class] Armor Class → CREATURES
+### [hit-points] Hit Points → CREATURES
+### [speed] Speed → CREATURES
+#### [burrow] Burrow → CREATURES
+#### [climb] Climb → CREATURES
+#### [fly] Fly → CREATURES
+#### [swim] Swim → CREATURES
+### [ability-scores] Ability Scores → CREATURES
+### [saving-throws] Saving Throws → CREATURES
+### [skills] Skills → CREATURES
+### [vulnerabilities-resistances-and-immunities] Vulnerabilities, Resistances, and Immunities → CREATURES
+### [senses] Senses → CREATURES
+#### [blindsight] Blindsight → CREATURES
+#### [darkvision] Darkvision → CREATURES
+#### [tremorsense] Tremorsense → CREATURES
+#### [truesight] Truesight → CREATURES
+### [languages] Languages → CREATURES
+#### [telepathy] Telepathy → CREATURES
+### [challenge] Challenge → CREATURES
+#### [experience-points] Experience Points → CREATURES
+### [special-traits] Special Traits → CREATURES
+#### [innate-spellcasting] Innate Spellcasting → SPELLCASTING, CREATURES
+#### [spellcasting] Spellcasting → SPELLCASTING, CREATURES
+#### [psionics] Psionics → CREATURES
+### [actions] Actions → CREATURES
+#### [melee-and-ranged-attacks] Melee and Ranged Attacks → COMBAT, CREATURES
+#### [multiattack] Multiattack → COMBAT, CREATURES
+#### [ammunition] Ammunition → CREATURES
+#### [reactions] Reactions → COMBAT, CREATURES
+### [limited-usage] Limited Usage → CREATURES
+### [equipment] Equipment → CREATURES
+## [section-legendary-creatures] Legendary Creatures → CREATURES
+### [legendary-actions] Legendary Actions → CREATURES
+### [a-legendary-creatures-lair] A Legendary Creature's Lair → CREATURES
+#### [lair-actions] Lair Actions → CREATURES
+#### [regional-effects] Regional Effects → CREATURES
+## [section-monster-descriptions] Monster Descriptions → CREATURES
+### [uncategorized] Uncategorized → CREATURES
+#### [aboleth] Aboleth → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ankheg] Ankheg → CREATURES
+##### [actions] Actions → CREATURES
+#### [avatar-of-death] Avatar of Death → CREATURES
+##### [actions] Actions → CREATURES
+#### [azer] Azer → CREATURES
+##### [actions] Actions → CREATURES
+#### [basilisk] Basilisk → CREATURES
+##### [actions] Actions → CREATURES
+#### [behir] Behir → CREATURES
+##### [actions] Actions → CREATURES
+#### [bugbear] Bugbear → CREATURES
+##### [actions] Actions → CREATURES
+#### [bulette] Bulette → CREATURES
+##### [actions] Actions → CREATURES
+#### [centaur] Centaur → CREATURES
+##### [actions] Actions → CREATURES
+#### [chimera] Chimera → CREATURES
+##### [actions] Actions → CREATURES
+#### [chuul] Chuul → CREATURES
+##### [actions] Actions → CREATURES
+#### [cloaker] Cloaker → CREATURES
+##### [actions] Actions → CREATURES
+#### [cockatrice] Cockatrice → CREATURES
+##### [actions] Actions → CREATURES
+#### [couatl] Couatl → CREATURES
+##### [actions] Actions → CREATURES
+#### [darkmantle] Darkmantle → CREATURES
+##### [actions] Actions → CREATURES
+#### [doppelganger] Doppelganger → CREATURES
+##### [actions] Actions → CREATURES
+#### [dragon-turtle] Dragon Turtle → CREATURES
+##### [actions] Actions → CREATURES
+#### [drider] Drider → CREATURES
+##### [actions] Actions → CREATURES
+#### [dryad] Dryad → CREATURES
+##### [actions] Actions → CREATURES
+#### [duergar] Duergar → CREATURES
+##### [actions] Actions → CREATURES
+#### [elf-drow] Elf, Drow → CREATURES
+##### [actions] Actions → CREATURES
+#### [ettercap] Ettercap → CREATURES
+##### [actions] Actions → CREATURES
+#### [ettin] Ettin → CREATURES
+##### [actions] Actions → CREATURES
+#### [gargoyle] Gargoyle → CREATURES
+##### [actions] Actions → CREATURES
+#### [ghost] Ghost → CREATURES
+##### [actions] Actions → CREATURES
+#### [gibbering-mouther] Gibbering Mouther → CREATURES
+##### [actions] Actions → CREATURES
+#### [gnoll] Gnoll → CREATURES
+##### [actions] Actions → CREATURES
+#### [gnome-deep-svirfneblin] Gnome, Deep (Svirfneblin) → CREATURES
+##### [actions] Actions → CREATURES
+#### [goblin] Goblin → CREATURES
+##### [actions] Actions → CREATURES
+#### [gorgon] Gorgon → CREATURES
+##### [actions] Actions → CREATURES
+#### [grick] Grick → CREATURES
+##### [actions] Actions → CREATURES
+#### [griffon] Griffon → CREATURES
+##### [actions] Actions → CREATURES
+#### [grimlock] Grimlock → CREATURES
+##### [actions] Actions → CREATURES
+#### [harpy] Harpy → CREATURES
+##### [actions] Actions → CREATURES
+#### [hell-hound] Hell Hound → CREATURES
+##### [actions] Actions → CREATURES
+#### [hippogriff] Hippogriff → CREATURES
+##### [actions] Actions → CREATURES
+#### [hobgoblin] Hobgoblin → CREATURES
+##### [actions] Actions → CREATURES
+#### [homunculus] Homunculus → CREATURES
+##### [actions] Actions → CREATURES
+#### [hydra] Hydra → CREATURES
+##### [actions] Actions → CREATURES
+#### [invisible-stalker] Invisible Stalker → CONDITIONS, CREATURES
+##### [actions] Actions → CONDITIONS, CREATURES
+#### [kobold] Kobold → CREATURES
+##### [actions] Actions → CREATURES
+#### [kraken] Kraken → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [lamia] Lamia → CREATURES
+##### [actions] Actions → CREATURES
+#### [lich] Lich → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [lizardfolk] Lizardfolk → CREATURES
+##### [actions] Actions → CREATURES
+#### [magmin] Magmin → CREATURES
+##### [actions] Actions → CREATURES
+#### [manticore] Manticore → CREATURES
+##### [actions] Actions → CREATURES
+#### [medusa] Medusa → CREATURES
+##### [actions] Actions → CREATURES
+#### [merfolk] Merfolk → CREATURES
+##### [actions] Actions → CREATURES
+#### [merrow] Merrow → CREATURES
+##### [actions] Actions → CREATURES
+#### [mimic] Mimic → CREATURES
+##### [actions] Actions → CREATURES
+#### [minotaur] Minotaur → CREATURES
+##### [actions] Actions → CREATURES
+#### [nightmare] Nightmare → CREATURES
+##### [actions] Actions → CREATURES
+#### [ogre] Ogre → CREATURES
+##### [actions] Actions → CREATURES
+#### [oni] Oni → CREATURES
+##### [actions] Actions → CREATURES
+#### [orc] Orc → CREATURES
+##### [actions] Actions → CREATURES
+#### [otyugh] Otyugh → CREATURES
+##### [actions] Actions → CREATURES
+#### [owlbear] Owlbear → CREATURES
+##### [actions] Actions → CREATURES
+#### [pegasus] Pegasus → CREATURES
+##### [actions] Actions → CREATURES
+#### [pseudodragon] Pseudodragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [purple-worm] Purple Worm → CREATURES
+##### [actions] Actions → CREATURES
+#### [rakshasa] Rakshasa → CREATURES
+##### [actions] Actions → CREATURES
+#### [remorhaz] Remorhaz → CREATURES
+##### [actions] Actions → CREATURES
+#### [roc] Roc → CREATURES
+##### [actions] Actions → CREATURES
+#### [roper] Roper → CREATURES
+##### [actions] Actions → CREATURES
+#### [rust-monster] Rust Monster → CREATURES
+##### [actions] Actions → CREATURES
+#### [sahuagin] Sahuagin → CREATURES
+##### [actions] Actions → CREATURES
+#### [salamander] Salamander → CREATURES
+##### [actions] Actions → CREATURES
+#### [satyr] Satyr → CREATURES
+##### [actions] Actions → CREATURES
+#### [shadow] Shadow → CREATURES
+##### [actions] Actions → CREATURES
+#### [shambling-mound] Shambling Mound → CREATURES
+##### [actions] Actions → CREATURES
+#### [shield-guardian] Shield Guardian → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [specter] Specter → CREATURES
+##### [actions] Actions → CREATURES
+#### [sprite] Sprite → CREATURES
+##### [actions] Actions → CREATURES
+#### [stirge] Stirge → CREATURES
+##### [actions] Actions → CREATURES
+#### [succubusincubus] Succubus/Incubus → CREATURES
+##### [actions] Actions → CREATURES
+#### [tarrasque] Tarrasque → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [treant] Treant → CREATURES
+##### [actions] Actions → CREATURES
+#### [troll] Troll → CREATURES
+##### [actions] Actions → CREATURES
+#### [unicorn] Unicorn → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [wight] Wight → CREATURES
+##### [actions] Actions → CREATURES
+#### [will-o-wisp] Will-o'-Wisp → CREATURES
+##### [actions] Actions → CREATURES
+#### [wraith] Wraith → CREATURES
+##### [actions] Actions → CREATURES
+#### [wyvern] Wyvern → CREATURES
+##### [actions] Actions → CREATURES
+#### [xorn] Xorn → CREATURES
+##### [actions] Actions → CREATURES
+### [angels] Angels → CREATURES
+#### [deva] Deva → CREATURES
+##### [actions] Actions → CREATURES
+#### [planetar] Planetar → CREATURES
+##### [actions] Actions → CREATURES
+#### [solar] Solar → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+### [animated-objects] Animated Objects → CREATURES
+#### [animated-armor] Animated Armor → CREATURES
+##### [actions] Actions → CREATURES
+#### [flying-sword] Flying Sword → CREATURES
+##### [actions] Actions → CREATURES
+#### [rug-of-smothering] Rug of Smothering → CREATURES
+##### [actions] Actions → CREATURES
+### [demons] Demons → CREATURES
+#### [balor] Balor → CREATURES
+##### [actions] Actions → CREATURES
+#### [dretch] Dretch → CREATURES
+##### [actions] Actions → CREATURES
+#### [glabrezu] Glabrezu → CREATURES
+##### [actions] Actions → CREATURES
+#### [hezrou] Hezrou → CREATURES
+##### [actions] Actions → CREATURES
+#### [marilith] Marilith → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [nalfeshnee] Nalfeshnee → CREATURES
+##### [actions] Actions → CREATURES
+#### [quasit] Quasit → CREATURES
+##### [actions] Actions → CREATURES
+#### [vrock] Vrock → CREATURES
+##### [actions] Actions → CREATURES
+### [devils] Devils → CREATURES
+#### [barbed-devil] Barbed Devil → CREATURES
+##### [actions] Actions → CREATURES
+#### [bearded-devil] Bearded Devil → CREATURES
+##### [actions] Actions → CREATURES
+#### [bone-devil] Bone Devil → CREATURES
+##### [actions] Actions → CREATURES
+#### [chain-devil] Chain Devil → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [erinyes] Erinyes → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [horned-devil] Horned Devil → CREATURES
+##### [actions] Actions → CREATURES
+#### [ice-devil] Ice Devil → CREATURES
+##### [actions] Actions → CREATURES
+#### [imp] Imp → CREATURES
+##### [actions] Actions → CREATURES
+#### [lemure] Lemure → CREATURES
+##### [actions] Actions → CREATURES
+#### [pit-fiend] Pit Fiend → CREATURES
+##### [actions] Actions → CREATURES
+### [dinosaurs] Dinosaurs → CREATURES
+#### [plesiosaurus] Plesiosaurus → CREATURES
+##### [actions] Actions → CREATURES
+#### [triceratops] Triceratops → CREATURES
+##### [actions] Actions → CREATURES
+#### [tyrannosaurus-rex] Tyrannosaurus Rex → CREATURES
+##### [actions] Actions → CREATURES
+### [dragons-chromatic] Dragons, Chromatic → CREATURES
+#### [adult-black-dragon] Adult Black Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-black-dragon] Ancient Black Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [black-dragon-wyrmling] Black Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-black-dragon] Young Black Dragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [adult-blue-dragon] Adult Blue Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-blue-dragon] Ancient Blue Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [blue-dragon-wyrmling] Blue Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-blue-dragon] Young Blue Dragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [adult-green-dragon] Adult Green Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-green-dragon] Ancient Green Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [green-dragon-wyrmling] Green Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-green-dragon] Young Green Dragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [adult-red-dragon] Adult Red Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-red-dragon] Ancient Red Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [red-dragon-wyrmling] Red Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-red-dragon] Young Red Dragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [adult-white-dragon] Adult White Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-white-dragon] Ancient White Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [white-dragon-wyrmling] White Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-white-dragon] Young White Dragon → CREATURES
+##### [actions] Actions → CREATURES
+### [dragons-metallic] Dragons, Metallic → CREATURES
+#### [adult-brass-dragon] Adult Brass Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-brass-dragon] Ancient Brass Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [brass-dragon-wyrmling] Brass Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-brass-dragon] Young Brass Dragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [adult-bronze-dragon] Adult Bronze Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-bronze-dragon] Ancient Bronze Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [bronze-dragon-wyrmling] Bronze Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-bronze-dragon] Young Bronze Dragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [adult-copper-dragon] Adult Copper Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-copper-dragon] Ancient Copper Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [copper-dragon-wyrmling] Copper Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-copper-dragon] Young Copper Dragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [adult-gold-dragon] Adult Gold Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-gold-dragon] Ancient Gold Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [gold-dragon-wyrmling] Gold Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-gold-dragon] Young Gold Dragon → CREATURES
+##### [actions] Actions → CREATURES
+#### [adult-silver-dragon] Adult Silver Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [ancient-silver-dragon] Ancient Silver Dragon → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [silver-dragon-wyrmling] Silver Dragon Wyrmling → CREATURES
+##### [actions] Actions → CREATURES
+#### [young-silver-dragon] Young Silver Dragon → CREATURES
+##### [actions] Actions → CREATURES
+### [elementals] Elementals → CREATURES
+#### [air-elemental] Air Elemental → CREATURES
+##### [actions] Actions → CREATURES
+#### [earth-elemental] Earth Elemental → CREATURES
+##### [actions] Actions → CREATURES
+#### [fire-elemental] Fire Elemental → CREATURES
+##### [actions] Actions → CREATURES
+#### [water-elemental] Water Elemental → CREATURES
+##### [actions] Actions → CREATURES
+### [fungi] Fungi → CREATURES
+#### [shrieker] Shrieker → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [violet-fungus] Violet Fungus → CREATURES
+##### [actions] Actions → CREATURES
+### [genies] Genies → CREATURES
+#### [djinni] Djinni → CREATURES
+##### [actions] Actions → CREATURES
+#### [efreeti] Efreeti → CREATURES
+##### [actions] Actions → CREATURES
+### [ghouls] Ghouls → CREATURES
+#### [ghast] Ghast → CREATURES
+##### [actions] Actions → CREATURES
+#### [ghoul] Ghoul → CREATURES
+##### [actions] Actions → CREATURES
+### [giants] Giants → CREATURES
+#### [cloud-giant] Cloud Giant → CREATURES
+##### [actions] Actions → CREATURES
+#### [fire-giant] Fire Giant → CREATURES
+##### [actions] Actions → CREATURES
+#### [frost-giant] Frost Giant → CREATURES
+##### [actions] Actions → CREATURES
+#### [hill-giant] Hill Giant → CREATURES
+##### [actions] Actions → CREATURES
+#### [stone-giant] Stone Giant → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [storm-giant] Storm Giant → CREATURES
+##### [actions] Actions → CREATURES
+### [golems] Golems → CREATURES
+#### [clay-golem] Clay Golem → CREATURES
+##### [actions] Actions → CREATURES
+#### [flesh-golem] Flesh Golem → CREATURES
+##### [actions] Actions → CREATURES
+#### [iron-golem] Iron Golem → CREATURES
+##### [actions] Actions → CREATURES
+#### [stone-golem] Stone Golem → CREATURES
+##### [actions] Actions → CREATURES
+### [hags] Hags → CREATURES
+#### [green-hag] Green Hag → CREATURES
+##### [actions] Actions → CREATURES
+#### [night-hag] Night Hag → CREATURES
+##### [actions] Actions → CREATURES
+#### [sea-hag] Sea Hag → CREATURES
+##### [actions] Actions → CREATURES
+### [half-dragon-template] Half-Dragon Template → CREATURES
+#### [half-red-dragon-veteran] Half-Red Dragon Veteran → CREATURES
+##### [actions] Actions → CREATURES
+### [lycanthropes] Lycanthropes → CREATURES
+#### [werebear] Werebear → CREATURES
+##### [actions] Actions → CREATURES
+#### [wereboar] Wereboar → CREATURES
+##### [actions] Actions → CREATURES
+#### [wererat] Wererat → CREATURES
+##### [actions] Actions → CREATURES
+#### [weretiger] Weretiger → CREATURES
+##### [actions] Actions → CREATURES
+#### [werewolf] Werewolf → CREATURES
+##### [actions] Actions → CREATURES
+### [mephits] Mephits → CREATURES
+#### [dust-mephit] Dust Mephit → CREATURES
+##### [actions] Actions → CREATURES
+#### [ice-mephit] Ice Mephit → CREATURES
+##### [actions] Actions → CREATURES
+#### [magma-mephit] Magma Mephit → CREATURES
+##### [actions] Actions → CREATURES
+#### [steam-mephit] Steam Mephit → CREATURES
+##### [actions] Actions → CREATURES
+### [mummies] Mummies → CREATURES
+#### [mummy] Mummy → CREATURES
+##### [actions] Actions → CREATURES
+#### [mummy-lord] Mummy Lord → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+### [nagas] Nagas → CREATURES
+#### [guardian-naga] Guardian Naga → CREATURES
+##### [actions] Actions → CREATURES
+#### [spirit-naga] Spirit Naga → CREATURES
+##### [actions] Actions → CREATURES
+### [oozes] Oozes → CREATURES
+#### [black-pudding] Black Pudding → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [gelatinous-cube] Gelatinous Cube → CREATURES
+##### [actions] Actions → CREATURES
+#### [gray-ooze] Gray Ooze → CREATURES
+##### [actions] Actions → CREATURES
+#### [ochre-jelly] Ochre Jelly → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+### [skeletons] Skeletons → CREATURES
+#### [minotaur-skeleton] Minotaur Skeleton → CREATURES
+##### [actions] Actions → CREATURES
+#### [skeleton] Skeleton → CREATURES
+##### [actions] Actions → CREATURES
+#### [warhorse-skeleton] Warhorse Skeleton → CREATURES
+##### [actions] Actions → CREATURES
+### [sphinxes] Sphinxes → CREATURES
+#### [androsphinx] Androsphinx → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [gynosphinx] Gynosphinx → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+### [vampires] Vampires → CREATURES
+#### [vampire] Vampire → CREATURES
+##### [actions] Actions → CREATURES
+##### [legendary-actions] Legendary Actions → CREATURES
+#### [vampire-spawn] Vampire Spawn → CREATURES
+##### [actions] Actions → CREATURES
+### [zombies] Zombies → CREATURES
+#### [ogre-zombie] Ogre Zombie → CREATURES
+##### [actions] Actions → CREATURES
+#### [zombie] Zombie → CREATURES
+##### [actions] Actions → CREATURES
+# [chapter-miscellaneous-creatures] Miscellaneous Creatures → CREATURES
+## [section-creature-descriptions] Creature Descriptions → CREATURES
+#### [ape] Ape → CREATURES
+##### [actions] Actions → CREATURES
+#### [awakened-shrub] Awakened Shrub → CREATURES
+##### [actions] Actions → CREATURES
+#### [awakened-tree] Awakened Tree → CREATURES
+##### [actions] Actions → CREATURES
+#### [axe-beak] Axe Beak → CREATURES
+##### [actions] Actions → CREATURES
+#### [baboon] Baboon → CREATURES
+##### [actions] Actions → CREATURES
+#### [badger] Badger → CREATURES
+##### [actions] Actions → CREATURES
+#### [bat] Bat → CREATURES
+##### [actions] Actions → CREATURES
+#### [black-bear] Black Bear → CREATURES
+##### [actions] Actions → CREATURES
+#### [blink-dog] Blink Dog → CREATURES
+##### [actions] Actions → CREATURES
+#### [blood-hawk] Blood Hawk → CREATURES
+##### [actions] Actions → CREATURES
+#### [boar] Boar → CREATURES
+##### [actions] Actions → CREATURES
+#### [brown-bear] Brown Bear → CREATURES
+##### [actions] Actions → CREATURES
+#### [camel] Camel → CREATURES
+##### [actions] Actions → CREATURES
+#### [cat] Cat → CREATURES
+##### [actions] Actions → CREATURES
+#### [constrictor-snake] Constrictor Snake → CREATURES
+##### [actions] Actions → CREATURES
+#### [crab] Crab → CREATURES
+##### [actions] Actions → CREATURES
+#### [crocodile] Crocodile → CREATURES
+##### [actions] Actions → CREATURES
+#### [death-dog] Death Dog → CREATURES
+##### [actions] Actions → CREATURES
+#### [deer] Deer → CREATURES
+##### [actions] Actions → CREATURES
+#### [dire-wolf] Dire Wolf → CREATURES
+##### [actions] Actions → CREATURES
+#### [draft-horse] Draft Horse → CREATURES
+##### [actions] Actions → CREATURES
+#### [eagle] Eagle → CREATURES
+##### [actions] Actions → CREATURES
+#### [elephant] Elephant → CREATURES
+##### [actions] Actions → CREATURES
+#### [elk] Elk → CREATURES
+##### [actions] Actions → CREATURES
+#### [flying-snake] Flying Snake → CREATURES
+##### [actions] Actions → CREATURES
+#### [frog] Frog → CREATURES
+#### [giant-ape] Giant Ape → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-badger] Giant Badger → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-bat] Giant Bat → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-boar] Giant Boar → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-centipede] Giant Centipede → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-constrictor-snake] Giant Constrictor Snake → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-crab] Giant Crab → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-crocodile] Giant Crocodile → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-eagle] Giant Eagle → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-elk] Giant Elk → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-fire-beetle] Giant Fire Beetle → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-fly] Giant Fly → CREATURES
+#### [giant-frog] Giant Frog → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-goat] Giant Goat → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-hyena] Giant Hyena → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-lizard] Giant Lizard → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-octopus] Giant Octopus → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-owl] Giant Owl → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-poisonous-snake] Giant Poisonous Snake → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-rat] Giant Rat → CREATURES
+##### [actions] Actions → CREATURES
+##### [variant-diseased-giant-rats] Variant: Diseased Giant Rats → CREATURES
+#### [giant-scorpion] Giant Scorpion → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-sea-horse] Giant Sea Horse → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-shark] Giant Shark → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-spider] Giant Spider → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-toad] Giant Toad → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-vulture] Giant Vulture → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-wasp] Giant Wasp → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-weasel] Giant Weasel → CREATURES
+##### [actions] Actions → CREATURES
+#### [giant-wolf-spider] Giant Wolf Spider → CREATURES
+##### [actions] Actions → CREATURES
+#### [goat] Goat → CREATURES
+##### [actions] Actions → CREATURES
+#### [hawk] Hawk → CREATURES
+##### [actions] Actions → CREATURES
+#### [hunter-shark] Hunter Shark → CREATURES
+##### [actions] Actions → CREATURES
+#### [hyena] Hyena → CREATURES
+##### [actions] Actions → CREATURES
+#### [jackal] Jackal → CREATURES
+##### [actions] Actions → CREATURES
+#### [killer-whale] Killer Whale → CREATURES
+##### [actions] Actions → CREATURES
+#### [lion] Lion → CREATURES
+##### [actions] Actions → CREATURES
+#### [lizard] Lizard → CREATURES
+##### [actions] Actions → CREATURES
+#### [mammoth] Mammoth → CREATURES
+##### [actions] Actions → CREATURES
+#### [mastiff] Mastiff → CREATURES
+##### [actions] Actions → CREATURES
+#### [mule] Mule → CREATURES
+##### [actions] Actions → CREATURES
+#### [octopus] Octopus → CREATURES
+##### [actions] Actions → CREATURES
+#### [owl] Owl → CREATURES
+##### [actions] Actions → CREATURES
+#### [panther] Panther → CREATURES
+##### [actions] Actions → CREATURES
+#### [phase-spider] Phase Spider → CREATURES
+##### [actions] Actions → CREATURES
+#### [poisonous-snake] Poisonous Snake → CREATURES
+##### [actions] Actions → CREATURES
+#### [polar-bear] Polar Bear → CREATURES
+##### [actions] Actions → CREATURES
+#### [pony] Pony → CREATURES
+##### [actions] Actions → CREATURES
+#### [quipper] Quipper → CREATURES
+##### [actions] Actions → CREATURES
+#### [rat] Rat → CREATURES
+##### [actions] Actions → CREATURES
+#### [raven] Raven → CREATURES
+##### [actions] Actions → CREATURES
+#### [reef-shark] Reef Shark → CREATURES
+##### [actions] Actions → CREATURES
+#### [rhinoceros] Rhinoceros → CREATURES
+##### [actions] Actions → CREATURES
+#### [riding-horse] Riding Horse → CREATURES
+##### [actions] Actions → CREATURES
+#### [saber-toothed-tiger] Saber-Toothed Tiger → CREATURES
+##### [actions] Actions → CREATURES
+#### [scorpion] Scorpion → CREATURES
+##### [actions] Actions → CREATURES
+#### [sea-horse] Sea Horse → CREATURES
+#### [spider] Spider → CREATURES
+##### [actions] Actions → CREATURES
+#### [swarm-of-bats] Swarm of Bats → CREATURES
+##### [actions] Actions → CREATURES
+#### [swarm-of-insects] Swarm of Insects → CREATURES
+##### [actions] Actions → CREATURES
+#### [variant-insect-swarms] Variant: Insect Swarms → CREATURES
+##### [swarm-of-beetles] Swarm of Beetles → CREATURES
+##### [swarm-of-centipedes] Swarm of Centipedes → CREATURES
+##### [swarm-of-spiders] Swarm of Spiders → CREATURES
+##### [swarm-of-wasps] Swarm of Wasps → CREATURES
+#### [swarm-of-poisonous-snakes] Swarm of Poisonous Snakes → CREATURES
+##### [actions] Actions → CREATURES
+#### [swarm-of-quippers] Swarm of Quippers → CREATURES
+##### [actions] Actions → CREATURES
+#### [swarm-of-rats] Swarm of Rats → CREATURES
+##### [actions] Actions → CREATURES
+#### [swarm-of-ravens] Swarm of Ravens → CREATURES
+##### [actions] Actions → CREATURES
+#### [tiger] Tiger → CREATURES
+##### [actions] Actions → CREATURES
+#### [vulture] Vulture → CREATURES
+##### [actions] Actions → CREATURES
+#### [warhorse] Warhorse → CREATURES
+##### [actions] Actions → CREATURES
+#### [weasel] Weasel → CREATURES
+##### [actions] Actions → CREATURES
+#### [winter-wolf] Winter Wolf → CREATURES
+##### [actions] Actions → CREATURES
+#### [wolf] Wolf → CREATURES
+##### [actions] Actions → CREATURES
+#### [worg] Worg → CREATURES
+##### [actions] Actions → CREATURES
+# [chapter-nonplayer-characters] Nonplayer Characters → CREATURES
+## [section-customizing-npcs] Customizing NPCs → CREATURES
+## [section-nonplayer-character-descriptions] Nonplayer Character Descriptions → CREATURES
+#### [acolyte] Acolyte → CREATURES
+##### [actions] Actions → CREATURES
+#### [archmage] Archmage → CREATURES
+##### [actions] Actions → CREATURES
+#### [assassin] Assassin → CREATURES
+##### [actions] Actions → CREATURES
+#### [bandit] Bandit → CREATURES
+##### [actions] Actions → CREATURES
+#### [bandit-captain] Bandit Captain → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [berserker] Berserker → CREATURES
+##### [actions] Actions → CREATURES
+#### [commoner] Commoner → CREATURES
+##### [actions] Actions → CREATURES
+#### [cult-fanatic] Cult Fanatic → CREATURES
+##### [actions] Actions → CREATURES
+#### [cultist] Cultist → CREATURES
+##### [actions] Actions → CREATURES
+#### [druid] Druid → CLASS_FEATURES, CREATURES
+##### [actions] Actions → CLASS_FEATURES, CREATURES
+#### [gladiator] Gladiator → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [guard] Guard → CREATURES
+##### [actions] Actions → CREATURES
+#### [knight] Knight → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [mage] Mage → CREATURES
+##### [actions] Actions → CREATURES
+#### [noble] Noble → CREATURES
+##### [actions] Actions → CREATURES
+##### [reactions] Reactions → COMBAT, CREATURES
+#### [priest] Priest → CREATURES
+##### [actions] Actions → CREATURES
+#### [scout] Scout → CREATURES
+##### [actions] Actions → CREATURES
+#### [spy] Spy → CREATURES
+##### [actions] Actions → CREATURES
+#### [thug] Thug → CREATURES
+##### [actions] Actions → CREATURES
+#### [tribal-warrior] Tribal Warrior → CREATURES
+##### [actions] Actions → CREATURES
+#### [veteran] Veteran → CREATURES
+##### [actions] Actions → CREATURES
+
+================================================================================
+CATEGORY DISTRIBUTION:
+================================================================================
+CHARACTER_CREATION  :  435 sections
+CLASS_FEATURES      :  470 sections
+SPELLCASTING        :  508 sections
+COMBAT              :  110 sections
+CONDITIONS          :   31 sections
+EQUIPMENT           :  283 sections
+CORE_MECHANICS      :   65 sections
+EXPLORATION         :   89 sections
+CREATURES           :  759 sections
+WORLD_LORE          :   14 sections
+
+================================================================================
+UNCATEGORIZED SECTIONS (need assignment):
+================================================================================
+
+Level 1 (#):
+  [legal-information] Legal Information
+
+================================================================================
+SUGGESTED ASSIGNMENTS FOR UNCATEGORIZED SECTIONS:
+================================================================================
+
+No automatic suggestions available for these sections.

@@ -1,27 +1,27 @@
 """
 D&D 5e Rulebook Storage System
 
-A comprehensive storage and retrieval system for D&D 5e rulebook content
-with intelligent entity extraction and 30 specialized query strategies.
+Core types and assignments for D&D 5e rulebook content organization.
 """
 
-from .storage import RulebookStorage
 from .types import (
-    RulebookQueryIntent, DnDEntityType, RulebookSection, 
-    DnDEntity, RulebookQueryResult
+    RulebookCategory, RulebookQueryIntent, RulebookSection,
+    SearchResult, QueryRequest, QueryResponse
 )
-from .entity_extractor import RulebookEntityExtractor
-from .query_strategies import RulebookQueryStrategies
-from .cache import RulebookQueryCache
+from .rulebook_assignments import (
+    RULEBOOK_CATEGORY_ASSIGNMENTS,
+    PATTERN_RULES,
+    MULTI_CATEGORY_SECTIONS
+)
 
 __all__ = [
-    'RulebookStorage',
-    'RulebookQueryIntent',
-    'DnDEntityType',
+    'RulebookCategory',
+    'RulebookQueryIntent', 
     'RulebookSection',
-    'DnDEntity',
-    'RulebookQueryResult',
-    'RulebookEntityExtractor',
-    'RulebookQueryStrategies',
-    'RulebookQueryCache'
+    'SearchResult',
+    'QueryRequest', 
+    'QueryResponse',
+    'RULEBOOK_CATEGORY_ASSIGNMENTS',
+    'PATTERN_RULES',
+    'MULTI_CATEGORY_SECTIONS'
 ]
