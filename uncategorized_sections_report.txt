@@ -9,7 +9,6 @@ Uncategorized: 1 (0.0%)
 ================================================================================
 ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ================================================================================
-# [legal-information] Legal Information → UNCATEGORIZED
 # [chapter-races] Races → CHARACTER_CREATION
 ## [section-racial-traits] Racial Traits → CHARACTER_CREATION
 ### [ability-score-increase] Ability Score Increase → CHARACTER_CREATION
@@ -61,12 +60,12 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [persistent-rage] Persistent Rage → CHARACTER_CREATION, CLASS_FEATURES
 ### [indomitable-might] Indomitable Might → CHARACTER_CREATION, CLASS_FEATURES
 ### [primal-champion] Primal Champion → CHARACTER_CREATION, CLASS_FEATURES
-## [section-barbarian-paths] Barbarian Paths → CHARACTER_CREATION, CLASS_FEATURES
-### [path-of-the-berserker] Path of the Berserker → CHARACTER_CREATION, CLASS_FEATURES
-#### [frenzy] Frenzy → CHARACTER_CREATION, CLASS_FEATURES
-#### [mindless-rage] Mindless Rage → CHARACTER_CREATION, CLASS_FEATURES
-#### [intimidating-presence] Intimidating Presence → CHARACTER_CREATION, CLASS_FEATURES
-#### [retaliation] Retaliation → CHARACTER_CREATION, CLASS_FEATURES
+## [section-barbarian-paths] Barbarian Paths → CLASS_FEATURES
+### [path-of-the-berserker] Path of the Berserker → CLASS_FEATURES
+#### [frenzy] Frenzy → CLASS_FEATURES
+#### [mindless-rage] Mindless Rage → CLASS_FEATURES
+#### [intimidating-presence] Intimidating Presence → CLASS_FEATURES
+#### [retaliation] Retaliation → CLASS_FEATURES
 ## [section-bard] Bard → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -74,27 +73,27 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
 ### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-#### [spell-slots] Spell Slots → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spell-slots] Spell Slots → SPELLCASTING
 #### [spells-known-of-1st-level-and-higher] Spells Known of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [ritual-casting] Ritual Casting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-### [bardic-inspiration] Bardic Inspiration → CHARACTER_CREATION, CLASS_FEATURES
+### [bardic-inspiration] Bardic Inspiration → CLASS_FEATURES
 ### [jack-of-all-trades] Jack of All Trades → CHARACTER_CREATION, CLASS_FEATURES
 ### [song-of-rest] Song of Rest → CHARACTER_CREATION, CLASS_FEATURES, EXPLORATION
-### [bard-college] Bard College → CHARACTER_CREATION, CLASS_FEATURES
+### [bard-college] Bard College → CLASS_FEATURES
 ### [expertise] Expertise → CHARACTER_CREATION, CLASS_FEATURES
 ### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
 ### [font-of-inspiration] Font of Inspiration → CHARACTER_CREATION, CLASS_FEATURES
 ### [countercharm] Countercharm → CHARACTER_CREATION, CLASS_FEATURES
 ### [magical-secrets] Magical Secrets → CHARACTER_CREATION, CLASS_FEATURES
 ### [superior-inspiration] Superior Inspiration → CHARACTER_CREATION, CLASS_FEATURES
-## [section-bard-colleges] Bard Colleges → CHARACTER_CREATION, CLASS_FEATURES
-### [college-of-lore] College of Lore → CHARACTER_CREATION, CLASS_FEATURES
-#### [bonus-proficiencies] Bonus Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
-#### [cutting-words] Cutting Words → CHARACTER_CREATION, CLASS_FEATURES
-#### [additional-magical-secrets] Additional Magical Secrets → CHARACTER_CREATION, CLASS_FEATURES
-#### [peerless-skill] Peerless Skill → CHARACTER_CREATION, CLASS_FEATURES
+## [section-bard-colleges] Bard Colleges → CLASS_FEATURES
+### [college-of-lore] College of Lore → CLASS_FEATURES
+#### [bonus-proficiencies] Bonus Proficiencies → CLASS_FEATURES
+#### [cutting-words] Cutting Words → CLASS_FEATURES
+#### [additional-magical-secrets] Additional Magical Secrets → CLASS_FEATURES
+#### [peerless-skill] Peerless Skill → CLASS_FEATURES
 ## [section-cleric] Cleric → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -113,20 +112,20 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
 ### [destroy-undead] Destroy Undead → CHARACTER_CREATION, CLASS_FEATURES
 ### [divine-intervention] Divine Intervention → CHARACTER_CREATION, CLASS_FEATURES
-## [section-domains] Domains → CHARACTER_CREATION, CLASS_FEATURES
-### [life-domain] Life Domain → CHARACTER_CREATION, CLASS_FEATURES
-#### [bonus-proficiency] Bonus Proficiency → CHARACTER_CREATION, CLASS_FEATURES
-#### [disciple-of-life] Disciple of Life → CHARACTER_CREATION, CLASS_FEATURES
-#### [channel-divinity-preserve-life] Channel Divinity: Preserve Life → CHARACTER_CREATION, CLASS_FEATURES
-#### [blessed-healer] Blessed Healer → CHARACTER_CREATION, CLASS_FEATURES
-#### [divine-strike] Divine Strike → CHARACTER_CREATION, CLASS_FEATURES
-#### [supreme-healing] Supreme Healing → CHARACTER_CREATION, CLASS_FEATURES
+## [section-domains] Domains → CLASS_FEATURES
+### [life-domain] Life Domain → CLASS_FEATURES
+#### [bonus-proficiency] Bonus Proficiency → CLASS_FEATURES
+#### [disciple-of-life] Disciple of Life → CLASS_FEATURES
+#### [channel-divinity-preserve-life] Channel Divinity: Preserve Life → CLASS_FEATURES
+#### [blessed-healer] Blessed Healer → CLASS_FEATURES
+#### [divine-strike] Divine Strike → CLASS_FEATURES
+#### [supreme-healing] Supreme Healing → CLASS_FEATURES
 ## [section-druid] Druid → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
 #### [proficiencies] Proficiencies → CHARACTER_CREATION, CLASS_FEATURES
 #### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
-### [druidic] Druidic → CHARACTER_CREATION, CLASS_FEATURES
+### [druidic] Druidic → CLASS_FEATURES
 ### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [preparing-and-casting-spells] Preparing and Casting Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
@@ -134,19 +133,19 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [ritual-casting] Ritual Casting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 ### [wild-shape] Wild Shape → CHARACTER_CREATION, CLASS_FEATURES
-### [druid-circle] Druid Circle → CHARACTER_CREATION, CLASS_FEATURES
+### [druid-circle] Druid Circle → CLASS_FEATURES
 ### [timeless-body] Timeless Body → CHARACTER_CREATION, CLASS_FEATURES
 ### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
 ### [beast-spells] Beast Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-### [archdruid] Archdruid → CHARACTER_CREATION, CLASS_FEATURES
-## [section-druid-circles] Druid Circles → CHARACTER_CREATION, CLASS_FEATURES
-### [circle-of-the-land] Circle of the Land → CHARACTER_CREATION, CLASS_FEATURES
-#### [bonus-cantrip] Bonus Cantrip → CHARACTER_CREATION, CLASS_FEATURES
-#### [natural-recovery] Natural Recovery → CHARACTER_CREATION, CLASS_FEATURES
-#### [circle-spells] Circle Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-#### [lands-stride] Land's Stride → CHARACTER_CREATION, CLASS_FEATURES
-#### [natures-ward] Nature's Ward → CHARACTER_CREATION, CLASS_FEATURES
-#### [natures-sanctuary] Nature's Sanctuary → CHARACTER_CREATION, CLASS_FEATURES
+### [archdruid] Archdruid → CLASS_FEATURES
+## [section-druid-circles] Druid Circles → CLASS_FEATURES
+### [circle-of-the-land] Circle of the Land → CLASS_FEATURES
+#### [bonus-cantrip] Bonus Cantrip → CLASS_FEATURES
+#### [natural-recovery] Natural Recovery → CLASS_FEATURES
+#### [circle-spells] Circle Spells → CLASS_FEATURES, SPELLCASTING
+#### [lands-stride] Land's Stride → CLASS_FEATURES
+#### [natures-ward] Nature's Ward → CLASS_FEATURES
+#### [natures-sanctuary] Nature's Sanctuary → CLASS_FEATURES
 ## [section-fighter] Fighter → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -165,13 +164,13 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
 ### [extra-attack] Extra Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
 ### [indomitable] Indomitable → CHARACTER_CREATION, CLASS_FEATURES
-## [section-martial-archetypes] Martial Archetypes → CHARACTER_CREATION, CLASS_FEATURES
-### [champion] Champion → CHARACTER_CREATION, CLASS_FEATURES
-#### [improved-critical] Improved Critical → CHARACTER_CREATION, CLASS_FEATURES
-#### [remarkable-athlete] Remarkable Athlete → CHARACTER_CREATION, CLASS_FEATURES
-#### [additional-fighting-style] Additional Fighting Style → CHARACTER_CREATION, CLASS_FEATURES
-#### [superior-critical] Superior Critical → CHARACTER_CREATION, CLASS_FEATURES
-#### [survivor] Survivor → CHARACTER_CREATION, CLASS_FEATURES
+## [section-martial-archetypes] Martial Archetypes → CLASS_FEATURES
+### [champion] Champion → CLASS_FEATURES
+#### [improved-critical] Improved Critical → CLASS_FEATURES
+#### [remarkable-athlete] Remarkable Athlete → CLASS_FEATURES
+#### [additional-fighting-style] Additional Fighting Style → CLASS_FEATURES
+#### [superior-critical] Superior Critical → CLASS_FEATURES
+#### [survivor] Survivor → CLASS_FEATURES
 ## [section-monk] Monk → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -199,12 +198,12 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [diamond-soul] Diamond Soul → CHARACTER_CREATION, CLASS_FEATURES
 ### [empty-body] Empty Body → CHARACTER_CREATION, CLASS_FEATURES
 ### [perfect-self] Perfect Self → CHARACTER_CREATION, CLASS_FEATURES
-## [section-monastic-traditions] Monastic Traditions → CHARACTER_CREATION, CLASS_FEATURES
-### [way-of-the-open-hand] Way of the Open Hand → CHARACTER_CREATION, CLASS_FEATURES
-#### [open-hand-technique] Open Hand Technique → CHARACTER_CREATION, CLASS_FEATURES
-#### [wholeness-of-body] Wholeness of Body → CHARACTER_CREATION, CLASS_FEATURES
-#### [tranquility] Tranquility → CHARACTER_CREATION, CLASS_FEATURES
-#### [quivering-palm] Quivering Palm → CHARACTER_CREATION, CLASS_FEATURES
+## [section-monastic-traditions] Monastic Traditions → CLASS_FEATURES
+### [way-of-the-open-hand] Way of the Open Hand → CLASS_FEATURES
+#### [open-hand-technique] Open Hand Technique → CLASS_FEATURES
+#### [wholeness-of-body] Wholeness of Body → CLASS_FEATURES
+#### [tranquility] Tranquility → CLASS_FEATURES
+#### [quivering-palm] Quivering Palm → CLASS_FEATURES
 ## [section-paladin] Paladin → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -232,14 +231,14 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [aura-of-courage] Aura of Courage → CHARACTER_CREATION, CLASS_FEATURES
 ### [improved-divine-smite] Improved Divine Smite → CHARACTER_CREATION, CLASS_FEATURES
 ### [cleansing-touch] Cleansing Touch → CHARACTER_CREATION, CLASS_FEATURES
-## [section-sacred-oaths] Sacred Oaths → CHARACTER_CREATION, CLASS_FEATURES
-### [oath-of-devotion] Oath of Devotion → CHARACTER_CREATION, CLASS_FEATURES
-#### [tenets-of-devotion] Tenets of Devotion → CHARACTER_CREATION, CLASS_FEATURES
-#### [oath-spells] Oath Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-#### [channel-divinity] Channel Divinity → CHARACTER_CREATION, CLASS_FEATURES
-#### [aura-of-devotion] Aura of Devotion → CHARACTER_CREATION, CLASS_FEATURES
-#### [purity-of-spirit] Purity of Spirit → CHARACTER_CREATION, CLASS_FEATURES
-#### [holy-nimbus] Holy Nimbus → CHARACTER_CREATION, CLASS_FEATURES
+## [section-sacred-oaths] Sacred Oaths → CLASS_FEATURES
+### [oath-of-devotion] Oath of Devotion → CLASS_FEATURES
+#### [tenets-of-devotion] Tenets of Devotion → CLASS_FEATURES
+#### [oath-spells] Oath Spells → CLASS_FEATURES, SPELLCASTING
+#### [channel-divinity] Channel Divinity → CLASS_FEATURES
+#### [aura-of-devotion] Aura of Devotion → CLASS_FEATURES
+#### [purity-of-spirit] Purity of Spirit → CLASS_FEATURES
+#### [holy-nimbus] Holy Nimbus → CLASS_FEATURES
 ## [section-ranger] Ranger → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -253,10 +252,10 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [dueling] Dueling → CHARACTER_CREATION, CLASS_FEATURES
 #### [two-weapon-fighting] Two-Weapon Fighting → CHARACTER_CREATION, CLASS_FEATURES
 ### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-#### [spell-slots] Spell Slots → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spell-slots] Spell Slots → SPELLCASTING
 #### [spells-known-of-1st-level-and-higher] Spells Known of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-### [ranger-archetype] Ranger Archetype → CHARACTER_CREATION, CLASS_FEATURES
+### [ranger-archetype] Ranger Archetype → CLASS_FEATURES
 ### [primeval-awareness] Primeval Awareness → CHARACTER_CREATION, CLASS_FEATURES
 ### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
 ### [extra-attack] Extra Attack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
@@ -265,12 +264,12 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [vanish] Vanish → CHARACTER_CREATION, CLASS_FEATURES
 ### [feral-senses] Feral Senses → CHARACTER_CREATION, CLASS_FEATURES
 ### [foe-slayer] Foe Slayer → CHARACTER_CREATION, CLASS_FEATURES
-## [section-ranger-archetypes] Ranger Archetypes → CHARACTER_CREATION, CLASS_FEATURES
-### [hunter] Hunter → CHARACTER_CREATION, CLASS_FEATURES
-#### [hunters-prey] Hunter's Prey → CHARACTER_CREATION, CLASS_FEATURES
-#### [defensive-tactics] Defensive Tactics → CHARACTER_CREATION, CLASS_FEATURES
-#### [multiattack] Multiattack → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
-#### [superior-hunters-defense] Superior Hunter's Defense → CHARACTER_CREATION, CLASS_FEATURES
+## [section-ranger-archetypes] Ranger Archetypes → CLASS_FEATURES
+### [hunter] Hunter → CLASS_FEATURES
+#### [hunters-prey] Hunter's Prey → CLASS_FEATURES
+#### [defensive-tactics] Defensive Tactics → CLASS_FEATURES
+#### [multiattack] Multiattack → CLASS_FEATURES, COMBAT
+#### [superior-hunters-defense] Superior Hunter's Defense → CLASS_FEATURES
 ## [section-rogue] Rogue → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -289,13 +288,13 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [slippery-mind] Slippery Mind → CHARACTER_CREATION, CLASS_FEATURES
 ### [elusive] Elusive → CHARACTER_CREATION, CLASS_FEATURES
 ### [stroke-of-luck] Stroke of Luck → CHARACTER_CREATION, CLASS_FEATURES
-## [section-roguish-archetypes] Roguish Archetypes → CHARACTER_CREATION, CLASS_FEATURES
-### [thief] Thief → CHARACTER_CREATION, CLASS_FEATURES
-#### [fast-hands] Fast Hands → CHARACTER_CREATION, CLASS_FEATURES
-#### [second-story-work] Second-Story Work → CHARACTER_CREATION, CLASS_FEATURES
-#### [supreme-sneak] Supreme Sneak → CHARACTER_CREATION, CLASS_FEATURES
-#### [use-magic-device] Use Magic Device → CHARACTER_CREATION, CLASS_FEATURES
-#### [thiefs-reflexes] Thief's Reflexes → CHARACTER_CREATION, CLASS_FEATURES
+## [section-roguish-archetypes] Roguish Archetypes → CLASS_FEATURES
+### [thief] Thief → CLASS_FEATURES
+#### [fast-hands] Fast Hands → CLASS_FEATURES
+#### [second-story-work] Second-Story Work → CLASS_FEATURES
+#### [supreme-sneak] Supreme Sneak → CLASS_FEATURES
+#### [use-magic-device] Use Magic Device → CLASS_FEATURES
+#### [thiefs-reflexes] Thief's Reflexes → CLASS_FEATURES
 ## [section-sorcerer] Sorcerer → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -303,7 +302,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [equipment] Equipment → CHARACTER_CREATION, CLASS_FEATURES
 ### [spellcasting] Spellcasting → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-#### [spell-slots] Spell Slots → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spell-slots] Spell Slots → SPELLCASTING
 #### [spells-known-of-1st-level-and-higher] Spells Known of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
@@ -322,13 +321,13 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [twinned-spell] Twinned Spell → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 ### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
 ### [sorcerous-restoration] Sorcerous Restoration → CHARACTER_CREATION, CLASS_FEATURES, EXPLORATION
-## [section-sorcerous-origins] Sorcerous Origins → CHARACTER_CREATION, CLASS_FEATURES
-### [draconic-bloodline] Draconic Bloodline → CHARACTER_CREATION, CLASS_FEATURES
-#### [dragon-ancestor] Dragon Ancestor → CHARACTER_CREATION, CLASS_FEATURES
-#### [draconic-resilience] Draconic Resilience → CHARACTER_CREATION, CLASS_FEATURES
-#### [elemental-affinity] Elemental Affinity → CHARACTER_CREATION, CLASS_FEATURES
-#### [dragon-wings] Dragon Wings → CHARACTER_CREATION, CLASS_FEATURES
-#### [draconic-presence] Draconic Presence → CHARACTER_CREATION, CLASS_FEATURES
+## [section-sorcerous-origins] Sorcerous Origins → CLASS_FEATURES
+### [draconic-bloodline] Draconic Bloodline → CLASS_FEATURES
+#### [dragon-ancestor] Dragon Ancestor → CLASS_FEATURES
+#### [draconic-resilience] Draconic Resilience → CLASS_FEATURES
+#### [elemental-affinity] Elemental Affinity → CLASS_FEATURES
+#### [dragon-wings] Dragon Wings → CLASS_FEATURES
+#### [draconic-presence] Draconic Presence → CLASS_FEATURES
 ## [section-warlock] Warlock → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -337,7 +336,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [otherworldly-patron] Otherworldly Patron → CHARACTER_CREATION, CLASS_FEATURES
 ### [pact-magic] Pact Magic → CHARACTER_CREATION, CLASS_FEATURES
 #### [cantrips] Cantrips → CHARACTER_CREATION, CLASS_FEATURES
-#### [spell-slots] Spell Slots → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+#### [spell-slots] Spell Slots → SPELLCASTING
 #### [spells-known-of-1st-level-and-higher] Spells Known of 1st Level and Higher → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [spellcasting-ability] Spellcasting Ability → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
 #### [spellcasting-focus] Spellcasting Focus → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
@@ -349,46 +348,46 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
 ### [mystic-arcanum] Mystic Arcanum → CHARACTER_CREATION, CLASS_FEATURES
 ### [eldritch-master] Eldritch Master → CHARACTER_CREATION, CLASS_FEATURES
-## [section-eldritch-invocations] Eldritch Invocations → CHARACTER_CREATION, CLASS_FEATURES
-#### [agonizing-blast] Agonizing Blast → CHARACTER_CREATION, CLASS_FEATURES
-#### [armor-of-shadows] Armor of Shadows → CHARACTER_CREATION, CLASS_FEATURES
-#### [ascendant-step] Ascendant Step → CHARACTER_CREATION, CLASS_FEATURES
-#### [beast-speech] Beast Speech → CHARACTER_CREATION, CLASS_FEATURES
-#### [beguiling-influence] Beguiling Influence → CHARACTER_CREATION, CLASS_FEATURES
-#### [bewitching-whispers] Bewitching Whispers → CHARACTER_CREATION, CLASS_FEATURES
-#### [book-of-ancient-secrets] Book of Ancient Secrets → CHARACTER_CREATION, CLASS_FEATURES
-#### [chains-of-the-deodand] Chains of the Deodand → CHARACTER_CREATION, CLASS_FEATURES
-#### [devils-sight] Devil's Sight → CHARACTER_CREATION, CLASS_FEATURES
-#### [dreadful-word] Dreadful Word → CHARACTER_CREATION, CLASS_FEATURES
-#### [eldritch-sight] Eldritch Sight → CHARACTER_CREATION, CLASS_FEATURES
-#### [eldritch-spear] Eldritch Spear → CHARACTER_CREATION, CLASS_FEATURES
-#### [eyes-of-the-rune-keeper] Eyes of the Rune Keeper → CHARACTER_CREATION, CLASS_FEATURES
-#### [fiendish-vigor] Fiendish Vigor → CHARACTER_CREATION, CLASS_FEATURES
-#### [gaze-of-two-minds] Gaze of Two Minds → CHARACTER_CREATION, CLASS_FEATURES
-#### [lifedrinker] Lifedrinker → CHARACTER_CREATION, CLASS_FEATURES
-#### [mask-of-many-faces] Mask of Many Faces → CHARACTER_CREATION, CLASS_FEATURES
-#### [master-of-myriad-forms] Master of Myriad Forms → CHARACTER_CREATION, CLASS_FEATURES
-#### [minions-of-chaos] Minions of Chaos → CHARACTER_CREATION, CLASS_FEATURES
-#### [mire-the-mind] Mire the Mind → CHARACTER_CREATION, CLASS_FEATURES
-#### [misty-visions] Misty Visions → CHARACTER_CREATION, CLASS_FEATURES
-#### [one-with-shadows] One with Shadows → CHARACTER_CREATION, CLASS_FEATURES
-#### [otherworldly-leap] Otherworldly Leap → CHARACTER_CREATION, CLASS_FEATURES
-#### [repelling-blast] Repelling Blast → CHARACTER_CREATION, CLASS_FEATURES
-#### [sculptor-of-flesh] Sculptor of Flesh → CHARACTER_CREATION, CLASS_FEATURES
-#### [sign-of-ill-omen] Sign of Ill Omen → CHARACTER_CREATION, CLASS_FEATURES
-#### [thief-of-five-fates] Thief of Five Fates → CHARACTER_CREATION, CLASS_FEATURES
-#### [thirsting-blade] Thirsting Blade → CHARACTER_CREATION, CLASS_FEATURES
-#### [visions-of-distant-realms] Visions of Distant Realms → CHARACTER_CREATION, CLASS_FEATURES
-#### [voice-of-the-chain-master] Voice of the Chain Master → CHARACTER_CREATION, CLASS_FEATURES
-#### [whispers-of-the-grave] Whispers of the Grave → CHARACTER_CREATION, CLASS_FEATURES
-#### [witch-sight] Witch Sight → CHARACTER_CREATION, CLASS_FEATURES
-## [section-otherworldly-patrons] Otherworldly Patrons → CHARACTER_CREATION, CLASS_FEATURES
-### [the-fiend] The Fiend → CHARACTER_CREATION, CLASS_FEATURES
-#### [expanded-spell-list] Expanded Spell List → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-#### [dark-ones-blessing] Dark One's Blessing → CHARACTER_CREATION, CLASS_FEATURES
-#### [dark-ones-own-luck] Dark One's Own Luck → CHARACTER_CREATION, CLASS_FEATURES
-#### [fiendish-resilience] Fiendish Resilience → CHARACTER_CREATION, CLASS_FEATURES
-#### [hurl-through-hell] Hurl Through Hell → CHARACTER_CREATION, CLASS_FEATURES
+## [section-eldritch-invocations] Eldritch Invocations → CLASS_FEATURES
+#### [agonizing-blast] Agonizing Blast → CLASS_FEATURES
+#### [armor-of-shadows] Armor of Shadows → CLASS_FEATURES
+#### [ascendant-step] Ascendant Step → CLASS_FEATURES
+#### [beast-speech] Beast Speech → CLASS_FEATURES
+#### [beguiling-influence] Beguiling Influence → CLASS_FEATURES
+#### [bewitching-whispers] Bewitching Whispers → CLASS_FEATURES
+#### [book-of-ancient-secrets] Book of Ancient Secrets → CLASS_FEATURES
+#### [chains-of-the-deodand] Chains of the Deodand → CLASS_FEATURES
+#### [devils-sight] Devil's Sight → CLASS_FEATURES
+#### [dreadful-word] Dreadful Word → CLASS_FEATURES
+#### [eldritch-sight] Eldritch Sight → CLASS_FEATURES
+#### [eldritch-spear] Eldritch Spear → CLASS_FEATURES
+#### [eyes-of-the-rune-keeper] Eyes of the Rune Keeper → CLASS_FEATURES
+#### [fiendish-vigor] Fiendish Vigor → CLASS_FEATURES
+#### [gaze-of-two-minds] Gaze of Two Minds → CLASS_FEATURES
+#### [lifedrinker] Lifedrinker → CLASS_FEATURES
+#### [mask-of-many-faces] Mask of Many Faces → CLASS_FEATURES
+#### [master-of-myriad-forms] Master of Myriad Forms → CLASS_FEATURES
+#### [minions-of-chaos] Minions of Chaos → CLASS_FEATURES
+#### [mire-the-mind] Mire the Mind → CLASS_FEATURES
+#### [misty-visions] Misty Visions → CLASS_FEATURES
+#### [one-with-shadows] One with Shadows → CLASS_FEATURES
+#### [otherworldly-leap] Otherworldly Leap → CLASS_FEATURES
+#### [repelling-blast] Repelling Blast → CLASS_FEATURES
+#### [sculptor-of-flesh] Sculptor of Flesh → CLASS_FEATURES
+#### [sign-of-ill-omen] Sign of Ill Omen → CLASS_FEATURES
+#### [thief-of-five-fates] Thief of Five Fates → CLASS_FEATURES
+#### [thirsting-blade] Thirsting Blade → CLASS_FEATURES
+#### [visions-of-distant-realms] Visions of Distant Realms → CLASS_FEATURES
+#### [voice-of-the-chain-master] Voice of the Chain Master → CLASS_FEATURES
+#### [whispers-of-the-grave] Whispers of the Grave → CLASS_FEATURES
+#### [witch-sight] Witch Sight → CLASS_FEATURES
+## [section-otherworldly-patrons] Otherworldly Patrons → CLASS_FEATURES
+### [the-fiend] The Fiend → CLASS_FEATURES
+#### [expanded-spell-list] Expanded Spell List → SPELLCASTING
+#### [dark-ones-blessing] Dark One's Blessing → CLASS_FEATURES
+#### [dark-ones-own-luck] Dark One's Own Luck → CLASS_FEATURES
+#### [fiendish-resilience] Fiendish Resilience → CLASS_FEATURES
+#### [hurl-through-hell] Hurl Through Hell → CLASS_FEATURES
 ## [section-wizard] Wizard → CHARACTER_CREATION, CLASS_FEATURES
 ### [class-features] Class Features → CHARACTER_CREATION, CLASS_FEATURES
 #### [hit-points] Hit Points → CHARACTER_CREATION, CLASS_FEATURES
@@ -405,15 +404,15 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [arcane-recovery] Arcane Recovery → CHARACTER_CREATION, CLASS_FEATURES
 ### [arcane-tradition] Arcane Tradition → CHARACTER_CREATION, CLASS_FEATURES
 ### [ability-score-improvement] Ability Score Improvement → CHARACTER_CREATION, CLASS_FEATURES
-### [spell-mastery] Spell Mastery → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
+### [spell-mastery] Spell Mastery → SPELLCASTING
 ### [signature-spells] Signature Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-## [section-arcane-traditions] Arcane Traditions → CHARACTER_CREATION, CLASS_FEATURES
-### [school-of-evocation] School of Evocation → CHARACTER_CREATION, CLASS_FEATURES
-#### [evocation-savant] Evocation Savant → CHARACTER_CREATION, CLASS_FEATURES
-#### [sculpt-spells] Sculpt Spells → CHARACTER_CREATION, CLASS_FEATURES, SPELLCASTING
-#### [potent-cantrip] Potent Cantrip → CHARACTER_CREATION, CLASS_FEATURES
-#### [empowered-evocation] Empowered Evocation → CHARACTER_CREATION, CLASS_FEATURES
-#### [overchannel] Overchannel → CHARACTER_CREATION, CLASS_FEATURES
+## [section-arcane-traditions] Arcane Traditions → CLASS_FEATURES
+### [school-of-evocation] School of Evocation → CLASS_FEATURES
+#### [evocation-savant] Evocation Savant → CLASS_FEATURES
+#### [sculpt-spells] Sculpt Spells → CLASS_FEATURES, SPELLCASTING
+#### [potent-cantrip] Potent Cantrip → CLASS_FEATURES
+#### [empowered-evocation] Empowered Evocation → CLASS_FEATURES
+#### [overchannel] Overchannel → CLASS_FEATURES
 # [chapter-using-ability-scores] Using Ability Scores → CORE_MECHANICS
 ## [section-ability-scores-and-modifiers] Ability Scores and Modifiers → CORE_MECHANICS
 ## [section-advantage-and-disadvantage] Advantage and Disadvantage → CORE_MECHANICS
@@ -482,9 +481,9 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [suggested-characteristics] Suggested Characteristics → CHARACTER_CREATION
 # [chapter-feats] Feats → CHARACTER_CREATION, CLASS_FEATURES
 ## [section-grappler] Grappler → CHARACTER_CREATION, CLASS_FEATURES, COMBAT
-## [section-inspiration] Inspiration → CHARACTER_CREATION, CLASS_FEATURES, CORE_MECHANICS
-### [gaining-inspiration] Gaining Inspiration → CHARACTER_CREATION, CLASS_FEATURES, CORE_MECHANICS
-### [using-inspiration] Using Inspiration → CHARACTER_CREATION, CLASS_FEATURES, CORE_MECHANICS
+## [section-inspiration] Inspiration → CORE_MECHANICS
+### [gaining-inspiration] Gaining Inspiration → CORE_MECHANICS
+### [using-inspiration] Using Inspiration → CORE_MECHANICS
 # [chapter-the-planes-of-existence] The Planes of Existence → WORLD_LORE
 ## [section-the-material-plane] The Material Plane → WORLD_LORE
 ## [section-beyond-the-material] Beyond the Material → WORLD_LORE
@@ -532,33 +531,33 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [recuperating] Recuperating → EXPLORATION
 #### [researching] Researching → EXPLORATION
 #### [training] Training → EXPLORATION
-## [section-conditions] Conditions → CONDITIONS, EXPLORATION
-#### [blinded] Blinded → CONDITIONS, EXPLORATION
-#### [charmed] Charmed → CONDITIONS, EXPLORATION
-#### [deafened] Deafened → CONDITIONS, EXPLORATION
-#### [exhaustion] Exhaustion → CONDITIONS, EXPLORATION
-#### [frightened] Frightened → CONDITIONS, EXPLORATION
-#### [grappled] Grappled → CONDITIONS, EXPLORATION
-#### [incapacitated] Incapacitated → CONDITIONS, EXPLORATION
-#### [invisible] Invisible → CONDITIONS, EXPLORATION
-#### [paralyzed] Paralyzed → CONDITIONS, EXPLORATION
-#### [petrified] Petrified → CONDITIONS, EXPLORATION
-#### [poisoned] Poisoned → CONDITIONS, EXPLORATION
-#### [prone] Prone → CONDITIONS, EXPLORATION
-#### [restrained] Restrained → CONDITIONS, EXPLORATION
-#### [stunned] Stunned → CONDITIONS, EXPLORATION
-#### [unconscious] Unconscious → CONDITIONS, EXPLORATION
-## [section-poisons] Poisons → CONDITIONS, EXPLORATION
-### [sample-poisons] Sample Poisons → CONDITIONS, EXPLORATION
-## [section-diseases] Diseases → CONDITIONS, EXPLORATION
-### [sample-diseases] Sample Diseases → CONDITIONS, EXPLORATION
-#### [cackle-fever] Cackle Fever → CONDITIONS, EXPLORATION
-#### [sewer-plague] Sewer Plague → CONDITIONS, EXPLORATION
-#### [sight-rot] Sight Rot → CONDITIONS, EXPLORATION
-## [section-madness] Madness → CONDITIONS, EXPLORATION
-### [going-mad] Going Mad → CONDITIONS, EXPLORATION
-### [madness-effects] Madness Effects → CONDITIONS, EXPLORATION
-### [curing-madness] Curing Madness → CONDITIONS, EXPLORATION
+## [section-conditions] Conditions → CONDITIONS
+#### [blinded] Blinded → CONDITIONS
+#### [charmed] Charmed → CONDITIONS
+#### [deafened] Deafened → CONDITIONS
+#### [exhaustion] Exhaustion → CONDITIONS
+#### [frightened] Frightened → CONDITIONS
+#### [grappled] Grappled → CONDITIONS
+#### [incapacitated] Incapacitated → CONDITIONS
+#### [invisible] Invisible → CONDITIONS
+#### [paralyzed] Paralyzed → CONDITIONS
+#### [petrified] Petrified → CONDITIONS
+#### [poisoned] Poisoned → CONDITIONS
+#### [prone] Prone → CONDITIONS
+#### [restrained] Restrained → CONDITIONS
+#### [stunned] Stunned → CONDITIONS
+#### [unconscious] Unconscious → CONDITIONS
+## [section-poisons] Poisons → CONDITIONS
+### [sample-poisons] Sample Poisons → CONDITIONS
+## [section-diseases] Diseases → CONDITIONS
+### [sample-diseases] Sample Diseases → CONDITIONS
+#### [cackle-fever] Cackle Fever → CONDITIONS
+#### [sewer-plague] Sewer Plague → CONDITIONS
+#### [sight-rot] Sight Rot → CONDITIONS
+## [section-madness] Madness → CONDITIONS
+### [going-mad] Going Mad → CONDITIONS
+### [madness-effects] Madness Effects → CONDITIONS
+### [curing-madness] Curing Madness → CONDITIONS
 ## [section-traps] Traps → COMBAT, EXPLORATION
 ### [traps-in-play] Traps in Play → COMBAT, EXPLORATION
 #### [triggering-a-trap] Triggering a Trap → COMBAT, EXPLORATION
@@ -590,7 +589,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [being-prone] Being Prone → COMBAT, CONDITIONS
 ### [moving-around-other-creatures] Moving Around Other Creatures → COMBAT
 ### [flying-movement] Flying Movement → COMBAT
-### [creature-size] Creature Size → COMBAT, CREATURES
+### [creature-size] Creature Size → CREATURES
 #### [space] Space → COMBAT, CREATURES
 #### [squeezing-into-a-smaller-space] Squeezing into a Smaller Space → COMBAT, CREATURES
 ## [section-actions-in-combat] Actions in Combat → COMBAT
@@ -631,7 +630,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [death-saving-throws] Death Saving Throws → COMBAT, CORE_MECHANICS
 #### [stabilizing-a-creature] Stabilizing a Creature → COMBAT, CORE_MECHANICS
 #### [monsters-and-death] Monsters and Death → COMBAT, CORE_MECHANICS
-### [knocking-a-creature-out] Knocking a Creature Out → COMBAT, CORE_MECHANICS, CREATURES
+### [knocking-a-creature-out] Knocking a Creature Out → CREATURES
 ### [temporary-hit-points] Temporary Hit Points → COMBAT, CORE_MECHANICS
 ## [section-mounted-combat] Mounted Combat → COMBAT
 ### [mounting-and-dismounting] Mounting and Dismounting → COMBAT
@@ -843,7 +842,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [dominate-monster] Dominate Monster → SPELLCASTING
 #### [dominate-person] Dominate Person → SPELLCASTING
 #### [dream] Dream → SPELLCASTING
-#### [druidcraft] Druidcraft → CLASS_FEATURES, SPELLCASTING
+#### [druidcraft] Druidcraft → CLASS_FEATURES
 #### [earthquake] Earthquake → SPELLCASTING
 #### [eldritch-blast] Eldritch Blast → SPELLCASTING
 #### [enhance-ability] Enhance Ability → SPELLCASTING
@@ -892,7 +891,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [goodberry] Goodberry → SPELLCASTING
 #### [grease] Grease → SPELLCASTING
 #### [greater-invisibility] Greater Invisibility → SPELLCASTING
-#### [greater-restoration] Greater Restoration → SPELLCASTING, EXPLORATION
+#### [greater-restoration] Greater Restoration → SPELLCASTING
 #### [guardian-of-faith] Guardian of Faith → SPELLCASTING
 #### [guards-and-wards] Guards and Wards → SPELLCASTING
 #### [guidance] Guidance → SPELLCASTING
@@ -927,7 +926,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 #### [jump] Jump → SPELLCASTING
 #### [knock] Knock → SPELLCASTING
 #### [legend-lore] Legend Lore → SPELLCASTING
-#### [lesser-restoration] Lesser Restoration → SPELLCASTING, EXPLORATION
+#### [lesser-restoration] Lesser Restoration → SPELLCASTING
 #### [levitate] Levitate → SPELLCASTING
 #### [light] Light → SPELLCASTING
 #### [lightning-bolt] Lightning Bolt → SPELLCASTING
@@ -1210,7 +1209,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [mace-of-disruption] Mace of Disruption → EQUIPMENT
 ### [mace-of-smiting] Mace of Smiting → EQUIPMENT
 ### [mace-of-terror] Mace of Terror → EQUIPMENT
-### [mantle-of-spell-resistance] Mantle of Spell Resistance → SPELLCASTING, EQUIPMENT
+### [mantle-of-spell-resistance] Mantle of Spell Resistance → SPELLCASTING
 ### [manual-of-bodily-health] Manual of Bodily Health → EQUIPMENT
 ### [manual-of-gainful-exercise] Manual of Gainful Exercise → EQUIPMENT
 ### [manual-of-golems] Manual of Golems → EQUIPMENT
@@ -1252,7 +1251,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [potion-of-resistance] Potion of Resistance → EQUIPMENT
 ### [potion-of-speed] Potion of Speed → EQUIPMENT
 ### [potion-of-water-breathing] Potion of Water Breathing → EQUIPMENT
-### [restorative-ointment] Restorative Ointment → EQUIPMENT, EXPLORATION
+### [restorative-ointment] Restorative Ointment → EQUIPMENT
 ### [ring-of-animal-influence] Ring of Animal Influence → EQUIPMENT
 ### [ring-of-djinni-summoning] Ring of Djinni Summoning → EQUIPMENT
 ### [ring-of-elemental-command] Ring of Elemental Command → EQUIPMENT
@@ -1266,8 +1265,8 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [ring-of-regeneration] Ring of Regeneration → EQUIPMENT
 ### [ring-of-resistance] Ring of Resistance → EQUIPMENT
 ### [ring-of-shooting-stars] Ring of Shooting Stars → EQUIPMENT
-### [ring-of-spell-storing] Ring of Spell Storing → SPELLCASTING, EQUIPMENT
-### [ring-of-spell-turning] Ring of Spell Turning → SPELLCASTING, EQUIPMENT
+### [ring-of-spell-storing] Ring of Spell Storing → SPELLCASTING
+### [ring-of-spell-turning] Ring of Spell Turning → SPELLCASTING
 ### [ring-of-swimming] Ring of Swimming → EQUIPMENT
 ### [ring-of-telekinesis] Ring of Telekinesis → EQUIPMENT
 ### [ring-of-three-wishes] Ring of Three Wishes → EQUIPMENT
@@ -1293,7 +1292,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ### [shield-of-missile-attraction] Shield of Missile Attraction → EQUIPMENT
 ### [slippers-of-spider-climbing] Slippers of Spider Climbing → EQUIPMENT
 ### [sovereign-glue] Sovereign Glue → EQUIPMENT
-### [spell-scroll] Spell Scroll → SPELLCASTING, EQUIPMENT
+### [spell-scroll] Spell Scroll → SPELLCASTING
 ### [spellguard-shield] Spellguard Shield → SPELLCASTING, EQUIPMENT
 ### [item-sphere-of-annihilation] Sphere of Annihilation → EQUIPMENT
 ### [staff-of-charming] Staff of Charming → EQUIPMENT
@@ -2080,7 +2079,7 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ##### [actions] Actions → CREATURES
 #### [cultist] Cultist → CREATURES
 ##### [actions] Actions → CREATURES
-#### [druid] Druid → CLASS_FEATURES, CREATURES
+#### [druid] Druid → CLASS_FEATURES
 ##### [actions] Actions → CLASS_FEATURES, CREATURES
 #### [gladiator] Gladiator → CREATURES
 ##### [actions] Actions → CREATURES
@@ -2107,30 +2106,19 @@ ALL SECTIONS WITH ASSIGNED CATEGORIES:
 ##### [actions] Actions → CREATURES
 #### [veteran] Veteran → CREATURES
 ##### [actions] Actions → CREATURES
+# [legal-information] Legal Information → UNCATEGORIZED
 
 ================================================================================
-CATEGORY DISTRIBUTION:
+CATEGORY STATISTICS:
 ================================================================================
-CHARACTER_CREATION  :  435 sections
-CLASS_FEATURES      :  470 sections
-SPELLCASTING        :  508 sections
-COMBAT              :  110 sections
+CHARACTER_CREATION  :  305 sections
+CLASS_FEATURES      :  461 sections
+SPELLCASTING        :  507 sections
+COMBAT              :  108 sections
 CONDITIONS          :   31 sections
-EQUIPMENT           :  283 sections
-CORE_MECHANICS      :   65 sections
-EXPLORATION         :   89 sections
-CREATURES           :  759 sections
+EQUIPMENT           :  279 sections
+CORE_MECHANICS      :   64 sections
+EXPLORATION         :   59 sections
+CREATURES           :  758 sections
 WORLD_LORE          :   14 sections
-
-================================================================================
-UNCATEGORIZED SECTIONS (need assignment):
-================================================================================
-
-Level 1 (#):
-  [legal-information] Legal Information
-
-================================================================================
-SUGGESTED ASSIGNMENTS FOR UNCATEGORIZED SECTIONS:
-================================================================================
-
-No automatic suggestions available for these sections.
+UNCATEGORIZED       :    1 sections

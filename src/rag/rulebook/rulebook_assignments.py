@@ -142,6 +142,30 @@ RULEBOOK_CATEGORY_ASSIGNMENTS = {
     "section-madness": [5],  # CONDITIONS
     "section-traps": [8, 4],  # EXPLORATION, COMBAT
     
+    # Individual conditions should only be CONDITIONS (override parent inheritance)
+    "blinded": [5],  # CONDITIONS
+    "charmed": [5],  # CONDITIONS
+    "deafened": [5],  # CONDITIONS
+    "exhaustion": [5],  # CONDITIONS
+    "frightened": [5],  # CONDITIONS
+    "grappled": [5],  # CONDITIONS
+    "incapacitated": [5],  # CONDITIONS
+    "invisible": [5],  # CONDITIONS
+    "paralyzed": [5],  # CONDITIONS
+    "petrified": [5],  # CONDITIONS
+    "poisoned": [5],  # CONDITIONS
+    "prone": [5],  # CONDITIONS
+    "restrained": [5],  # CONDITIONS
+    "stunned": [5],  # CONDITIONS
+    "unconscious": [5],  # CONDITIONS
+    
+    # Restoration spells should only be SPELLCASTING (override parent inheritance)
+    "greater-restoration": [3],  # SPELLCASTING
+    "lesser-restoration": [3],  # SPELLCASTING
+    
+    # Restorative items should only be EQUIPMENT (override parent inheritance)
+    "restorative-ointment": [6],  # EQUIPMENT
+    
     # COMBAT CHAPTER
     "chapter-combat": [4],  # COMBAT
     "section-the-order-of-combat": [4],

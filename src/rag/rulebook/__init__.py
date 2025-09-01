@@ -13,6 +13,8 @@ from .rulebook_assignments import (
     PATTERN_RULES,
     MULTI_CATEGORY_SECTIONS
 )
+from .storage import RulebookStorage
+from .categorizer import RulebookCategorizer
 
 __all__ = [
     'RulebookCategory',
@@ -23,5 +25,7 @@ __all__ = [
     'QueryResponse',
     'RULEBOOK_CATEGORY_ASSIGNMENTS',
     'PATTERN_RULES',
-    'MULTI_CATEGORY_SECTIONS'
+    'MULTI_CATEGORY_SECTIONS',
+    'RulebookStorage',
+    'RulebookCategorizer'
 ]
