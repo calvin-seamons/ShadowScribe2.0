@@ -1,7 +1,14 @@
 """
-D&D 5e Rulebook Storage System
+D&D 5e RAG System - Rulebook and Session Notes
 """
 
 from .rulebook import RulebookCategory, RulebookQueryIntent
+from .session_notes import SessionNotesQueryIntent, SessionNotesStorage, SessionNotesQueryEngine
 
-__all__ = ['RulebookCategory', 'RulebookQueryIntent']
+__all__ = [
+    'RulebookCategory', 
+    'RulebookQueryIntent',
+    'SessionNotesQueryIntent',
+    'SessionNotesStorage',
+    'SessionNotesQueryEngine'
+]
