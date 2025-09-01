@@ -4,6 +4,7 @@ Intelligent semantic search with intention-based filtering and multi-stage scori
 """
 
 import re
+import time
 import numpy as np
 from typing import List, Dict, Tuple, Optional
 import openai
@@ -11,7 +12,7 @@ import hashlib
 
 from .rulebook_types import (
     RulebookQueryIntent, RulebookSection, SearchResult, 
-    RulebookCategory, INTENTION_CATEGORY_MAP
+    RulebookCategory, INTENTION_CATEGORY_MAP, QueryPerformanceMetrics
 )
 from ..config import get_config
 
@@ -88,7 +89,7 @@ class RulebookQueryEngine:
         entities: List[str],
         context_hints: List[str] = None,
         k: int = 5
-    ) -> List[SearchResult]:
+    ) -> Tuple[List[SearchResult], QueryPerformanceMetrics]:
         """
         Perform intelligent query against rulebook sections.
         
@@ -100,27 +101,52 @@ class RulebookQueryEngine:
             k: Number of results to return
             
         Returns:
-            List of SearchResult objects with hierarchical content
+            Tuple of (SearchResult list, QueryPerformanceMetrics)
         """
+        start_time = time.perf_counter()
+        
+        # Initialize performance tracking
+        performance = QueryPerformanceMetrics()
+        performance.total_sections_available = len(self.storage.sections)
+        
         if context_hints is None:
             context_hints = []
             
         # 1. Filter sections by intention
+        filter_start = time.perf_counter()
         candidate_sections = self._filter_sections_by_intention(intention)
+        filter_end = time.perf_counter()
+        
+        performance.intention_filtering_ms = (filter_end - filter_start) * 1000
+        performance.sections_after_filtering = len(candidate_sections)
         
         if not candidate_sections:
-            return []
+            performance.total_time_ms = (time.perf_counter() - start_time) * 1000
+            return [], performance
         
         # 2. Perform semantic search
-        semantic_results = self._semantic_search(user_query, candidate_sections)
+        semantic_start = time.perf_counter()
+        semantic_results = self._semantic_search(user_query, candidate_sections, performance)
+        semantic_end = time.perf_counter()
+        
+        performance.semantic_search_ms = (semantic_end - semantic_start) * 1000
         
         # 3. Apply entity boosting
+        entity_start = time.perf_counter()
         entity_boosted_results = self._boost_entity_matches(semantic_results, entities)
+        entity_end = time.perf_counter()
+        
+        performance.entity_boosting_ms = (entity_end - entity_start) * 1000
         
         # 4. Enhance with context hints
-        final_results = self._enhance_with_context_hints(entity_boosted_results, context_hints)
+        context_start = time.perf_counter()
+        final_results = self._enhance_with_context_hints(entity_boosted_results, context_hints, performance)
+        context_end = time.perf_counter()
+        
+        performance.context_enhancement_ms = (context_end - context_start) * 1000
         
         # 5. Take top-k and create SearchResult objects
+        assembly_start = time.perf_counter()
         top_results = final_results[:k]
         search_results = []
         
@@ -138,10 +164,22 @@ class RulebookQueryEngine:
             )
             search_results.append(search_result)
         
-        # 6. Include children content for complete context
-        self._include_children_content(search_results)
+        assembly_end = time.perf_counter()
+        performance.result_assembly_ms = (assembly_end - assembly_start) * 1000
+        performance.results_returned = len(search_results)
         
-        return search_results
+        # 6. Include children content for complete context
+        children_start = time.perf_counter()
+        self._include_children_content(search_results)
+        children_end = time.perf_counter()
+        
+        performance.children_inclusion_ms = (children_end - children_start) * 1000
+        
+        # Finalize performance metrics
+        end_time = time.perf_counter()
+        performance.total_time_ms = (end_time - start_time) * 1000
+        
+        return search_results, performance
     
     def _filter_sections_by_intention(self, intention: RulebookQueryIntent) -> List[RulebookSection]:
         """Filter sections to only those relevant to the query intention"""
@@ -162,13 +200,20 @@ class RulebookQueryEngine:
         
         return candidate_sections
     
-    def _semantic_search(self, query: str, candidate_sections: List[RulebookSection]) -> List[Tuple[RulebookSection, float]]:
+    def _semantic_search(self, query: str, candidate_sections: List[RulebookSection], performance: QueryPerformanceMetrics) -> List[Tuple[RulebookSection, float]]:
         """Perform semantic search using embeddings"""
         if not candidate_sections:
             return []
         
+        # Track sections with embeddings
+        performance.sections_with_embeddings = sum(1 for s in candidate_sections if s.vector is not None)
+        
         # Embed the query
-        query_embedding = self._get_embedding(query)
+        embed_start = time.perf_counter()
+        query_embedding = self._get_embedding(query, performance)
+        embed_end = time.perf_counter()
+        
+        performance.embedding_total_ms += (embed_end - embed_start) * 1000
         
         results = []
         for section in candidate_sections:
@@ -219,13 +264,17 @@ class RulebookQueryEngine:
         boosted_results.sort(key=lambda x: x[1], reverse=True)
         return boosted_results
     
-    def _enhance_with_context_hints(self, results: List[Tuple[RulebookSection, float]], hints: List[str]) -> List[Tuple[RulebookSection, float]]:
+    def _enhance_with_context_hints(self, results: List[Tuple[RulebookSection, float]], hints: List[str], performance: QueryPerformanceMetrics) -> List[Tuple[RulebookSection, float]]:
         """Enhance scores using context hints"""
         if not hints:
             return results
         
         # Get embeddings for all context hints using batch processing
-        hint_embeddings = self._get_embeddings_batch(hints)
+        embed_start = time.perf_counter()
+        hint_embeddings = self._get_embeddings_batch(hints, performance)
+        embed_end = time.perf_counter()
+        
+        performance.embedding_total_ms += (embed_end - embed_start) * 1000
         
         enhanced_results = []
         for section, base_score in results:
@@ -299,12 +348,16 @@ class RulebookQueryEngine:
         
         return matched
     
-    def _get_embedding(self, text: str) -> List[float]:
+    def _get_embedding(self, text: str, performance: QueryPerformanceMetrics) -> List[float]:
         """Get embedding for text using OpenAI API with caching"""
         # Check cache first
         cached_embedding = self.embedding_cache.get(text)
         if cached_embedding is not None:
+            performance.embedding_cache_hits += 1
             return cached_embedding
+        
+        performance.embedding_cache_misses += 1
+        performance.embedding_api_calls += 1
         
         try:
             response = openai.embeddings.create(
@@ -324,7 +377,7 @@ class RulebookQueryEngine:
             self.embedding_cache.put(text, fallback)
             return fallback
     
-    def _get_embeddings_batch(self, texts: List[str]) -> List[List[float]]:
+    def _get_embeddings_batch(self, texts: List[str], performance: QueryPerformanceMetrics) -> List[List[float]]:
         """Get embeddings for multiple texts, using cache where possible"""
         embeddings = []
         texts_to_embed = []
@@ -335,13 +388,17 @@ class RulebookQueryEngine:
             cached_embedding = self.embedding_cache.get(text)
             if cached_embedding is not None:
                 embeddings.append(cached_embedding)
+                performance.embedding_cache_hits += 1
             else:
                 embeddings.append(None)  # Placeholder
                 texts_to_embed.append(text)
                 indices_to_embed.append(i)
+                performance.embedding_cache_misses += 1
         
         # Batch embed uncached texts
         if texts_to_embed:
+            performance.embedding_api_calls += 1  # One batch API call
+                
             try:
                 response = openai.embeddings.create(
                     model=self.embedding_model,

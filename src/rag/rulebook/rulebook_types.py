@@ -28,36 +28,36 @@ class RulebookCategory(Enum):
 
 class RulebookQueryIntent(Enum):
     """All supported D&D 5e rulebook query intentions"""
-    DESCRIBE_ENTITY = "describe_entity"
-    COMPARE_ENTITIES = "compare_entities"
-    LEVEL_PROGRESSION = "level_progression"
-    ACTION_OPTIONS = "action_options"
-    RULE_MECHANICS = "rule_mechanics"
-    CALCULATE_VALUES = "calculate_values"
-    SPELL_DETAILS = "spell_details"
-    CLASS_SPELL_ACCESS = "class_spell_access"
-    MONSTER_STATS = "monster_stats"
-    CONDITION_EFFECTS = "condition_effects"
-    CHARACTER_CREATION = "character_creation"
-    MULTICLASS_RULES = "multiclass_rules"
-    EQUIPMENT_PROPERTIES = "equipment_properties"
-    DAMAGE_TYPES = "damage_types"
-    REST_MECHANICS = "rest_mechanics"
-    SKILL_USAGE = "skill_usage"
-    FIND_BY_CRITERIA = "find_by_criteria"
-    PREREQUISITE_CHECK = "prerequisite_check"
-    INTERACTION_RULES = "interaction_rules"
-    TACTICAL_USAGE = "tactical_usage"
-    ENVIRONMENTAL_RULES = "environmental_rules"
-    CREATURE_ABILITIES = "creature_abilities"
-    SAVING_THROWS = "saving_throws"
-    MAGIC_ITEM_USAGE = "magic_item_usage"
-    PLANAR_PROPERTIES = "planar_properties"
-    DOWNTIME_ACTIVITIES = "downtime_activities"
-    SUBCLASS_FEATURES = "subclass_features"
-    COST_LOOKUP = "cost_lookup"
-    LEGENDARY_MECHANICS = "legendary_mechanics"
-    OPTIMIZATION_ADVICE = "optimization_advice"
+    DESCRIBE_ENTITY = "describe_entity"  # Find exact section for single entity - "What are the traits of a dwarf?"
+    COMPARE_ENTITIES = "compare_entities"  # Compare multiple entities - "What's the difference between a wizard and a sorcerer?"
+    LEVEL_PROGRESSION = "level_progression"  # Class level features - "What does a fighter get at level 5?"
+    ACTION_OPTIONS = "action_options"  # Combat actions available - "What can I do on my turn in combat?"
+    RULE_MECHANICS = "rule_mechanics"  # Specific rule explanations - "How does concentration work?"
+    CALCULATE_VALUES = "calculate_values"  # Math and calculations - "What's my AC with chain mail and a shield?"
+    SPELL_DETAILS = "spell_details"  # Individual spell descriptions - "What does fireball do?"
+    CLASS_SPELL_ACCESS = "class_spell_access"  # Class spell lists - "What spells can a ranger learn?"
+    MONSTER_STATS = "monster_stats"  # Creature stat blocks - "What are the stats for a red dragon?"
+    CONDITION_EFFECTS = "condition_effects"  # Status effects - "What does being poisoned do?"
+    CHARACTER_CREATION = "character_creation"  # Character building overview - "How do I create a character?"
+    MULTICLASS_RULES = "multiclass_rules"  # Multi-classing requirements - "Can I multiclass barbarian and wizard?"
+    EQUIPMENT_PROPERTIES = "equipment_properties"  # Item properties - "What does the finesse property mean?"
+    DAMAGE_TYPES = "damage_types"  # Damage mechanics - "How does fire damage work?"
+    REST_MECHANICS = "rest_mechanics"  # Rest rules - "What happens during a long rest?"
+    SKILL_USAGE = "skill_usage"  # Skill applications - "When do I use Investigation vs Perception?"
+    FIND_BY_CRITERIA = "find_by_criteria"  # Search by properties - "What spells deal thunder damage?"
+    PREREQUISITE_CHECK = "prerequisite_check"  # Requirements - "What do I need to take the Grappler feat?"
+    INTERACTION_RULES = "interaction_rules"  # Rule interactions - "How does invisibility interact with opportunity attacks?"
+    TACTICAL_USAGE = "tactical_usage"  # Combat tactics - "How do I effectively use grappling?"
+    ENVIRONMENTAL_RULES = "environmental_rules"  # Environment effects - "How does underwater combat work?"
+    CREATURE_ABILITIES = "creature_abilities"  # Monster special abilities - "What special abilities does a lich have?"
+    SAVING_THROWS = "saving_throws"  # Save mechanics - "When do I make a Wisdom saving throw?"
+    MAGIC_ITEM_USAGE = "magic_item_usage"  # Magic item mechanics - "How does a Bag of Holding work?"
+    PLANAR_PROPERTIES = "planar_properties"  # Plane characteristics - "What are the properties of the Feywild?"
+    DOWNTIME_ACTIVITIES = "downtime_activities"  # Non-adventure activities - "What can I do during downtime?"
+    SUBCLASS_FEATURES = "subclass_features"  # Subclass abilities - "What does a Circle of the Moon druid get?"
+    COST_LOOKUP = "cost_lookup"  # Item pricing - "How much does plate armor cost?"
+    LEGENDARY_MECHANICS = "legendary_mechanics"  # Legendary creature rules - "How do legendary actions work?"
+    OPTIMIZATION_ADVICE = "optimization_advice"  # Character build advice - "What's the best build for a tank?"
 
 
 @dataclass
@@ -173,6 +173,56 @@ class QueryRequest:
 
 
 @dataclass
+class QueryPerformanceMetrics:
+    """Detailed timing performance information for query operations"""
+    total_time_ms: float = 0.0
+    intention_filtering_ms: float = 0.0
+    semantic_search_ms: float = 0.0
+    entity_boosting_ms: float = 0.0
+    context_enhancement_ms: float = 0.0
+    result_assembly_ms: float = 0.0
+    children_inclusion_ms: float = 0.0
+    
+    # Detailed embedding performance
+    embedding_cache_hits: int = 0
+    embedding_cache_misses: int = 0
+    embedding_api_calls: int = 0
+    embedding_total_ms: float = 0.0
+    
+    # Search scope metrics
+    total_sections_available: int = 0
+    sections_after_filtering: int = 0
+    sections_with_embeddings: int = 0
+    results_returned: int = 0
+    
+    def to_dict(self) -> Dict:
+        """Convert to dictionary for analysis"""
+        return {
+            'total_time_ms': self.total_time_ms,
+            'timing_breakdown': {
+                'intention_filtering_ms': self.intention_filtering_ms,
+                'semantic_search_ms': self.semantic_search_ms,
+                'entity_boosting_ms': self.entity_boosting_ms,
+                'context_enhancement_ms': self.context_enhancement_ms,
+                'result_assembly_ms': self.result_assembly_ms,
+                'children_inclusion_ms': self.children_inclusion_ms
+            },
+            'embedding_performance': {
+                'cache_hits': self.embedding_cache_hits,
+                'cache_misses': self.embedding_cache_misses,
+                'api_calls': self.embedding_api_calls,
+                'total_embedding_time_ms': self.embedding_total_ms
+            },
+            'search_scope': {
+                'total_sections_available': self.total_sections_available,
+                'sections_after_filtering': self.sections_after_filtering,
+                'sections_with_embeddings': self.sections_with_embeddings,
+                'results_returned': self.results_returned
+            }
+        }
+
+
+@dataclass
 class QueryResponse:
     """Response structure from rulebook queries"""
     request: QueryRequest
@@ -180,10 +230,11 @@ class QueryResponse:
     total_tokens: int
     categories_searched: List[RulebookCategory]
     processing_time_ms: float = 0.0
+    performance_metrics: Optional['QueryPerformanceMetrics'] = None
     
     def to_dict(self) -> Dict:
         """Convert to dictionary for API responses"""
-        return {
+        result = {
             'intention': self.request.intention.value,
             'entities': self.request.entities,
             'context_hints': self.request.context_hints,
@@ -192,6 +243,11 @@ class QueryResponse:
             'categories_searched': [cat.name for cat in self.categories_searched],
             'processing_time_ms': self.processing_time_ms
         }
+        
+        if self.performance_metrics:
+            result['performance_metrics'] = self.performance_metrics.to_dict()
+            
+        return result
 
 
 # Intention to Category Mapping

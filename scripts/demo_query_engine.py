@@ -36,7 +36,7 @@ def main():
     print("\n" + "=" * 40)
     print("Sample Query: Fireball spell details")
     
-    results = engine.query(
+    results, performance = engine.query(
         intention=RulebookQueryIntent.SPELL_DETAILS,
         user_query="How does the fireball spell work?",
         entities=["fireball"],
@@ -45,6 +45,7 @@ def main():
     )
     
     print(f"Found {len(results)} results:")
+    print(f"Query completed in {performance.total_time_ms:.1f}ms")
     
     for i, result in enumerate(results, 1):
         print(f"\n{i}. {result.section.title} (Score: {result.score:.3f})")

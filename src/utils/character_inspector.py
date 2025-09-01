@@ -16,7 +16,7 @@ from typing import get_type_hints, get_origin, get_args, Any, Dict, List, Option
 
 # Always use package imports - script should be run as a module
 from src.utils.character_manager import CharacterManager
-from src.types.character_types import Character
+from src.rag.character.character_types import Character
 
 
 class CharacterInspector:

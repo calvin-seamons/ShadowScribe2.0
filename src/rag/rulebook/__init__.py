@@ -13,7 +13,7 @@ from .rulebook_types import (
 )
 from .rulebook_storage import RulebookStorage
 from .categorizer import RulebookCategorizer
-from .query_engine import RulebookQueryEngine
+from .rulebook_query_engine import RulebookQueryEngine
 
 __all__ = [
     'RulebookCategory',

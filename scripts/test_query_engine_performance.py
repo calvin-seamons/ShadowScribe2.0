@@ -107,7 +107,7 @@ def performance_test():
         query_start = time.time()
         
         try:
-            results = engine.query(
+            results, performance = engine.query(
                 intention=test['intention'],
                 user_query=test['query'],
                 entities=test['entities'],

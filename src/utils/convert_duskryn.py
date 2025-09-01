@@ -10,7 +10,7 @@ import json
 import os
 from datetime import datetime
 from typing import Dict, List, Any, Optional
-from src.types.character_types import (
+from src.rag.character.character_types import (
     Character, CharacterBase, PhysicalCharacteristics, AbilityScores,
     CombatStats, Proficiency, DamageModifier, PassiveScores, Senses,
     BackgroundInfo, BackgroundFeature, PersonalityTraits, Backstory,

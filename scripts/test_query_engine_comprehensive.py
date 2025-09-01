@@ -81,7 +81,7 @@ class QueryEngineTestSuite:
         
         try:
             # Execute query
-            results = self.engine.query(
+            results, performance = self.engine.query(
                 intention=intention,
                 user_query=user_query,
                 entities=entities,
@@ -90,6 +90,7 @@ class QueryEngineTestSuite:
             )
             
             self.log(f"\n📊 RESULTS: Found {len(results)} sections")
+            self.log(f"⏱️  Query Time: {performance.total_time_ms:.1f}ms")
             
             if not results:
                 self.log("⚠️  No results returned - this may indicate an issue")

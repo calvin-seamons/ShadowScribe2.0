@@ -9,7 +9,7 @@ __version__ = "2.0.0"
 __author__ = "Calvin Seamons"
 
 # Import main classes for easy access
-from .types.character_types import Character
+from .rag.character.character_types import Character
 from .utils.character_manager import CharacterManager
 from .utils.character_inspector import CharacterInspector
 

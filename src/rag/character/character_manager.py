@@ -9,13 +9,14 @@ import pickle
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
-from src.rag.character.character_types import Character
+from .character_types import Character
+from .spell_calculations import update_spellcasting_calculations
 
 
 class CharacterManager:
     """Simple manager for saving and loading Character objects."""
-    
-    def __init__(self, save_directory: str = "saved_characters"):
+
+    def __init__(self, save_directory: str = "knowledge_base/saved_characters"):
         """Initialize the character manager with a save directory."""
         self.save_directory = Path(save_directory)
         self.save_directory.mkdir(exist_ok=True)
@@ -54,7 +55,7 @@ class CharacterManager:
         Load a Character object from a pickle file.
         
         Args:
-            filename: The filename to load from
+            filename: Name of the file to load (with or without .pkl extension)
             
         Returns:
             The loaded Character object
@@ -73,6 +74,9 @@ class CharacterManager:
         with open(filepath, 'rb') as f:
             character = pickle.load(f)
             
+        # Auto-fix spell calculations if they're incorrect
+        character = update_spellcasting_calculations(character)
+            
         return character
     
     def list_saved_characters(self) -> list[str]:
@@ -84,19 +88,36 @@ class CharacterManager:
         """
         character_files = []
         for pkl_file in self.save_directory.glob("*.pkl"):
+            # Remove .pkl extension for display
             character_files.append(pkl_file.stem)
         
         return sorted(character_files)
     
-    def delete_character(self, filename: str) -> bool:
+    def character_exists(self, filename: str) -> bool:
         """
-        Delete a saved character file.
+        Check if a character file exists.
         
         Args:
-            filename: The filename to delete
+            filename: Name of the file to check
             
         Returns:
-            True if deleted successfully, False if file didn't exist
+            True if the file exists, False otherwise
+        """
+        if not filename.endswith('.pkl'):
+            filename += '.pkl'
+            
+        filepath = self.save_directory / filename
+        return filepath.exists()
+    
+    def delete_character(self, filename: str) -> bool:
+        """
+        Delete a character file.
+        
+        Args:
+            filename: Name of the file to delete
+            
+        Returns:
+            True if the file was deleted, False if it didn't exist
         """
         if not filename.endswith('.pkl'):
             filename += '.pkl'
