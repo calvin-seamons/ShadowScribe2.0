@@ -15,8 +15,7 @@ import time
 import openai
 from dotenv import load_dotenv
 
-from .types import RulebookSection, RulebookCategory, SearchResult
-from .rulebook_assignments import RULEBOOK_CATEGORY_ASSIGNMENTS, MULTI_CATEGORY_SECTIONS
+from .rulebook_types import RulebookSection, RulebookCategory, SearchResult, RULEBOOK_CATEGORY_ASSIGNMENTS, MULTI_CATEGORY_SECTIONS
 from .categorizer import RulebookCategorizer
 
 

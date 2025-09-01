@@ -14,7 +14,7 @@ import json
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.rag.rulebook.storage import RulebookStorage
+from src.rag.rulebook.rulebook_storage import RulebookStorage
 
 
 def main():

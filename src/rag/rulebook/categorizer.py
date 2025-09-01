@@ -5,8 +5,8 @@ Provides consistent categorization logic for all rulebook sections
 
 import re
 from typing import List, Dict, Tuple, Any, Optional
-from .types import RulebookCategory
-from .rulebook_assignments import (
+from .rulebook_types import (
+    RulebookCategory,
     RULEBOOK_CATEGORY_ASSIGNMENTS,
     PATTERN_RULES,
     MULTI_CATEGORY_SECTIONS
