@@ -127,10 +127,10 @@ class SessionEvent:
     """A significant event that occurred during a session"""
     session_number: int
     description: str
-    participants: List[Entity]
+    event_type: str  # "ritual", "combat", "social", "exploration", etc.
+    participants: List[Entity] = field(default_factory=list)
     location: Optional[str] = None
     timestamp: Optional[str] = None  # In-game time
-    event_type: str  # "ritual", "combat", "social", "exploration", etc.
     outcomes: List[str] = field(default_factory=list)
     related_events: List[int] = field(default_factory=list)  # Session numbers
 
@@ -220,3 +220,30 @@ class RetrievedContent:
     entities_mentioned: List[Entity] = field(default_factory=list)
     confidence_score: float = 1.0
     source_sections: List[str] = field(default_factory=list)  # Which parts of notes this came from
+
+# Query engine structures
+@dataclass
+class SessionNotesContext:
+    """Context from a specific session relevant to a query"""
+    session_number: int
+    session_summary: str
+    relevant_sections: Dict[str, Any] = field(default_factory=dict)
+    entities_found: List[Entity] = field(default_factory=list)
+    relevance_score: float = 0.0
+
+@dataclass
+class QueryEngineInput:
+    """Input structure for the query engine"""
+    user_query: str
+    intention: str  # UserIntention enum string
+    entities: List[Dict[str, str]] = field(default_factory=list)  # [{"name": "entity_name", "type": "entity_type"}]
+    context_hints: List[str] = field(default_factory=list)
+    top_k: int = 5
+
+@dataclass
+class QueryEngineResult:
+    """Result from the query engine"""
+    contexts: List[SessionNotesContext] = field(default_factory=list)
+    total_sessions_searched: int = 0
+    entities_resolved: List[Entity] = field(default_factory=list)
+    query_summary: str = ""
