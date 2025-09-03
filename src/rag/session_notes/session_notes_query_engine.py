@@ -15,7 +15,7 @@ from .session_types import (
     QueryEngineInput, QueryEngineResult, CharacterStatus, CombatEncounter,
     SpellAbilityUse, CharacterDecision, Memory, QuestObjective, SessionEvent
 )
-from .storage import SessionNotesStorage
+from .session_notes_storage import SessionNotesStorage
 
 
 class SessionNotesQueryEngine:

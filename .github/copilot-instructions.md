@@ -3,7 +3,7 @@
 ## Project Overview
 ShadowScribe2.0 is a comprehensive D&D/RPG character management system built around a sophisticated dataclass-based type system. The architecture separates character data modeling from business logic through three core layers:
 
-- **`src/types/character_types.py`**: Complete character type system with 20+ dataclasses modeling everything from basic stats to complex spell systems
+- **`src/rag/character/character_types.py`**: Complete character type system with 20+ dataclasses modeling everything from basic stats to complex spell systems
 - **`src/utils/`**: Business logic for character persistence, inspection, and data conversion
 - **`scripts/`**: Entry point modules that handle the import complexity
 
@@ -70,7 +70,7 @@ python -m scripts.run_manager
 ```python
 # Correct imports
 from src.utils.character_manager import CharacterManager
-from src.types.character_types import Character
+from src.rag.character.character_types import Character
 
 # NOT: from .character_manager import CharacterManager
 ```
@@ -143,7 +143,7 @@ sys.path.insert(0, str(project_root))
 
 # Use absolute imports
 from src.utils.character_manager import CharacterManager
-from src.types.character_types import Character
+from src.rag.character.character_types import Character
 
 def main():
     # Your feature logic here
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
 ## Key Files & Their Roles
 
-- **`src/types/character_types.py`**: Single source of truth for all character data structures (575+ lines)
+- **`src/rag/character/character_types.py`**: Single source of truth for all character data structures (575+ lines)
 - **`src/utils/character_manager.py`**: Character CRUD operations and pickle persistence
 - **`src/utils/character_inspector.py`**: Debugging/analysis tool with multiple output formats
 - **`src/utils/convert_duskryn.py`**: Example converter from JSON → Character (1400+ lines of conversion logic)

@@ -74,7 +74,7 @@ sys.path.insert(0, str(project_root))
 
 # Use absolute imports
 from src.utils.character_manager import CharacterManager
-from src.types.character_types import Character
+from src.rag.character.character_types import Character
 
 def main():
     # Your code here
