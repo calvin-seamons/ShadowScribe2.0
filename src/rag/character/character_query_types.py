@@ -473,3 +473,45 @@ class IntentionDataMapper:
             nested_objects=nested_objects,
             include_relationships=True
         )
+
+
+@dataclass
+class CharacterQueryPerformanceMetrics:
+    """Detailed timing performance information for character query operations"""
+    total_time_ms: float = 0.0
+    character_loading_ms: float = 0.0
+    intention_mapping_ms: float = 0.0
+    data_extraction_ms: float = 0.0
+    entity_filtering_ms: float = 0.0
+    serialization_ms: float = 0.0
+    
+    # Entity processing metrics
+    entities_processed: int = 0
+    entity_matches_found: int = 0
+    
+    # Data scope metrics
+    total_character_fields: int = 0
+    fields_extracted: int = 0
+    objects_serialized: int = 0
+    
+    def to_dict(self) -> Dict:
+        """Convert to dictionary for analysis"""
+        return {
+            'total_time_ms': self.total_time_ms,
+            'timing_breakdown': {
+                'character_loading_ms': self.character_loading_ms,
+                'intention_mapping_ms': self.intention_mapping_ms,
+                'data_extraction_ms': self.data_extraction_ms,
+                'entity_filtering_ms': self.entity_filtering_ms,
+                'serialization_ms': self.serialization_ms
+            },
+            'entity_processing': {
+                'entities_processed': self.entities_processed,
+                'entity_matches_found': self.entity_matches_found
+            },
+            'data_scope': {
+                'total_character_fields': self.total_character_fields,
+                'fields_extracted': self.fields_extracted,
+                'objects_serialized': self.objects_serialized
+            }
+        }

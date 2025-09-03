@@ -6,6 +6,7 @@ Supports natural language queries with entity resolution and contextual understa
 """
 
 import re
+import time
 from typing import List, Dict, Optional, Set, Tuple, Any
 from difflib import SequenceMatcher
 from collections import defaultdict
@@ -13,7 +14,8 @@ from collections import defaultdict
 from .session_types import (
     SessionNotes, Entity, EntityType, UserIntention, SessionNotesContext,
     QueryEngineInput, QueryEngineResult, CharacterStatus, CombatEncounter,
-    SpellAbilityUse, CharacterDecision, Memory, QuestObjective, SessionEvent
+    SpellAbilityUse, CharacterDecision, Memory, QuestObjective, SessionEvent,
+    SessionNotesQueryPerformanceMetrics
 )
 from .session_notes_storage import SessionNotesStorage
 
@@ -27,15 +29,31 @@ class SessionNotesQueryEngine:
         
     def query(self, query_input: QueryEngineInput) -> QueryEngineResult:
         """Main query method that orchestrates the entire search process"""
+        start_time = time.perf_counter()
+        
+        # Initialize performance tracking
+        performance = SessionNotesQueryPerformanceMetrics()
+        performance.entities_input = len(query_input.entities)
+        performance.total_sessions_available = len(self.storage.get_all_sessions())
+        
         # Step 1: Resolve entities
-        resolved_entities = self._resolve_entities(query_input.entities, query_input.context_hints)
+        resolve_start = time.perf_counter()
+        resolved_entities = self._resolve_entities(query_input.entities, query_input.context_hints, performance)
+        resolve_end = time.perf_counter()
+        performance.entity_resolution_ms = (resolve_end - resolve_start) * 1000
+        performance.entities_resolved = len(resolved_entities)
         
         # Step 2: Get relevant sessions based on intention and entities
+        filter_start = time.perf_counter()
         relevant_sessions = self._get_relevant_sessions(
             query_input.intention, resolved_entities, query_input.context_hints
         )
+        filter_end = time.perf_counter()
+        performance.session_filtering_ms = (filter_end - filter_start) * 1000
+        performance.sessions_searched = len(relevant_sessions)
         
         # Step 3: Build contexts for each relevant session
+        context_start = time.perf_counter()
         contexts = []
         for session in relevant_sessions:
             context = self._build_session_context(
@@ -43,21 +61,35 @@ class SessionNotesQueryEngine:
             )
             if context.relevance_score > 0:
                 contexts.append(context)
+        context_end = time.perf_counter()
+        performance.context_building_ms = (context_end - context_start) * 1000
+        performance.contexts_built = len(contexts)
         
         # Step 4: Score and sort contexts
+        scoring_start = time.perf_counter()
         contexts = sorted(contexts, key=lambda c: c.relevance_score, reverse=True)
+        scoring_end = time.perf_counter()
+        performance.scoring_sorting_ms = (scoring_end - scoring_start) * 1000
         
         # Step 5: Limit to top_k results
+        limiting_start = time.perf_counter()
         contexts = contexts[:query_input.top_k]
+        limiting_end = time.perf_counter()
+        performance.result_limiting_ms = (limiting_end - limiting_start) * 1000
+        performance.results_returned = len(contexts)
+        
+        # Finalize performance metrics
+        performance.total_time_ms = (time.perf_counter() - start_time) * 1000
         
         return QueryEngineResult(
             contexts=contexts,
             total_sessions_searched=len(relevant_sessions),
             entities_resolved=resolved_entities,
-            query_summary=self._generate_query_summary(query_input, resolved_entities)
+            query_summary=self._generate_query_summary(query_input, resolved_entities),
+            performance_metrics=performance
         )
     
-    def _resolve_entities(self, entity_dicts: List[Dict[str, str]], context_hints: List[str]) -> List[Entity]:
+    def _resolve_entities(self, entity_dicts: List[Dict[str, str]], context_hints: List[str], performance: SessionNotesQueryPerformanceMetrics) -> List[Entity]:
         """Resolve entity names to actual Entity objects using fuzzy matching and aliases"""
         resolved = []
         
@@ -75,6 +107,7 @@ class SessionNotesQueryEngine:
             entity = self._fuzzy_match_entity(entity_name, entity_type, context_hints)
             if entity:
                 resolved.append(entity)
+                performance.fuzzy_matches_performed += 1
                 continue
                 
             # Create placeholder entity if no match found

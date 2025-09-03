@@ -5,11 +5,12 @@ Simple router that takes a user intention string and entities array,
 maps them to character data, and returns all relevant objects.
 """
 
+import time
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 
 from .character_types import Character
-from .character_query_types import UserIntention, EntityType, IntentionDataMapper
+from .character_query_types import UserIntention, EntityType, IntentionDataMapper, CharacterQueryPerformanceMetrics
 from .character_manager import CharacterManager
 from .entity_matcher import EntityMatcher
 
@@ -21,6 +22,7 @@ class QueryResult:
     metadata: Dict[str, Any] = field(default_factory=dict)  # Query metadata
     warnings: List[str] = field(default_factory=list)  # Any warnings or issues
     entity_matches: List[Dict[str, Any]] = field(default_factory=list)  # Entity match details
+    performance_metrics: Optional[CharacterQueryPerformanceMetrics] = None  # Performance timing data
 
 
 class CharacterQueryRouter:
@@ -57,47 +59,95 @@ class CharacterQueryRouter:
         Returns:
             QueryResult with all relevant character data and nested objects
         """
+        start_time = time.perf_counter()
+        
         entities = entities or []
         warnings = []
         
-        # Load the character
+        # Initialize performance tracking
+        performance = CharacterQueryPerformanceMetrics()
+        performance.entities_processed = len(entities)
+        
+        # 1. Load the character
+        load_start = time.perf_counter()
         try:
             character = self.character_manager.load_character(character_name)
         except Exception as e:
+            performance.total_time_ms = (time.perf_counter() - start_time) * 1000
             return QueryResult(
                 character_data={},
-                warnings=[f"Could not load character '{character_name}': {str(e)}"]
+                warnings=[f"Could not load character '{character_name}': {str(e)}"],
+                performance_metrics=performance
             )
+        load_end = time.perf_counter()
+        performance.character_loading_ms = (load_end - load_start) * 1000
         
-        # Map user intention to UserIntention enum
+        # 2. Map user intention to UserIntention enum
+        intention_start = time.perf_counter()
         try:
             intention_enum = UserIntention(user_intention.lower())
         except ValueError:
             warnings.append(f"Unknown user intention: {user_intention}")
             # Return basic character info as fallback
+            fallback_start = time.perf_counter()
+            basic_data = {
+                "character_base": character.character_base.__dict__,
+                "ability_scores": character.ability_scores.__dict__
+            }
+            fallback_end = time.perf_counter()
+            performance.serialization_ms = (fallback_end - fallback_start) * 1000
+            performance.total_time_ms = (time.perf_counter() - start_time) * 1000
+            performance.fields_extracted = 2
             return QueryResult(
-                character_data={
-                    "character_base": character.character_base.__dict__,
-                    "ability_scores": character.ability_scores.__dict__
-                },
-                warnings=warnings
+                character_data=basic_data,
+                warnings=warnings,
+                performance_metrics=performance
             )
+        intention_end = time.perf_counter()
+        performance.intention_mapping_ms = (intention_end - intention_start) * 1000
         
-        # Get data requirements for this intention
+        # 3. Get data requirements for this intention
+        mapping_start = time.perf_counter()
         mappings = self.intention_mapper.get_mappings()
         if intention_enum not in mappings:
             warnings.append(f"No mapping found for intention: {user_intention}")
-            return QueryResult(character_data={}, warnings=warnings)
+            performance.total_time_ms = (time.perf_counter() - start_time) * 1000
+            return QueryResult(
+                character_data={}, 
+                warnings=warnings,
+                performance_metrics=performance
+            )
         
         mapping = mappings[intention_enum]
+        mapping_end = time.perf_counter()
+        performance.intention_mapping_ms += (mapping_end - mapping_start) * 1000
         
-        # Extract required character data
+        # 4. Extract required character data
+        extract_start = time.perf_counter()
         character_data = self._extract_character_data(character, mapping.required_fields)
+        extract_end = time.perf_counter()
+        performance.data_extraction_ms = (extract_end - extract_start) * 1000
+        performance.fields_extracted = len(character_data)
         
-        # Filter by entities if provided
+        # 5. Filter by entities if provided
         entity_matches = []
         if entities:
+            filter_start = time.perf_counter()
             character_data, entity_matches = self._filter_by_entities(character_data, entities)
+            filter_end = time.perf_counter()
+            performance.entity_filtering_ms = (filter_end - filter_start) * 1000
+            performance.entity_matches_found = len(entity_matches)
+        
+        # 6. Finalize performance metrics
+        serialization_start = time.perf_counter()
+        # Count serialized objects (approximate by counting nested dictionaries)
+        performance.objects_serialized = self._count_serialized_objects(character_data)
+        performance.total_character_fields = len(character.__dict__)
+        serialization_end = time.perf_counter()
+        performance.serialization_ms += (serialization_end - serialization_start) * 1000
+        
+        # Total time
+        performance.total_time_ms = (time.perf_counter() - start_time) * 1000
         
         return QueryResult(
             character_data=character_data,
@@ -107,7 +157,8 @@ class CharacterQueryRouter:
                 "required_fields": list(mapping.required_fields)
             },
             warnings=warnings,
-            entity_matches=entity_matches
+            entity_matches=entity_matches,
+            performance_metrics=performance
         )
     
     def _extract_character_data(self, character: Character, required_fields: set) -> Dict[str, Any]:
@@ -121,6 +172,18 @@ class CharacterQueryRouter:
                     result[field_name] = self._serialize_object(field_value)
         
         return result
+    
+    def _count_serialized_objects(self, data: Any) -> int:
+        """Count the number of objects that were serialized (approximate)"""
+        count = 0
+        if isinstance(data, dict):
+            count += 1  # The dict itself
+            for value in data.values():
+                count += self._count_serialized_objects(value)
+        elif isinstance(data, list):
+            for item in data:
+                count += self._count_serialized_objects(item)
+        return count
     
     def _serialize_object(self, obj: Any) -> Any:
         """Convert dataclass objects to dictionaries recursively."""

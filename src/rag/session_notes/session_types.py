@@ -247,3 +247,50 @@ class QueryEngineResult:
     total_sessions_searched: int = 0
     entities_resolved: List[Entity] = field(default_factory=list)
     query_summary: str = ""
+    performance_metrics: Optional['SessionNotesQueryPerformanceMetrics'] = None
+
+
+@dataclass
+class SessionNotesQueryPerformanceMetrics:
+    """Detailed timing performance information for session notes query operations"""
+    total_time_ms: float = 0.0
+    entity_resolution_ms: float = 0.0
+    session_filtering_ms: float = 0.0
+    context_building_ms: float = 0.0
+    scoring_sorting_ms: float = 0.0
+    result_limiting_ms: float = 0.0
+    
+    # Entity processing metrics
+    entities_input: int = 0
+    entities_resolved: int = 0
+    fuzzy_matches_performed: int = 0
+    
+    # Search scope metrics
+    total_sessions_available: int = 0
+    sessions_searched: int = 0
+    contexts_built: int = 0
+    results_returned: int = 0
+    
+    def to_dict(self) -> Dict:
+        """Convert to dictionary for analysis"""
+        return {
+            'total_time_ms': self.total_time_ms,
+            'timing_breakdown': {
+                'entity_resolution_ms': self.entity_resolution_ms,
+                'session_filtering_ms': self.session_filtering_ms,
+                'context_building_ms': self.context_building_ms,
+                'scoring_sorting_ms': self.scoring_sorting_ms,
+                'result_limiting_ms': self.result_limiting_ms
+            },
+            'entity_processing': {
+                'entities_input': self.entities_input,
+                'entities_resolved': self.entities_resolved,
+                'fuzzy_matches_performed': self.fuzzy_matches_performed
+            },
+            'search_scope': {
+                'total_sessions_available': self.total_sessions_available,
+                'sessions_searched': self.sessions_searched,
+                'contexts_built': self.contexts_built,
+                'results_returned': self.results_returned
+            }
+        }
