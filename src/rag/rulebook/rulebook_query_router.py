@@ -1,5 +1,5 @@
 """
-D&D 5e Rulebook Query Engine
+D&D 5e Rulebook Query Router
 Intelligent semantic search with intention-based filtering and multi-stage scoring
 """
 
@@ -59,9 +59,9 @@ class EmbeddingCache:
         self.access_order.append(key)
 
 
-class RulebookQueryEngine:
+class RulebookQueryRouter:
     """
-    Intelligent query engine for D&D 5e rulebook sections.
+    Intelligent query router for D&D 5e rulebook sections.
     Combines semantic search with entity matching and context hints.
     """
     

@@ -12,7 +12,7 @@ sys.path.insert(0, str(project_root))
 
 from src.rag.rulebook.rulebook_types import RulebookQueryIntent, QueryPerformanceMetrics
 from src.rag.rulebook.rulebook_storage import RulebookStorage
-from src.rag.rulebook.rulebook_query_engine import RulebookQueryEngine
+from src.rag.rulebook.rulebook_query_router import RulebookQueryRouter
 
 def test_performance_metrics():
     """Test that performance metrics are properly tracked"""
@@ -31,7 +31,7 @@ def test_performance_metrics():
         return False
     
     # Create query engine
-    engine = RulebookQueryEngine(storage)
+    engine = RulebookQueryRouter(storage)
     
     # Test query without performance metrics
     print("\n1. Testing query without performance metrics...")

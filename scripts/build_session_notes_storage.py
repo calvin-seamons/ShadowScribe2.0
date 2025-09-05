@@ -12,7 +12,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.rag.session_notes import (
-    SessionNotesParser, SessionNotesStorage, SessionNotesQueryEngine,
+    SessionNotesParser, SessionNotesStorage, SessionNotesQueryRouter,
     parse_session_notes_directory, SessionNotesQueryIntent,
     QueryEntity, EntityType
 )
@@ -53,7 +53,7 @@ def main():
     
     # Initialize query engine
     print("\nInitializing query engine...")
-    query_engine = SessionNotesQueryEngine(storage)
+    query_engine = SessionNotesQueryRouter(storage)
     print("✓ Query engine initialized")
     
     # Test basic functionality

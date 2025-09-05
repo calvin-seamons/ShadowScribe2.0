@@ -1,7 +1,7 @@
 """
-Session Notes Query Engine
+Session Notes Query Router
 
-Advanced query engine for searching and retrieving information from D&D session notes.
+Advanced query router for searching and retrieving information from D&D session notes.
 Supports natural language queries with entity resolution and contextual understanding.
 """
 
@@ -20,8 +20,8 @@ from .session_types import (
 from .session_notes_storage import SessionNotesStorage
 
 
-class SessionNotesQueryEngine:
-    """Advanced query engine for session notes with entity resolution and contextual search"""
+class SessionNotesQueryRouter:
+    """Advanced query router for session notes with entity resolution and contextual search"""
     
     def __init__(self, storage: SessionNotesStorage):
         self.storage = storage

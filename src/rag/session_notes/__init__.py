@@ -1,7 +1,7 @@
 from .session_types import *
 from .session_notes_parser import SessionNotesParser, parse_session_notes_directory
 from .session_notes_storage import SessionNotesStorage
-from .session_notes_query_engine import SessionNotesQueryEngine
+from .session_notes_query_router import SessionNotesQueryRouter
 
 __all__ = [
     # Types
@@ -17,5 +17,5 @@ __all__ = [
     'SessionNotesStorage',
     
     # Query Engine
-    'SessionNotesQueryEngine'
+    'SessionNotesQueryRouter'
 ]

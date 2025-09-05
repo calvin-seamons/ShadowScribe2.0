@@ -12,7 +12,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.rag.session_notes import (
-    SessionNotesStorage, SessionNotesQueryEngine, SessionNotesQueryIntent,
+    SessionNotesStorage, SessionNotesQueryRouter, SessionNotesQueryIntent,
     parse_session_notes_directory
 )
 
@@ -25,7 +25,7 @@ def main():
     # Check if storage exists
     try:
         storage = SessionNotesStorage()
-        engine = SessionNotesQueryEngine(storage)
+        engine = SessionNotesQueryRouter(storage)
         print("✓ System Status: READY")
     except Exception as e:
         print("✗ System Status: NOT READY")
