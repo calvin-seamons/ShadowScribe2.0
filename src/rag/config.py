@@ -19,6 +19,49 @@ EmbeddingModel = Literal[
     "local-mpnet-base"         # Local, fast (768 dim)
 ]
 
+# OpenAI Model Categories - Different models require different parameters
+OpenAIStandardModel = Literal[
+    # Standard models - support temperature, max_tokens
+    "gpt-4o",                  # High quality, multimodal
+    "gpt-4o-mini",            # Fast, cost-effective
+    "gpt-4-turbo",            # High quality, large context
+    "gpt-4",                  # High quality, standard
+    "gpt-3.5-turbo",          # Legacy, fast
+    "gpt-3.5-turbo-16k"       # Legacy, large context
+]
+
+OpenAIReasoningModel = Literal[
+    # Reasoning models - no temperature/max_tokens, use max_completion_tokens
+    "o1",                     # Advanced reasoning
+    "o1-mini",                # Fast reasoning
+    "gpt-5",                  # Latest flagship reasoning
+    "gpt-5-mini",             # Fast flagship reasoning  
+    "gpt-5-nano"              # Ultra-fast reasoning
+]
+
+AnthropicModel = Literal[
+    # Claude 4 models - Latest generation
+    "claude-opus-4-1-20250805",   # Latest Claude 4 Opus
+    "claude-opus-4-1",            # Claude 4 Opus (alias)
+    "claude-opus-4-20250514",     # Claude 4 Opus (May 2025)
+    "claude-opus-4-0",            # Claude 4 Opus (alias)
+    "claude-sonnet-4-20250514",   # Claude 4 Sonnet
+    "claude-sonnet-4-0",          # Claude 4 Sonnet (alias)
+    
+    # Claude 3.7 models - Advanced reasoning
+    "claude-3-7-sonnet-20250219", # Claude 3.7 Sonnet
+    "claude-3-7-sonnet-latest",   # Claude 3.7 Sonnet (latest alias)
+    
+    # Claude 3.5 models - Balanced quality/speed
+    "claude-3-5-haiku-20241022",  # Claude 3.5 Haiku (specific version)
+    "claude-3-5-haiku-latest",    # Claude 3.5 Haiku (latest alias) - Fast, cost-effective
+    "claude-3-5-sonnet-latest",   # Claude 3.5 Sonnet (latest alias) - Balanced quality/speed
+    
+    # Claude 3 models - Stable versions
+    "claude-3-opus-latest",       # Claude 3 Opus (highest quality)
+    "claude-3-haiku-20240307"     # Claude 3 Haiku (specific version)
+]
+
 
 @dataclass
 class RAGConfig:
@@ -33,11 +76,14 @@ class RAGConfig:
     router_llm_provider: str = "openai"   # Provider for router decisions
     final_response_llm_provider: str = "openai"  # Provider for final response
     
-    # Model Settings
-    openai_router_model: str = "gpt-3.5-turbo"
-    openai_final_model: str = "gpt-4"
-    anthropic_router_model: str = "claude-3-haiku-20240307"
-    anthropic_final_model: str = "claude-3-sonnet-20240229"
+    # Model Settings - Updated with latest available models (as of Sept 2025)
+    # OpenAI Models
+    openai_router_model: str = "gpt-4o-mini"  # Fast, cost-effective for routing
+    openai_final_model: str = "gpt-4o"        # High quality for final responses
+    
+    # Anthropic Models  
+    anthropic_router_model: str = "claude-3-5-haiku-latest"   # Fast, cost-effective for routing
+    anthropic_final_model: str = "claude-opus-4-1"            # Latest, highest quality Claude 4
     
     # Embedding Model Settings
     embedding_model: EmbeddingModel = "text-embedding-3-small"  # Default: fast and good
@@ -75,11 +121,11 @@ class RAGConfig:
             router_llm_provider=os.getenv('RAG_ROUTER_LLM_PROVIDER', 'openai'),
             final_response_llm_provider=os.getenv('RAG_FINAL_LLM_PROVIDER', 'openai'),
             
-            # Model Settings
-            openai_router_model=os.getenv('RAG_OPENAI_ROUTER_MODEL', 'gpt-3.5-turbo'),
-            openai_final_model=os.getenv('RAG_OPENAI_FINAL_MODEL', 'gpt-4'),
-            anthropic_router_model=os.getenv('RAG_ANTHROPIC_ROUTER_MODEL', 'claude-3-haiku-20240307'),
-            anthropic_final_model=os.getenv('RAG_ANTHROPIC_FINAL_MODEL', 'claude-3-sonnet-20240229'),
+            # Model Settings - Updated defaults
+            openai_router_model=os.getenv('RAG_OPENAI_ROUTER_MODEL', 'gpt-4o-mini'),
+            openai_final_model=os.getenv('RAG_OPENAI_FINAL_MODEL', 'gpt-4o'),
+            anthropic_router_model=os.getenv('RAG_ANTHROPIC_ROUTER_MODEL', 'claude-3-5-haiku-latest'),
+            anthropic_final_model=os.getenv('RAG_ANTHROPIC_FINAL_MODEL', 'claude-opus-4-1'),
             
             # Embedding and Query Settings
             embedding_model=os.getenv('RAG_EMBEDDING_MODEL', 'text-embedding-3-small'),
@@ -116,6 +162,43 @@ class RAGConfig:
         if not self.anthropic_api_key:
             return False
         return self.anthropic_api_key.startswith('sk-ant-') and len(self.anthropic_api_key) > 20
+
+    def is_reasoning_model(self, model: str) -> bool:
+        """Check if a model is a reasoning model that requires special parameters"""
+        reasoning_models = {"o1", "o1-mini", "gpt-5", "gpt-5-mini", "gpt-5-nano"}
+        return model in reasoning_models
+    
+    def is_standard_model(self, model: str) -> bool:
+        """Check if a model supports standard parameters (temperature, max_tokens)"""
+        return not self.is_reasoning_model(model)
+    
+    def get_available_openai_models(self) -> dict:
+        """Get all available OpenAI models categorized by type"""
+        return {
+            "standard": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo", "gpt-3.5-turbo-16k"],
+            "reasoning": ["o1", "o1-mini", "gpt-5", "gpt-5-mini", "gpt-5-nano"]
+        }
+    
+    def get_available_anthropic_models(self) -> dict:
+        """Get all available Anthropic models categorized by generation"""
+        return {
+            "claude_4": [
+                "claude-opus-4-1-20250805", "claude-opus-4-1", 
+                "claude-opus-4-20250514", "claude-opus-4-0",
+                "claude-sonnet-4-20250514", "claude-sonnet-4-0"
+            ],
+            "claude_3_7": [
+                "claude-3-7-sonnet-20250219", "claude-3-7-sonnet-latest"
+            ],
+            "claude_3_5": [
+                "claude-3-5-haiku-20241022", "claude-3-5-haiku-latest"
+                # Removed claude-3-5-sonnet-latest - returns 404
+            ],
+            "claude_3": [
+                "claude-3-haiku-20240307"
+                # Removed claude-3-opus-latest - returns 404
+            ]
+        }
 
 
 # Global config instance
