@@ -32,18 +32,19 @@ def test_system_integration():
     print(f"   ✓ Entities: {len(campaign_notes.entities)}")
     print(f"   ✓ Session IDs: {list(campaign_notes.sessions.keys())}")
     
-    # 3. Create LLM clients and prompt manager (mock)
+    # 3. Create LLM clients and prompt manager (real)
     print("\n3. Setting up LLM components...")
     llm_clients = LLMClientFactory.create_default_clients()
     print(f"   ✓ LLM Clients: {list(llm_clients.keys())}")
     
-    # Mock prompt manager for now
-    class MockPromptManager:
-        def get_prompt(self, prompt_name, **kwargs):
-            return f"Mock prompt for {prompt_name}"
+    # Create real context assembler and prompt manager
+    from src.rag.context_assembler import ContextAssembler
+    from src.rag.central_prompt_manager import CentralPromptManager
     
-    prompt_manager = MockPromptManager()
-    print("   ✓ Prompt Manager: MockPromptManager")
+    context_assembler = ContextAssembler()
+    prompt_manager = CentralPromptManager(context_assembler)
+    print("   ✓ Context Assembler: ContextAssembler")
+    print("   ✓ Prompt Manager: CentralPromptManager")
     
     # 4. Create central engine
     print("\n4. Creating CentralEngine...")
