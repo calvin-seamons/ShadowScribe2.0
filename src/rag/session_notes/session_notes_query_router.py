@@ -17,13 +17,14 @@ from .session_types import (
     SessionNotesQueryPerformanceMetrics
 )
 from .session_notes_storage import SessionNotesStorage
+from .campaign_session_notes_storage import CampaignSessionNotesStorage
 
 
 class SessionNotesQueryRouter:
     """Advanced query router for session notes with entity resolution and contextual search"""
     
-    def __init__(self, storage: SessionNotesStorage):
-        self.storage = storage
+    def __init__(self, campaign_storage: CampaignSessionNotesStorage):
+        self.campaign_storage = campaign_storage
         self.fuzzy_threshold = 0.6  # Lower threshold for better partial matching
         
     def query(self, character_name: str, original_query: str, intention: str, 
@@ -34,7 +35,7 @@ class SessionNotesQueryRouter:
         # Initialize performance tracking
         performance = SessionNotesQueryPerformanceMetrics()
         performance.entities_input = len(entities)
-        performance.total_sessions_available = len(self.storage.get_all_sessions())
+        performance.total_sessions_available = len(self.campaign_storage.get_all_sessions())
         
         # Step 1: Resolve entities
         resolve_start = time.perf_counter()
@@ -98,7 +99,7 @@ class SessionNotesQueryRouter:
             entity_type = entity_dict.get("type", "")
             
             # Try direct lookup first
-            entity = self.storage.get_entity(entity_name)
+            entity = self.campaign_storage.get_entity(entity_name)
             if entity:
                 resolved.append(entity)
                 continue
@@ -127,7 +128,7 @@ class SessionNotesQueryRouter:
     def _fuzzy_match_entity(self, name: str, entity_type: str, context_hints: List[str]) -> Optional[Entity]:
         """Perform fuzzy matching on entity names and aliases"""
         name_lower = name.lower()
-        all_entities = self.storage.get_all_entities()
+        all_entities = list(self.campaign_storage.entities.values())
         
         best_match = None
         best_score = 0
@@ -171,7 +172,7 @@ class SessionNotesQueryRouter:
     
     def _get_relevant_sessions(self, intention: str, entities: List[Entity], context_hints: List[str]) -> List[SessionNotes]:
         """Get sessions relevant to the query based on intention and entities"""
-        all_sessions = self.storage.get_all_sessions()
+        all_sessions = self.campaign_storage.get_all_sessions()
         
         # Handle temporal filters
         sessions = self._apply_temporal_filters(all_sessions, context_hints)
@@ -711,10 +712,12 @@ class SessionNotesQueryRouter:
         
         # Recency bonus if requested
         if any(hint in ["recent", "recently", "latest", "last"] for hint in context_hints):
-            all_sessions = self.storage.get_all_sessions()
+            all_sessions = self.campaign_storage.get_all_sessions()
             if all_sessions:
-                max_session = max(s.session_number for s in all_sessions)
-                score -= 0.1 * (max_session - session.session_number)
+                max_session_date = max(s.date for s in all_sessions)
+                session_date = session.date
+                days_diff = (max_session_date - session_date).days
+                score -= 0.1 * (days_diff / 30)  # Penalty based on months old
         
         # Completeness bonus
         if len(context.relevant_sections) > 1:

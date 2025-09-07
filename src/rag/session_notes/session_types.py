@@ -287,6 +287,41 @@ class SessionNotesQueryPerformanceMetrics:
         }
 
 
+# ===== STORAGE TYPES =====
+
+@dataclass
+class SessionMetadata:
+    """Metadata for a processed session"""
+    session_id: str
+    session_date: datetime
+    title: str
+    file_path: Optional[str] = None
+    processed_date: datetime = field(default_factory=datetime.now)
+
+@dataclass 
+class ProcessedSession:
+    """A processed session with metadata and content"""
+    metadata: SessionMetadata
+    content: str
+    summary: str
+    entities_mentioned: List[str] = field(default_factory=list)
+    raw_notes: Optional[SessionNotes] = None
+
+@dataclass
+class SessionEntity:
+    """An entity extracted from session notes"""
+    name: str
+    entity_type: str
+    description: str
+    first_mentioned: int  # Session number
+    sessions_appeared: List[int] = field(default_factory=list)
+    aliases: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+# Alias for compatibility
+SessionQueryMetrics = SessionNotesQueryPerformanceMetrics
+
+
 # ===== PROMPT GENERATION HELPERS =====
 
 class SessionNotesPromptHelper:

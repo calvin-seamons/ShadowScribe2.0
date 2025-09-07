@@ -20,6 +20,7 @@ from .character.character_query_types import UserIntention as CharacterIntention
 from .rulebook.rulebook_query_router import RulebookQueryRouter
 from .rulebook.rulebook_types import RulebookQueryIntent, SearchResult, QueryPerformanceMetrics
 from .session_notes.session_notes_query_router import SessionNotesQueryRouter
+from .session_notes.campaign_session_notes_storage import CampaignSessionNotesStorage
 from .session_notes.session_types import QueryEngineResult
 
 
@@ -68,7 +69,7 @@ class CentralEngine:
     """Main orchestrator - makes all LLM calls and coordinates the pipeline."""
     
     def __init__(self, llm_clients: Dict[str, LLMClient], prompt_manager, 
-                 character=None, rulebook_storage=None, session_notes_storage=None):
+                 character=None, rulebook_storage=None, campaign_session_notes=None):
         """Initialize with LLM clients and prompt manager."""
         self.llm_clients = llm_clients
         self.prompt_manager = prompt_manager
@@ -77,14 +78,14 @@ class CentralEngine:
         # Initialize query routers with required storage instances
         self.character_router = CharacterQueryRouter(character) if character else None
         self.rulebook_router = RulebookQueryRouter(rulebook_storage) if rulebook_storage else None
-        self.session_notes_router = SessionNotesQueryRouter(session_notes_storage) if session_notes_storage else None
+        self.session_notes_router = SessionNotesQueryRouter(campaign_session_notes) if campaign_session_notes else None
     
     @classmethod
     def create_from_config(cls, prompt_manager, character=None, 
-                          rulebook_storage=None, session_notes_storage=None):
+                          rulebook_storage=None, campaign_session_notes=None):
         """Create CentralEngine instance using default configuration."""
         llm_clients = LLMClientFactory.create_default_clients()
-        return cls(llm_clients, prompt_manager, character, rulebook_storage, session_notes_storage)
+        return cls(llm_clients, prompt_manager, character, rulebook_storage, campaign_session_notes)
     
     def process_query(self, user_query: str, character_name: str) -> str:
         """

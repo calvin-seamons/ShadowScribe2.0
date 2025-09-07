@@ -1,294 +1,234 @@
 """
 Session Notes Storage System
 
-Handles storage and retrieval of SessionNotes objects using pickle files.
+Centralized manager for multiple campaign session notes storage systems.
+Handles loading/saving campaigns and provides access to campaign-specific storage.
 """
 
 import pickle
 from pathlib import Path
-from typing import List, Dict, Optional, Set
+from typing import List, Dict, Optional, Any
 from datetime import datetime
 
-from .session_types import SessionNotes, Entity, EntityType
+from .session_types import (
+    SessionMetadata, ProcessedSession, SessionEntity,
+    QueryEngineResult, SessionNotesQueryPerformanceMetrics
+)
+from .campaign_session_notes_storage import CampaignSessionNotesStorage
 
 
 class SessionNotesStorage:
-    """Storage system for session notes using pickle files"""
+    """
+    Manager for multiple campaign session notes storage systems.
+    Handles file I/O and provides access to campaign-specific data.
+    """
     
     def __init__(self, storage_dir: str = "knowledge_base/processed_session_notes"):
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         
-        # Storage files
-        self.sessions_file = self.storage_dir / "sessions.pkl"
-        self.entities_file = self.storage_dir / "entities.pkl"
-        self.metadata_file = self.storage_dir / "metadata.pkl"
+        # In-memory cache of loaded campaigns
+        self._campaigns: Dict[str, CampaignSessionNotesStorage] = {}
         
-        # In-memory caches
-        self._sessions: Dict[int, SessionNotes] = {}
-        self._entities: Dict[str, Entity] = {}
-        self._metadata: Dict[str, any] = {}
+        # Load list of available campaigns
+        self._discover_campaigns()
+    
+    def get_campaign(self, campaign_name: str) -> Optional[CampaignSessionNotesStorage]:
+        """
+        Get a campaign's session notes storage.
+        Loads from disk if not already in memory.
+        """
+        if campaign_name not in self._campaigns or self._campaigns[campaign_name] is None:
+            loaded_campaign = self._load_campaign(campaign_name)
+            if loaded_campaign:
+                self._campaigns[campaign_name] = loaded_campaign
         
-        # Load existing data
-        self._load_from_disk()
+        return self._campaigns.get(campaign_name)
     
-    def store_session(self, session_notes: SessionNotes) -> None:
-        """Store a session notes object"""
-        # Store in memory
-        self._sessions[session_notes.session_number] = session_notes
+    def get_all_campaigns(self) -> List[str]:
+        """Get list of all available campaign names."""
+        return list(self._campaigns.keys())
+    
+    def create_campaign(self, campaign_name: str) -> CampaignSessionNotesStorage:
+        """Create a new campaign storage."""
+        campaign = CampaignSessionNotesStorage(campaign_name=campaign_name)
+        self._campaigns[campaign_name] = campaign
+        self.save_campaign(campaign_name)
+        return campaign
+    
+    def save_campaign(self, campaign_name: str) -> bool:
+        """Save a campaign to disk."""
+        campaign = self._campaigns.get(campaign_name)
+        if not campaign:
+            return False
         
-        # Update entity registry
-        self._update_entities(session_notes)
+        campaign_dir = self.storage_dir / campaign_name
+        campaign_dir.mkdir(parents=True, exist_ok=True)
         
-        # Update metadata
-        self._update_metadata(session_notes)
-        
-        # Save to disk
-        self._save_to_disk()
-        
-        print(f"✓ Stored Session {session_notes.session_number}: {session_notes.title}")
-    
-    def get_session(self, session_number: int) -> Optional[SessionNotes]:
-        """Get a specific session by number"""
-        return self._sessions.get(session_number)
-    
-    def get_all_sessions(self) -> List[SessionNotes]:
-        """Get all stored sessions, sorted by session number"""
-        return sorted(self._sessions.values(), key=lambda s: s.session_number)
-    
-    def get_sessions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[SessionNotes]:
-        """Get sessions within a date range"""
-        return [
-            session for session in self._sessions.values()
-            if start_date <= session.date <= end_date
-        ]
-    
-    def get_sessions_with_entity(self, entity_name: str) -> List[SessionNotes]:
-        """Get all sessions that mention a specific entity"""
-        sessions_with_entity = []
-        
-        for session in self._sessions.values():
-            if self._session_contains_entity(session, entity_name):
-                sessions_with_entity.append(session)
-        
-        return sorted(sessions_with_entity, key=lambda s: s.session_number)
-    
-    def get_entity(self, entity_name: str) -> Optional[Entity]:
-        """Get entity information"""
-        return self._entities.get(entity_name.lower())
-    
-    def get_entities_by_type(self, entity_type: EntityType) -> List[Entity]:
-        """Get all entities of a specific type"""
-        return [
-            entity for entity in self._entities.values()
-            if entity.entity_type == entity_type
-        ]
-    
-    def get_all_entities(self) -> List[Entity]:
-        """Get all registered entities"""
-        return list(self._entities.values())
-    
-    def search_sessions_by_keyword(self, keyword: str) -> List[SessionNotes]:
-        """Simple keyword search across session content"""
-        keyword_lower = keyword.lower()
-        matching_sessions = []
-        
-        for session in self._sessions.values():
-            if self._session_contains_keyword(session, keyword_lower):
-                matching_sessions.append(session)
-        
-        return sorted(matching_sessions, key=lambda s: s.session_number)
-    
-    def get_latest_sessions(self, count: int = 5) -> List[SessionNotes]:
-        """Get the most recent sessions"""
-        all_sessions = sorted(self._sessions.values(), key=lambda s: s.session_number, reverse=True)
-        return all_sessions[:count]
-    
-    def get_session_count(self) -> int:
-        """Get total number of stored sessions"""
-        return len(self._sessions)
-    
-    def get_storage_info(self) -> Dict[str, any]:
-        """Get information about the storage system"""
-        return {
-            "session_count": len(self._sessions),
-            "entity_count": len(self._entities),
-            "storage_dir": str(self.storage_dir),
-            "last_updated": self._metadata.get("last_updated"),
-            "session_range": {
-                "min": min(self._sessions.keys()) if self._sessions else None,
-                "max": max(self._sessions.keys()) if self._sessions else None
-            },
-            "entity_types": {
-                entity_type.value: len([e for e in self._entities.values() if e.entity_type == entity_type])
-                for entity_type in EntityType
+        try:
+            # Save each component separately
+            with open(campaign_dir / "sessions.pkl", "wb") as f:
+                pickle.dump(campaign.sessions, f)
+            
+            with open(campaign_dir / "entities.pkl", "wb") as f:
+                pickle.dump(campaign.entities, f)
+                
+            with open(campaign_dir / "embeddings.pkl", "wb") as f:
+                pickle.dump(campaign.embeddings, f)
+                
+            with open(campaign_dir / "metadata.pkl", "wb") as f:
+                pickle.dump(campaign.metadata, f)
+            
+            # Save campaign settings
+            campaign_info = {
+                'campaign_name': campaign.campaign_name,
+                'embedding_model': campaign.embedding_model,
+                'chunk_size': campaign.chunk_size,
+                'chunk_overlap': campaign.chunk_overlap,
+                'last_saved': datetime.now()
             }
-        }
-    
-    def delete_session(self, session_number: int) -> bool:
-        """Delete a session from storage"""
-        if session_number in self._sessions:
-            del self._sessions[session_number]
-            self._save_to_disk()
-            print(f"✓ Deleted Session {session_number}")
+            with open(campaign_dir / "campaign_info.pkl", "wb") as f:
+                pickle.dump(campaign_info, f)
+            
             return True
-        return False
+        except Exception as e:
+            print(f"Error saving campaign {campaign_name}: {e}")
+            return False
     
-    def clear_all_data(self) -> None:
-        """Clear all stored data (destructive operation)"""
-        self._sessions.clear()
-        self._entities.clear()
-        self._metadata.clear()
-        
-        # Remove pickle files
-        for file_path in [self.sessions_file, self.entities_file, self.metadata_file]:
-            if file_path.exists():
-                file_path.unlink()
-        
-        print("✓ Cleared all session notes data")
+    def save_all_campaigns(self) -> int:
+        """Save all loaded campaigns to disk. Returns number of campaigns saved."""
+        saved_count = 0
+        for campaign_name in self._campaigns:
+            if self.save_campaign(campaign_name):
+                saved_count += 1
+        return saved_count
     
-    def _update_entities(self, session_notes: SessionNotes) -> None:
-        """Update entity registry with entities from a session"""
-        all_entities = (
-            session_notes.player_characters +
-            session_notes.npcs +
-            session_notes.locations +
-            session_notes.items
-        )
+    def _load_campaign(self, campaign_name: str) -> Optional[CampaignSessionNotesStorage]:
+        """Load a campaign from disk."""
+        campaign_dir = self.storage_dir / campaign_name
         
-        for entity in all_entities:
-            key = entity.name.lower()
-            if key not in self._entities:
-                self._entities[key] = entity
+        if not campaign_dir.exists():
+            return None
+        
+        try:
+            # Load campaign info first
+            campaign_info = {}
+            info_file = campaign_dir / "campaign_info.pkl"
+            if info_file.exists():
+                with open(info_file, "rb") as f:
+                    campaign_info = pickle.load(f)
+            
+            # Create campaign storage instance
+            campaign = CampaignSessionNotesStorage(
+                campaign_name=campaign_name,
+                embedding_model=campaign_info.get('embedding_model', 'text-embedding-3-small'),
+                chunk_size=campaign_info.get('chunk_size', 1000),
+                chunk_overlap=campaign_info.get('chunk_overlap', 200)
+            )
+            
+            # Load each component if it exists
+            sessions_file = campaign_dir / "sessions.pkl"
+            if sessions_file.exists():
+                with open(sessions_file, "rb") as f:
+                    campaign.sessions = pickle.load(f)
+            
+            entities_file = campaign_dir / "entities.pkl"
+            if entities_file.exists():
+                with open(entities_file, "rb") as f:
+                    campaign.entities = pickle.load(f)
+                    
+            embeddings_file = campaign_dir / "embeddings.pkl"
+            if embeddings_file.exists():
+                with open(embeddings_file, "rb") as f:
+                    campaign.embeddings = pickle.load(f)
+                    
+            metadata_file = campaign_dir / "metadata.pkl"
+            if metadata_file.exists():
+                with open(metadata_file, "rb") as f:
+                    campaign.metadata = pickle.load(f)
+            
+            return campaign
+            
+        except Exception as e:
+            print(f"Error loading campaign {campaign_name}: {e}")
+            return None
+    
+    def _discover_campaigns(self) -> None:
+        """Discover available campaigns by scanning the storage directory."""
+        if not self.storage_dir.exists():
+            return
+        
+        for item in self.storage_dir.iterdir():
+            if item.is_dir():
+                campaign_name = item.name
+                # Check if it has expected campaign files
+                if (item / "sessions.pkl").exists() or (item / "campaign_info.pkl").exists():
+                    # Don't load yet, just register as available
+                    if campaign_name not in self._campaigns:
+                        self._campaigns[campaign_name] = None  # Placeholder
+    
+    def list_campaigns(self) -> Dict[str, Dict[str, Any]]:
+        """Get summary information about all campaigns."""
+        campaign_summaries = {}
+        
+        for campaign_name in self.get_all_campaigns():
+            campaign = self.get_campaign(campaign_name)
+            if campaign:
+                campaign_summaries[campaign_name] = campaign.get_campaign_summary()
             else:
-                # Update existing entity with new information
-                existing = self._entities[key]
-                if entity.description and not existing.description:
-                    existing.description = entity.description
-                if entity.aliases:
-                    existing.aliases.extend([a for a in entity.aliases if a not in existing.aliases])
+                # If campaign failed to load, provide basic info
+                campaign_dir = self.storage_dir / campaign_name
+                campaign_summaries[campaign_name] = {
+                    'campaign_name': campaign_name,
+                    'status': 'failed_to_load',
+                    'directory': str(campaign_dir)
+                }
+        
+        return campaign_summaries
     
-    def _update_metadata(self, session_notes: SessionNotes) -> None:
-        """Update storage metadata"""
-        self._metadata["last_updated"] = datetime.now()
-        self._metadata["last_session_added"] = session_notes.session_number
-        
-        if "first_session" not in self._metadata:
-            self._metadata["first_session"] = session_notes.session_number
-    
-    def _session_contains_entity(self, session: SessionNotes, entity_name: str) -> bool:
-        """Check if a session contains references to an entity"""
-        entity_name_lower = entity_name.lower()
-        
-        # Check in entity lists
-        all_entities = (
-            session.player_characters + session.npcs + 
-            session.locations + session.items
-        )
-        
-        for entity in all_entities:
-            if entity.name.lower() == entity_name_lower:
-                return True
-            if any(alias.lower() == entity_name_lower for alias in entity.aliases):
-                return True
-        
-        # Check in text content
-        text_fields = [
-            session.summary, session.cliffhanger or "",
-            session.next_session_hook or ""
-        ]
-        
-        for field in text_fields:
-            if entity_name_lower in field.lower():
-                return True
-        
-        # Check in raw sections
-        for section_text in session.raw_sections.values():
-            if entity_name_lower in section_text.lower():
-                return True
-        
-        return False
-    
-    def _session_contains_keyword(self, session: SessionNotes, keyword: str) -> bool:
-        """Check if a session contains a keyword"""
-        # Check in main text fields
-        text_fields = [
-            session.title, session.summary,
-            session.cliffhanger or "", session.next_session_hook or ""
-        ]
-        
-        for field in text_fields:
-            if keyword in field.lower():
-                return True
-        
-        # Check in raw sections
-        for section_text in session.raw_sections.values():
-            if keyword in section_text.lower():
-                return True
-        
-        # Check in structured data
-        for quote in session.quotes:
-            if keyword in quote.get("quote", "").lower() or keyword in quote.get("speaker", "").lower():
-                return True
-        
-        for moment in session.funny_moments:
-            if keyword in moment.lower():
-                return True
-        
-        return False
-    
-    def _load_from_disk(self) -> None:
-        """Load data from pickle files"""
+    def delete_campaign(self, campaign_name: str) -> bool:
+        """Delete a campaign from disk and memory."""
         try:
-            if self.sessions_file.exists():
-                with open(self.sessions_file, 'rb') as f:
-                    self._sessions = pickle.load(f)
-                    print(f"✓ Loaded {len(self._sessions)} sessions from disk")
+            # Remove from memory
+            if campaign_name in self._campaigns:
+                del self._campaigns[campaign_name]
+            
+            # Remove from disk
+            campaign_dir = self.storage_dir / campaign_name
+            if campaign_dir.exists():
+                import shutil
+                shutil.rmtree(campaign_dir)
+            
+            return True
         except Exception as e:
-            print(f"⚠ Warning: Could not load sessions file: {e}")
-            self._sessions = {}
-        
-        try:
-            if self.entities_file.exists():
-                with open(self.entities_file, 'rb') as f:
-                    self._entities = pickle.load(f)
-                    print(f"✓ Loaded {len(self._entities)} entities from disk")
-        except Exception as e:
-            print(f"⚠ Warning: Could not load entities file: {e}")
-            self._entities = {}
-        
-        try:
-            if self.metadata_file.exists():
-                with open(self.metadata_file, 'rb') as f:
-                    self._metadata = pickle.load(f)
-        except Exception as e:
-            print(f"⚠ Warning: Could not load metadata file: {e}")
-            self._metadata = {}
+            print(f"Error deleting campaign {campaign_name}: {e}")
+            return False
     
-    def _save_to_disk(self) -> None:
-        """Save data to pickle files"""
-        try:
-            with open(self.sessions_file, 'wb') as f:
-                pickle.dump(self._sessions, f)
-        except Exception as e:
-            print(f"✗ Error saving sessions: {e}")
-        
-        try:
-            with open(self.entities_file, 'wb') as f:
-                pickle.dump(self._entities, f)
-        except Exception as e:
-            print(f"✗ Error saving entities: {e}")
-        
-        try:
-            with open(self.metadata_file, 'wb') as f:
-                pickle.dump(self._metadata, f)
-        except Exception as e:
-            print(f"✗ Error saving metadata: {e}")
+    def get_total_session_count(self) -> int:
+        """Get total number of sessions across all campaigns."""
+        total = 0
+        for campaign_name in self.get_all_campaigns():
+            campaign = self.get_campaign(campaign_name)
+            if campaign:
+                total += campaign.get_session_count()
+        return total
     
-    def __str__(self) -> str:
-        """String representation of storage system"""
-        info = self.get_storage_info()
-        return f"SessionNotesStorage({info['session_count']} sessions, {info['entity_count']} entities)"
+    def get_total_entity_count(self) -> int:
+        """Get total number of entities across all campaigns."""
+        total = 0
+        for campaign_name in self.get_all_campaigns():
+            campaign = self.get_campaign(campaign_name)
+            if campaign:
+                total += campaign.get_entity_count()
+        return total
     
-    def __repr__(self) -> str:
-        return self.__str__()
+    def search_across_campaigns(self, keyword: str) -> Dict[str, List[ProcessedSession]]:
+        """Search for sessions containing a keyword across all campaigns."""
+        results = {}
+        for campaign_name in self.get_all_campaigns():
+            campaign = self.get_campaign(campaign_name)
+            if campaign:
+                matching_sessions = campaign.search_sessions_by_keyword(keyword)
+                if matching_sessions:
+                    results[campaign_name] = matching_sessions
+        return results
