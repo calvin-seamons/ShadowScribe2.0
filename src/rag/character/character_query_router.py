@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 
 from .character_types import Character
 from .character_query_types import UserIntention, EntityType, IntentionDataMapper, CharacterQueryPerformanceMetrics
-from .character_manager import CharacterManager
 from .entity_matcher import EntityMatcher
 
 
@@ -36,15 +35,14 @@ class CharacterQueryRouter:
     Returns: All relevant character data and nested objects
     """
     
-    def __init__(self, character_manager: Optional[CharacterManager] = None):
-        """Initialize the query router."""
-        self.character_manager = character_manager or CharacterManager()
+    def __init__(self, character: Optional[Character] = None):
+        """Initialize the query router with a character object."""
+        self.character = character
         self.intention_mapper = IntentionDataMapper()
         self.entity_matcher = EntityMatcher()
     
     def query_character(
         self, 
-        character_name: str,
         user_intention: str, 
         entities: List[Dict[str, Any]] = None
     ) -> CharacterQueryResult:
@@ -52,7 +50,6 @@ class CharacterQueryRouter:
         Main method to query character information.
         
         Args:
-            character_name: Name of the character to query
             user_intention: String representing what user wants (e.g., "inventory", "spell_list")
             entities: List of entity dicts with keys like {'name': 'Longsword', 'type': 'weapon'}
         
@@ -68,19 +65,16 @@ class CharacterQueryRouter:
         performance = CharacterQueryPerformanceMetrics()
         performance.entities_processed = len(entities)
         
-        # 1. Load the character
-        load_start = time.perf_counter()
-        try:
-            character = self.character_manager.load_character(character_name)
-        except Exception as e:
+        # 1. Check if character is available
+        if not self.character:
             performance.total_time_ms = (time.perf_counter() - start_time) * 1000
             return CharacterQueryResult(
                 character_data={},
-                warnings=[f"Could not load character '{character_name}': {str(e)}"],
+                warnings=["No character loaded in query router"],
                 performance_metrics=performance
             )
-        load_end = time.perf_counter()
-        performance.character_loading_ms = (load_end - load_start) * 1000
+        
+        character = self.character
         
         # 2. Map user intention to UserIntention enum
         intention_start = time.perf_counter()
@@ -288,18 +282,18 @@ class CharacterQueryRouter:
 # Example usage function
 def example_usage():
     """Example of how to use the CharacterQueryRouter."""
-    router = CharacterQueryRouter()
+    # Note: In practice, you would load a character object and pass it to the router
+    # router = CharacterQueryRouter(character)  
+    router = CharacterQueryRouter()  # This will return warnings since no character is loaded
     
     # Example 1: Get all inventory
     result = router.query_character(
-        character_name="Duskryn Nightwarden",
         user_intention="inventory"
     )
     print("Full inventory:", result.character_data.keys())
     
     # Example 2: Get specific weapon
     result = router.query_character(
-        character_name="Duskryn Nightwarden", 
         user_intention="weapons",
         entities=[{"name": "longsword", "type": "weapon"}]
     )
@@ -307,7 +301,6 @@ def example_usage():
     
     # Example 3: Get spell information
     result = router.query_character(
-        character_name="Duskryn Nightwarden",
         user_intention="spell_details", 
         entities=[{"name": "eldritch blast", "type": "spell"}]
     )

@@ -15,10 +15,10 @@ from src.rag.character.character_types import Character
 class CharacterManager:
     """Simple manager for saving and loading Character objects."""
     
-    def __init__(self, save_directory: str = "saved_characters"):
+    def __init__(self, save_directory: str = "knowledge_base/saved_characters"):
         """Initialize the character manager with a save directory."""
         self.save_directory = Path(save_directory)
-        self.save_directory.mkdir(exist_ok=True)
+        self.save_directory.mkdir(parents=True, exist_ok=True)
     
     def save_character(self, character: Character, filename: Optional[str] = None) -> str:
         """
@@ -115,8 +115,8 @@ def save_duskryn_character():
     """Example: Save Duskryn character using the converter."""
     from src.utils.convert_duskryn import create_duskryn_character
     
-    # Create character from JSON files
-    duskryn = create_duskryn_character()
+    # Create character from JSON files (using correct path)
+    duskryn = create_duskryn_character("knowledge_base/legacy_json/Duskryn_Nightwarden")
     
     # Save the character
     manager = CharacterManager()

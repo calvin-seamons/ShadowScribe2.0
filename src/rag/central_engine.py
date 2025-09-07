@@ -1,7 +1,7 @@
 """
 Central Engine & Query Processing Pipeline
 
-Main orchestrator that makes all LLM calls and coordinates the entire query processing pipeline.
+Main orchestrator that makes LLM calls and coordinates the entire query processing pipeline.
 Implements the design from DESIGN_CENTRAL_PROMPT_SYSTEM.md with three parallel LLM calls.
 """
 
@@ -29,7 +29,6 @@ from .session_notes.session_types import QueryEngineResult
 class CharacterLLMRouterOutput:
     """Output from Character Router LLM call."""
     is_needed: bool
-    character_name: str = ""
     user_intention: Optional[str] = None
     entities: List[Dict[str, Any]] = field(default_factory=list)
 
@@ -69,23 +68,23 @@ class CentralEngine:
     """Main orchestrator - makes all LLM calls and coordinates the pipeline."""
     
     def __init__(self, llm_clients: Dict[str, LLMClient], prompt_manager, 
-                 character_manager=None, rulebook_storage=None, session_notes_storage=None):
+                 character=None, rulebook_storage=None, session_notes_storage=None):
         """Initialize with LLM clients and prompt manager."""
         self.llm_clients = llm_clients
         self.prompt_manager = prompt_manager
         self.config = get_config()
         
         # Initialize query routers with required storage instances
-        self.character_router = CharacterQueryRouter(character_manager)
+        self.character_router = CharacterQueryRouter(character) if character else None
         self.rulebook_router = RulebookQueryRouter(rulebook_storage) if rulebook_storage else None
         self.session_notes_router = SessionNotesQueryRouter(session_notes_storage) if session_notes_storage else None
     
     @classmethod
-    def create_from_config(cls, prompt_manager, character_manager=None, 
+    def create_from_config(cls, prompt_manager, character=None, 
                           rulebook_storage=None, session_notes_storage=None):
         """Create CentralEngine instance using default configuration."""
         llm_clients = LLMClientFactory.create_default_clients()
-        return cls(llm_clients, prompt_manager, character_manager, rulebook_storage, session_notes_storage)
+        return cls(llm_clients, prompt_manager, character, rulebook_storage, session_notes_storage)
     
     def process_query(self, user_query: str, character_name: str) -> str:
         """
@@ -221,7 +220,7 @@ class CentralEngine:
                 # Fallback to available clients
                 client = self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
                 if not client:
-                    return CharacterLLMRouterOutput(is_needed=False, character_name=character_name)
+                    return CharacterLLMRouterOutput(is_needed=False)
             
             # Select appropriate model based on provider
             if provider == "openai":
@@ -239,17 +238,16 @@ class CentralEngine:
             )
             
             if "error" in response:
-                return CharacterLLMRouterOutput(is_needed=False, character_name=character_name)
+                return CharacterLLMRouterOutput(is_needed=False)
             
             return CharacterLLMRouterOutput(
                 is_needed=response.get("is_needed", False),
-                character_name=character_name,  # Set from engine class
                 user_intention=response.get("user_intention"),
                 entities=response.get("entities", [])
             )
         except Exception as e:
             # Fallback to not needed on error
-            return CharacterLLMRouterOutput(is_needed=False, character_name=character_name)
+            return CharacterLLMRouterOutput(is_needed=False)
     
     async def _make_rulebook_router_llm_call(self, prompt: str) -> RulebookLLMRouterOutput:
         """Make LLM call for rulebook router decision."""
@@ -343,9 +341,8 @@ class CentralEngine:
             return CharacterQueryResult(character_data={})
         
         try:
-            # Pass all parameters directly from LLM router output
+            # Pass parameters directly from LLM router output (character is pre-loaded)
             result = self.character_router.query_character(
-                character_name=output.character_name,
                 user_intention=output.user_intention,
                 entities=output.entities
             )

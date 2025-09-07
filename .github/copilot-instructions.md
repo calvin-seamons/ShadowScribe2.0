@@ -42,7 +42,7 @@ if anthropic_key:
 ## Critical Development Patterns
 
 ### Virtual Environment (ESSENTIAL)
-**ALWAYS activate the virtual environment before running any Python scripts**:
+**ALWAYS activate the virtual environment before running any Python CODE AT ALL!!**:
 ```bash
 # On Windows (PowerShell)
 .\.venv\Scripts\Activate.ps1
