@@ -16,7 +16,7 @@ from .entity_matcher import EntityMatcher
 
 
 @dataclass
-class QueryResult:
+class CharacterQueryResult:
     """Result structure containing all relevant character data and objects."""
     character_data: Dict[str, Any]  # The actual character data
     metadata: Dict[str, Any] = field(default_factory=dict)  # Query metadata
@@ -47,7 +47,7 @@ class CharacterQueryRouter:
         character_name: str,
         user_intention: str, 
         entities: List[Dict[str, Any]] = None
-    ) -> QueryResult:
+    ) -> CharacterQueryResult:
         """
         Main method to query character information.
         
@@ -74,7 +74,7 @@ class CharacterQueryRouter:
             character = self.character_manager.load_character(character_name)
         except Exception as e:
             performance.total_time_ms = (time.perf_counter() - start_time) * 1000
-            return QueryResult(
+            return CharacterQueryResult(
                 character_data={},
                 warnings=[f"Could not load character '{character_name}': {str(e)}"],
                 performance_metrics=performance
@@ -98,7 +98,7 @@ class CharacterQueryRouter:
             performance.serialization_ms = (fallback_end - fallback_start) * 1000
             performance.total_time_ms = (time.perf_counter() - start_time) * 1000
             performance.fields_extracted = 2
-            return QueryResult(
+            return CharacterQueryResult(
                 character_data=basic_data,
                 warnings=warnings,
                 performance_metrics=performance
@@ -112,7 +112,7 @@ class CharacterQueryRouter:
         if intention_enum not in mappings:
             warnings.append(f"No mapping found for intention: {user_intention}")
             performance.total_time_ms = (time.perf_counter() - start_time) * 1000
-            return QueryResult(
+            return CharacterQueryResult(
                 character_data={}, 
                 warnings=warnings,
                 performance_metrics=performance
@@ -149,7 +149,7 @@ class CharacterQueryRouter:
         # Total time
         performance.total_time_ms = (time.perf_counter() - start_time) * 1000
         
-        return QueryResult(
+        return CharacterQueryResult(
             character_data=character_data,
             metadata={
                 "intention": user_intention,

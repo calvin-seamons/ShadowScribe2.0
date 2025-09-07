@@ -7,8 +7,7 @@ __all__ = [
     # Types
     'Entity', 'EntityType', 'UserIntention', 'CharacterStatus', 'CombatEncounter',
     'SpellAbilityUse', 'CharacterDecision', 'Memory', 'QuestObjective', 'SessionEvent',
-    'SessionNotes', 'QueryInput', 'RetrievedContent', 'SessionNotesContext', 
-    'QueryEngineInput', 'QueryEngineResult',
+    'SessionNotes', 'QueryInput', 'RetrievedContent', 'SessionNotesContext', 'QueryEngineResult',
     
     # Parser
     'SessionNotesParser', 'parse_session_notes_directory',

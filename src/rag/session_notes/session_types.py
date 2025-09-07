@@ -232,15 +232,6 @@ class SessionNotesContext:
     relevance_score: float = 0.0
 
 @dataclass
-class QueryEngineInput:
-    """Input structure for the query engine"""
-    user_query: str
-    intention: str  # UserIntention enum string
-    entities: List[Dict[str, str]] = field(default_factory=list)  # [{"name": "entity_name", "type": "entity_type"}]
-    context_hints: List[str] = field(default_factory=list)
-    top_k: int = 5
-
-@dataclass
 class QueryEngineResult:
     """Result from the query engine"""
     contexts: List[SessionNotesContext] = field(default_factory=list)
@@ -294,3 +285,64 @@ class SessionNotesQueryPerformanceMetrics:
                 'results_returned': self.results_returned
             }
         }
+
+
+# ===== PROMPT GENERATION HELPERS =====
+
+class SessionNotesPromptHelper:
+    """Provides prompt-ready information for session notes intents and entity types."""
+    
+    @staticmethod
+    def get_intent_definitions() -> Dict[str, str]:
+        """Returns all session notes intentions with their definitions for prompts."""
+        return {
+            "character_status": "Current character status and conditions",
+            "event_sequence": "What happened when - chronological events",
+            "npc_info": "NPC interactions, relationships, and information",
+            "location_details": "Information about places visited and explored",
+            "item_tracking": "Items found, lost, used, or traded",
+            "combat_recap": "Details of past combat encounters",
+            "spell_ability_usage": "Spells and abilities used during sessions",
+            "character_decisions": "Important character choices and their outcomes",
+            "party_dynamics": "Group interactions and relationships",
+            "quest_tracking": "Quest progress, objectives, and completion status",
+            "puzzle_solutions": "Puzzles encountered and how they were solved",
+            "loot_rewards": "Treasure, rewards, and items obtained",
+            "death_revival": "Character deaths, revivals, and soul-related events",
+            "divine_religious": "Interactions with deities and religious events",
+            "memory_vision": "Memories recovered, visions seen, dreams experienced",
+            "rules_mechanics": "Rule interpretations and mechanical decisions made",
+            "humor_moments": "Funny moments and memorable jokes",
+            "unresolved_mysteries": "Ongoing mysteries and unanswered questions",
+            "future_implications": "Events that might affect future sessions",
+            "cross_session": "Connections and patterns across multiple sessions"
+        }
+    
+    @staticmethod
+    def get_entity_type_definitions() -> Dict[str, str]:
+        """Returns all session notes entity types with examples for prompts."""
+        return {
+            "player_character": "Player characters (e.g., 'Duskryn', 'party members')",
+            "non_player_character": "NPCs (e.g., 'tavern keeper', 'quest giver', 'villain')",
+            "location": "Places (e.g., 'tavern', 'dungeon', 'city', 'forest')",
+            "item": "Items and objects (e.g., 'magic sword', 'treasure chest', 'key')",
+            "artifact": "Powerful magical items (e.g., 'staff of power', 'ancient relic')",
+            "spell": "Spells cast (e.g., 'fireball', 'healing word', 'teleport')",
+            "ability": "Special abilities used (e.g., 'rage', 'sneak attack', 'turn undead')",
+            "organization": "Groups and factions (e.g., 'thieves guild', 'royal court')",
+            "deity": "Gods and divine beings (e.g., 'Tyr', 'Shar', 'patron deity')",
+            "creature": "Monsters and creatures (e.g., 'dragon', 'goblin', 'undead')",
+            "event": "Significant occurrences (e.g., 'battle', 'discovery', 'betrayal')",
+            "quest": "Missions and objectives (e.g., 'rescue mission', 'fetch quest')",
+            "puzzle": "Puzzles and challenges (e.g., 'riddle', 'trap', 'maze')"
+        }
+    
+    @staticmethod
+    def get_all_intents() -> List[str]:
+        """Returns list of all session notes intention names."""
+        return [intent.value for intent in UserIntention]
+    
+    @staticmethod
+    def get_all_entity_types() -> List[str]:
+        """Returns list of all session notes entity type names."""
+        return [entity.value for entity in EntityType]

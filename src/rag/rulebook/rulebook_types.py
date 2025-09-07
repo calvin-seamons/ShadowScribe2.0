@@ -662,3 +662,68 @@ MULTI_CATEGORY_SECTIONS = {
     # Mounts are both equipment and exploration
     "section-mounts-and-vehicles": [6, 8],
 }
+
+
+# ===== PROMPT GENERATION HELPERS =====
+
+class RulebookPromptHelper:
+    """Provides prompt-ready information for rulebook intents and entity types."""
+    
+    @staticmethod
+    def get_intent_definitions() -> Dict[str, str]:
+        """Returns all rulebook query intentions with their definitions for prompts."""
+        return {
+            "describe_entity": "Find exact section for single entity - 'What are the traits of a dwarf?'",
+            "compare_entities": "Compare multiple entities - 'What's the difference between a wizard and a sorcerer?'",
+            "level_progression": "Class level features - 'What does a fighter get at level 5?'",
+            "action_options": "Combat actions available - 'What can I do on my turn in combat?'",
+            "rule_mechanics": "Specific rule explanations - 'How does concentration work?'",
+            "calculate_values": "Math and calculations - 'What's my AC with chain mail and a shield?'",
+            "spell_details": "Individual spell descriptions - 'What does fireball do?'",
+            "class_spell_access": "Class spell lists - 'What spells can a ranger learn?'",
+            "monster_stats": "Creature stat blocks - 'What are the stats for a red dragon?'",
+            "condition_effects": "Status effects - 'What does being poisoned do?'",
+            "character_creation": "Character building overview - 'How do I create a character?'",
+            "multiclass_rules": "Multi-classing requirements - 'Can I multiclass barbarian and wizard?'",
+            "equipment_properties": "Item properties - 'What does the finesse property mean?'",
+            "damage_types": "Damage mechanics - 'How does fire damage work?'",
+            "rest_mechanics": "Rest rules - 'What happens during a long rest?'",
+            "skill_usage": "Skill applications - 'When do I use Investigation vs Perception?'",
+            "find_by_criteria": "Search by properties - 'What spells deal thunder damage?'",
+            "prerequisite_check": "Requirements - 'What do I need to take the Grappler feat?'",
+            "interaction_rules": "Rule interactions - 'How does invisibility interact with opportunity attacks?'",
+            "tactical_usage": "Combat tactics - 'How do I effectively use grappling?'",
+            "environmental_rules": "Environment effects - 'How does underwater combat work?'",
+            "creature_abilities": "Monster special abilities - 'What special abilities does a lich have?'",
+            "saving_throws": "Save mechanics - 'When do I make a Wisdom saving throw?'",
+            "magic_item_usage": "Magic item mechanics - 'How does a Bag of Holding work?'",
+            "planar_properties": "Plane characteristics - 'What are the properties of the Feywild?'",
+            "downtime_activities": "Non-adventure activities - 'What can I do during downtime?'",
+            "subclass_features": "Subclass abilities - 'What does a Circle of the Moon druid get?'",
+            "cost_lookup": "Item pricing - 'How much does plate armor cost?'",
+            "legendary_mechanics": "Legendary creature rules - 'How do legendary actions work?'",
+            "optimization_advice": "Character build advice - 'What's the best build for a tank?'"
+        }
+    
+    @staticmethod
+    def get_entity_type_definitions() -> Dict[str, str]:
+        """Returns entity types relevant to rulebook queries with examples."""
+        return {
+            "spell": "Magic spells (e.g., 'fireball', 'healing word', 'counterspell')",
+            "item": "Equipment and items (e.g., 'longsword', 'healing potion', 'rope')",
+            "creature": "Monsters and NPCs (e.g., 'dragon', 'goblin', 'lich')",
+            "condition": "Status effects (e.g., 'poisoned', 'stunned', 'charmed')",
+            "rule": "Game mechanics (e.g., 'concentration', 'opportunity attacks', 'advantage')",
+            "mechanic": "System mechanics (e.g., 'saving throws', 'ability checks', 'combat')",
+            "action": "Combat actions (e.g., 'attack', 'dash', 'dodge', 'help')",
+            "class": "Character classes (e.g., 'wizard', 'fighter', 'rogue')",
+            "race": "Character races (e.g., 'elf', 'dwarf', 'tiefling')",
+            "feat": "Character feats (e.g., 'great weapon master', 'lucky', 'alert')",
+            "equipment": "Weapons, armor, tools (e.g., 'plate armor', 'thieves' tools')",
+            "plane": "Planes of existence (e.g., 'feywild', 'shadowfell', 'nine hells')"
+        }
+    
+    @staticmethod
+    def get_all_intents() -> List[str]:
+        """Returns list of all rulebook query intention names."""
+        return [intent.value for intent in RulebookQueryIntent]

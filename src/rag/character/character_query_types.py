@@ -515,3 +515,81 @@ class CharacterQueryPerformanceMetrics:
                 'objects_serialized': self.objects_serialized
             }
         }
+
+
+# ===== PROMPT GENERATION HELPERS =====
+
+class CharacterPromptHelper:
+    """Provides prompt-ready information for character intents and entity types."""
+    
+    @staticmethod
+    def get_intent_definitions() -> Dict[str, str]:
+        """Returns all character intentions with their definitions for prompts."""
+        return {
+            "character_basics": "Name, race, class, level, alignment, physical traits",
+            "ability_scores": "STR, DEX, CON, INT, WIS, CHA scores and modifiers",
+            "combat_info": "HP, AC, initiative, speed, saving throws, resistances", 
+            "action_economy": "Available actions, attacks, reactions, bonus actions",
+            "proficiencies": "All proficiencies: skills, tools, languages, armor, weapons",
+            "passive_abilities": "Passive perception, investigation, insight, etc.",
+            "movement_senses": "Movement speed, special movement, senses, vision",
+            "class_features": "Class features and abilities",
+            "racial_traits": "Racial traits and abilities",
+            "background_features": "Background features",
+            "feats": "Feats and their effects",
+            "all_features": "All features and traits combined",
+            "inventory": "Full inventory, equipped items, carrying capacity",
+            "weapons": "Weapon details and attack options",
+            "armor_equipment": "Armor and protective equipment",
+            "magical_items": "Magic items and their properties",
+            "spellcasting": "Spell save DC, attack bonus, spellcasting ability",
+            "spell_list": "Known/prepared spells by level",
+            "spell_details": "Specific spell information",
+            "spell_slots": "Available spell slots by level",
+            "background_info": "Background, lifestyle, languages",
+            "personality": "Personality traits, ideals, bonds, flaws",
+            "backstory": "Character backstory and history",
+            "relationships": "Organizations, allies, enemies, contacts",
+            "objectives": "Active quests, contracts, goals",
+            "completed_objectives": "Completed quests and contracts",
+            "progression": "Level, XP, advancement options",
+            "full_character_sheet": "Complete character information",
+            "character_summary": "High-level character overview",
+            "calculations": "Damage calculations, optimization analysis",
+            "roleplay_info": "Character voice, motivations, session prep"
+        }
+    
+    @staticmethod
+    def get_entity_type_definitions() -> Dict[str, str]:
+        """Returns all character entity types with examples for prompts."""
+        return {
+            "spell": "Magic spells (e.g., 'fireball', 'cure wounds')",
+            "item": "General items (e.g., 'rope', 'torch', 'healing potion')",
+            "weapon": "Weapons (e.g., 'longsword', 'shortbow', 'dagger')",
+            "armor": "Armor and shields (e.g., 'chainmail', 'leather armor', 'shield')",
+            "feature": "Class features (e.g., 'rage', 'sneak attack', 'action surge')",
+            "trait": "Racial traits (e.g., 'darkvision', 'lucky', 'stone cunning')",
+            "quest": "Quests and missions (e.g., 'rescue the princess', 'find the artifact')",
+            "contract": "Formal contracts (e.g., 'assassination contract', 'escort mission')",
+            "ally": "Allies and friends (e.g., 'tavern keeper', 'guild contact')",
+            "enemy": "Enemies and foes (e.g., 'red dragon', 'orc chieftain')",
+            "organization": "Groups and organizations (e.g., 'thieves guild', 'royal guard')",
+            "ability": "Abilities and skills (e.g., 'athletics', 'perception', 'insight')",
+            "skill": "Skill proficiencies (e.g., 'stealth', 'investigation', 'persuasion')",
+            "action": "Combat actions (e.g., 'attack', 'dash', 'dodge', 'help')",
+            "class": "Character classes (e.g., 'fighter', 'wizard', 'rogue')",
+            "race": "Character races (e.g., 'elf', 'dwarf', 'human')",
+            "background": "Character backgrounds (e.g., 'criminal', 'soldier', 'noble')",
+            "condition": "Status conditions (e.g., 'poisoned', 'stunned', 'charmed')",
+            "resource": "Resources and currencies (e.g., 'gold', 'spell slots', 'hit dice')"
+        }
+    
+    @staticmethod
+    def get_all_intents() -> List[str]:
+        """Returns list of all character intention names."""
+        return [intent.value for intent in UserIntention]
+    
+    @staticmethod
+    def get_all_entity_types() -> List[str]:
+        """Returns list of all character entity type names."""
+        return [entity.value for entity in EntityType]

@@ -28,6 +28,17 @@ class RAGConfig:
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     
+    # LLM Client Settings
+    primary_llm_provider: str = "openai"  # "openai" or "anthropic"
+    router_llm_provider: str = "openai"   # Provider for router decisions
+    final_response_llm_provider: str = "openai"  # Provider for final response
+    
+    # Model Settings
+    openai_router_model: str = "gpt-3.5-turbo"
+    openai_final_model: str = "gpt-4"
+    anthropic_router_model: str = "claude-3-haiku-20240307"
+    anthropic_final_model: str = "claude-3-sonnet-20240229"
+    
     # Embedding Model Settings
     embedding_model: EmbeddingModel = "text-embedding-3-small"  # Default: fast and good
     
@@ -59,7 +70,18 @@ class RAGConfig:
             openai_api_key=os.getenv('OPENAI_API_KEY'),
             anthropic_api_key=os.getenv('ANTHROPIC_API_KEY'),
             
+            # LLM Provider Settings
+            primary_llm_provider=os.getenv('RAG_PRIMARY_LLM_PROVIDER', 'openai'),
+            router_llm_provider=os.getenv('RAG_ROUTER_LLM_PROVIDER', 'openai'),
+            final_response_llm_provider=os.getenv('RAG_FINAL_LLM_PROVIDER', 'openai'),
+            
             # Model Settings
+            openai_router_model=os.getenv('RAG_OPENAI_ROUTER_MODEL', 'gpt-3.5-turbo'),
+            openai_final_model=os.getenv('RAG_OPENAI_FINAL_MODEL', 'gpt-4'),
+            anthropic_router_model=os.getenv('RAG_ANTHROPIC_ROUTER_MODEL', 'claude-3-haiku-20240307'),
+            anthropic_final_model=os.getenv('RAG_ANTHROPIC_FINAL_MODEL', 'claude-3-sonnet-20240229'),
+            
+            # Embedding and Query Settings
             embedding_model=os.getenv('RAG_EMBEDDING_MODEL', 'text-embedding-3-small'),
             max_results=int(os.getenv('RAG_MAX_RESULTS', '10')),
             entity_boost_weight=float(os.getenv('RAG_ENTITY_BOOST_WEIGHT', '0.25')),
