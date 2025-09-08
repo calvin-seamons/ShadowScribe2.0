@@ -200,6 +200,13 @@ class CharacterQueryRouter:
         if not entities:
             return character_data, []
         
+        # For inventory/equipment intentions, skip entity filtering entirely
+        # These queries need complete data to make comparisons and find best items
+        inventory_intentions = ['inventory', 'weapons', 'armor', 'equipment', 'items']
+        if any(section in character_data for section in inventory_intentions):
+            print(f"🔍 DEBUG: Skipping entity filtering for inventory/equipment data - returning complete unfiltered data")
+            return character_data, []  # Return unfiltered data
+        
         filtered_data = {}
         all_entity_matches = []
         

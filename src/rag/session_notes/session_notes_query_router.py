@@ -336,30 +336,82 @@ class SessionNotesQueryRouter:
             context.relevant_sections["events"] = sorted(relevant_events, key=lambda e: e.session_number)
     
     def _handle_npc_info(self, session: SessionNotes, context: SessionNotesContext, entities: List[Entity], context_hints: List[str]) -> None:
-        """Handle NPC information queries"""
+        """Handle character information queries (NPCs and PCs)"""
+        entities_found_count = 0
+        
         for entity in entities:
-            if entity.entity_type == EntityType.NPC:
-                # Find NPC in session
-                npc_entity = None
+            # Search for both NPCs and PCs - don't restrict by entity type
+            character_entity = None
+            
+            # First, try to find in NPCs
+            if entity.entity_type == EntityType.NPC or entity.entity_type == EntityType.PC:
                 for npc in session.npcs:
-                    if npc.name.lower() == entity.name.lower():
-                        npc_entity = npc
+                    if self._entity_matches_name(entity, npc.name):
+                        character_entity = npc
                         context.entities_found.append(entity)
+                        entities_found_count += 1
                         break
                 
-                if npc_entity:
-                    context.relevant_sections["npc"] = npc_entity
-                    
-                    # Find quotes from this NPC
-                    npc_quotes = [q for q in session.quotes if q.get("speaker", "").lower() == entity.name.lower()]
-                    if npc_quotes:
-                        context.relevant_sections["quotes"] = npc_quotes
-                    
-                    # Find events involving this NPC
-                    npc_events = [e for e in session.key_events 
-                                 if any(p.name.lower() == entity.name.lower() for p in e.participants)]
-                    if npc_events:
-                        context.relevant_sections["events"] = npc_events
+                # If not found in NPCs, try player characters
+                if not character_entity:
+                    for pc in session.player_characters:
+                        if self._entity_matches_name(entity, pc.name):
+                            character_entity = pc
+                            context.entities_found.append(entity)
+                            entities_found_count += 1
+                            break
+            
+            # If we found a character entity, collect their information
+            if character_entity:
+                context.relevant_sections["character"] = character_entity
+                
+                # Find quotes from this character
+                character_quotes = [q for q in session.quotes 
+                                  if self._entity_matches_name(entity, q.get("speaker", ""))]
+                if character_quotes:
+                    context.relevant_sections["quotes"] = character_quotes
+                
+                # Find events involving this character
+                character_events = [e for e in session.key_events 
+                                  if any(self._entity_matches_name(entity, p.name) for p in e.participants)]
+                if character_events:
+                    context.relevant_sections["events"] = character_events
+                
+                # Find character status
+                for status_name, status in session.character_statuses.items():
+                    if self._entity_matches_name(entity, status_name):
+                        context.relevant_sections["status"] = status
+                        break
+            
+            # Fallback: search in raw text content for mentions of this character
+            elif len(entities) <= 2:  # Only do text search for small entity lists
+                mentions_found = False
+                for section_name, section_text in session.raw_sections.items():
+                    if self._entity_mentioned_in_text(entity, section_text):
+                        if "text_mentions" not in context.relevant_sections:
+                            context.relevant_sections["text_mentions"] = {}
+                        context.relevant_sections["text_mentions"][section_name] = section_text
+                        mentions_found = True
+                        if entity not in context.entities_found:
+                            context.entities_found.append(entity)
+                            entities_found_count += 1
+                
+                # Also check quotes and summary for mentions
+                if not mentions_found:
+                    for quote in session.quotes:
+                        quote_text = quote.get("quote", "") + " " + quote.get("context", "")
+                        if self._entity_mentioned_in_text(entity, quote_text):
+                            if "quote_mentions" not in context.relevant_sections:
+                                context.relevant_sections["quote_mentions"] = []
+                            context.relevant_sections["quote_mentions"].append(quote)
+                            if entity not in context.entities_found:
+                                context.entities_found.append(entity)
+                                entities_found_count += 1
+                            break
+        
+        # Fallback to party dynamics if multiple characters are involved and we found some entities
+        if len(entities) >= 2 and entities_found_count >= 1:
+            self._add_party_dynamics_fallback(session, context, entities)
     
     def _handle_location_details(self, session: SessionNotes, context: SessionNotesContext, entities: List[Entity], context_hints: List[str]) -> None:
         """Handle location detail queries"""
@@ -779,3 +831,58 @@ class SessionNotesQueryRouter:
                     return True
         
         return False
+    
+    def _add_party_dynamics_fallback(self, session: SessionNotes, context: SessionNotesContext, entities: List[Entity]) -> None:
+        """Add party dynamics information as fallback when multiple characters are involved"""
+        dynamics = {}
+        
+        # Get party conflicts involving any of the entities
+        if session.party_conflicts:
+            relevant_conflicts = []
+            for conflict in session.party_conflicts:
+                if any(self._entity_mentioned_in_text(entity, conflict) for entity in entities):
+                    relevant_conflicts.append(conflict)
+            if relevant_conflicts:
+                dynamics["conflicts"] = relevant_conflicts
+        
+        # Get party bonds involving any of the entities
+        if session.party_bonds:
+            relevant_bonds = []
+            for bond in session.party_bonds:
+                if any(self._entity_mentioned_in_text(entity, bond) for entity in entities):
+                    relevant_bonds.append(bond)
+            if relevant_bonds:
+                dynamics["bonds"] = relevant_bonds
+        
+        # Get quotes between the entities
+        relevant_quotes = []
+        for quote in session.quotes:
+            speaker = quote.get("speaker", "")
+            quote_text = quote.get("quote", "") + " " + quote.get("context", "")
+            
+            # Check if quote involves any of our entities
+            entity_mentioned = any(
+                self._entity_matches_name(entity, speaker) or 
+                self._entity_mentioned_in_text(entity, quote_text)
+                for entity in entities
+            )
+            if entity_mentioned:
+                relevant_quotes.append(quote)
+        
+        if relevant_quotes:
+            dynamics["interaction_quotes"] = relevant_quotes
+        
+        # Get group decisions involving these entities
+        relevant_decisions = []
+        for decision in session.character_decisions:
+            if any(self._entity_matches_name(entity, decision.character) for entity in entities):
+                relevant_decisions.append(decision)
+        
+        if relevant_decisions:
+            dynamics["character_decisions"] = relevant_decisions
+        
+        # Add dynamics if we found anything
+        if dynamics:
+            if "party_dynamics" not in context.relevant_sections:
+                context.relevant_sections["party_dynamics"] = {}
+            context.relevant_sections["party_dynamics"].update(dynamics)

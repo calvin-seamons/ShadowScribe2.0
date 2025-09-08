@@ -88,6 +88,17 @@ class RAGConfig:
     # Embedding Model Settings
     embedding_model: EmbeddingModel = "text-embedding-3-small"  # Default: fast and good
     
+    # LLM Generation Settings
+    # Router LLM Settings (fast, cheaper models for routing decisions)
+    router_temperature: float = 0.3
+    router_max_tokens: int = 2000
+    router_max_completion_tokens: int = 2000  # For reasoning models
+    
+    # Final Response LLM Settings (higher quality models for final responses)
+    final_temperature: float = 0.7
+    final_max_tokens: int = 2000
+    final_max_completion_tokens: int = 2000  # For reasoning models
+    
     # Query Engine Settings
     max_results: int = 10
     entity_boost_weight: float = 0.25
@@ -129,6 +140,15 @@ class RAGConfig:
             
             # Embedding and Query Settings
             embedding_model=os.getenv('RAG_EMBEDDING_MODEL', 'text-embedding-3-small'),
+            
+            # LLM Generation Settings
+            router_temperature=float(os.getenv('RAG_ROUTER_TEMPERATURE', '0.3')),
+            router_max_tokens=int(os.getenv('RAG_ROUTER_MAX_TOKENS', '2000')),
+            router_max_completion_tokens=int(os.getenv('RAG_ROUTER_MAX_COMPLETION_TOKENS', '2000')),
+            final_temperature=float(os.getenv('RAG_FINAL_TEMPERATURE', '0.7')),
+            final_max_tokens=int(os.getenv('RAG_FINAL_MAX_TOKENS', '2000')),
+            final_max_completion_tokens=int(os.getenv('RAG_FINAL_MAX_COMPLETION_TOKENS', '2000')),
+            
             max_results=int(os.getenv('RAG_MAX_RESULTS', '10')),
             entity_boost_weight=float(os.getenv('RAG_ENTITY_BOOST_WEIGHT', '0.25')),
             context_hint_weight=float(os.getenv('RAG_CONTEXT_HINT_WEIGHT', '0.15')),
@@ -199,6 +219,44 @@ class RAGConfig:
                 # Removed claude-3-opus-latest - returns 404
             ]
         }
+    
+    def get_router_llm_params(self, model: Optional[str] = None) -> dict:
+        """Get LLM parameters for router calls (fast, cheaper models)"""
+        model = model or (
+            self.openai_router_model if self.router_llm_provider == "openai" 
+            else self.anthropic_router_model
+        )
+        
+        if self.is_reasoning_model(model):
+            # Reasoning models don't support temperature
+            return {
+                "max_completion_tokens": self.router_max_completion_tokens
+            }
+        else:
+            # Standard models
+            return {
+                "temperature": self.router_temperature,
+                "max_tokens": self.router_max_tokens
+            }
+    
+    def get_final_llm_params(self, model: Optional[str] = None) -> dict:
+        """Get LLM parameters for final response calls (higher quality models)"""
+        model = model or (
+            self.openai_final_model if self.final_response_llm_provider == "openai" 
+            else self.anthropic_final_model
+        )
+        
+        if self.is_reasoning_model(model):
+            # Reasoning models don't support temperature
+            return {
+                "max_completion_tokens": self.final_max_completion_tokens
+            }
+        else:
+            # Standard models
+            return {
+                "temperature": self.final_temperature,
+                "max_tokens": self.final_max_tokens
+            }
 
 
 # Global config instance

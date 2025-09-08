@@ -226,6 +226,37 @@ class EntityMatcher:
             if any(weapon_type in norm_entity_type for weapon_type in weapon_types):
                 return True
         
+        # Enhanced weapon detection - check if searching for weapon and item has weapon properties
+        if "weapon" in norm_entity_type and self._item_has_weapon_properties({'name': '', 'type': item_type}):
+            return True
+        
+        return False
+    
+    def _item_has_weapon_properties(self, item: Any) -> bool:
+        """Check if an item has weapon-like properties (can deal damage)."""
+        # Handle both dict and dataclass objects
+        if hasattr(item, '__dict__'):
+            # Dataclass object - check various weapon-related attributes
+            return (
+                hasattr(item, 'damage') and getattr(item, 'damage') is not None or
+                hasattr(item, 'damage_type') and getattr(item, 'damage_type') is not None or
+                hasattr(item, 'attack_type') and getattr(item, 'attack_type') is not None or
+                hasattr(item, 'properties') and any(
+                    prop.lower() in ['finesse', 'light', 'heavy', 'reach', 'thrown', 'versatile', 'two-handed', 'ammunition']
+                    for prop in (getattr(item, 'properties') or [])
+                )
+            )
+        elif isinstance(item, dict):
+            # Dictionary object
+            return (
+                item.get('damage') is not None or
+                item.get('damage_type') is not None or
+                item.get('attack_type') is not None or
+                any(
+                    prop.lower() in ['finesse', 'light', 'heavy', 'reach', 'thrown', 'versatile', 'two-handed', 'ammunition']
+                    for prop in (item.get('properties', []))
+                )
+            )
         return False
 
     def filter_items_by_entities(self, items: List[Any], entities: List[Dict[str, Any]]) -> Tuple[List[Any], List[Dict[str, Any]]]:

@@ -60,94 +60,186 @@ class ContextAssembler:
         
         return assembled
     
-    def _format_character_content(self, character_results: Dict[str, Any]) -> str:
+    def _format_character_content(self, character_results) -> str:
         """
         Format character query results into readable context.
         """
         if not character_results:
             return ""
+            
+        # Handle CharacterQueryResult object
+        if hasattr(character_results, 'character_data'):
+            formatted_parts = []
+            
+            # Format the character data
+            character_data = character_results.character_data
+            if character_data:
+                formatted_parts.append("CHARACTER DATA:")
+                formatted_parts.append("-" * 40)
+                
+                # Format character data based on its structure
+                if isinstance(character_data, dict):
+                    for key, value in character_data.items():
+                        if value is not None:
+                            formatted_parts.append(f"{key}: {value}")
+                else:
+                    formatted_parts.append(str(character_data))
+            
+            # Add warnings if any
+            if hasattr(character_results, 'warnings') and character_results.warnings:
+                formatted_parts.append("\nWARNINGS:")
+                for warning in character_results.warnings:
+                    formatted_parts.append(f"⚠️  {warning}")
+            
+            return "\n".join(formatted_parts) if formatted_parts else ""
         
-        formatted_parts = []
+        # Fallback for dictionary format
+        elif isinstance(character_results, dict):
+            formatted_parts = []
+            
+            # Add character basic info if available
+            if "character_info" in character_results:
+                formatted_parts.append(f"Character Information:\n{character_results['character_info']}")
+            
+            # Add character data sections
+            if "character_data" in character_results:
+                formatted_parts.append(f"Character Data:\n{character_results['character_data']}")
+            
+            # Add any additional character context
+            if "additional_context" in character_results:
+                formatted_parts.append(f"Additional Context:\n{character_results['additional_context']}")
+            
+            # If we have raw character results without specific keys, format them directly
+            if not formatted_parts and character_results:
+                formatted_parts.append(f"Character Results:\n{str(character_results)}")
+            
+            return "\n\n".join(formatted_parts) if formatted_parts else ""
         
-        # Add character basic info if available
-        if "character_info" in character_results:
-            formatted_parts.append(f"Character Information:\n{character_results['character_info']}")
-        
-        # Add character data sections
-        if "character_data" in character_results:
-            formatted_parts.append(f"Character Data:\n{character_results['character_data']}")
-        
-        # Add any additional character context
-        if "additional_context" in character_results:
-            formatted_parts.append(f"Additional Context:\n{character_results['additional_context']}")
-        
-        # If we have raw character results without specific keys, format them directly
-        if not formatted_parts and character_results:
-            formatted_parts.append(f"Character Results:\n{str(character_results)}")
-        
-        return "\n\n".join(formatted_parts) if formatted_parts else ""
+        # Fallback for other types
+        else:
+            return f"Character Results:\n{str(character_results)}"
     
-    def _format_rulebook_content(self, rulebook_results: Dict[str, Any]) -> str:
+    def _format_rulebook_content(self, rulebook_results) -> str:
         """
         Format rulebook results into coherent rules explanations.
         """
         if not rulebook_results:
             return ""
+            
+        # Handle tuple format (results, performance)
+        if isinstance(rulebook_results, tuple) and len(rulebook_results) == 2:
+            search_results, performance = rulebook_results
+            formatted_parts = []
+            
+            if search_results:
+                formatted_parts.append("RULEBOOK RESULTS:")
+                formatted_parts.append("-" * 40)
+                
+                for i, result in enumerate(search_results[:5], 1):  # Limit to top 5 results
+                    formatted_parts.append(f"{i}. {result.section.title}")
+                    if hasattr(result.section, 'content') and result.section.content:
+                        # Truncate content if too long
+                        content = result.section.content[:500] + "..." if len(result.section.content) > 500 else result.section.content
+                        formatted_parts.append(f"   {content}")
+                    formatted_parts.append("")  # Empty line between results
+            
+            if performance:
+                formatted_parts.append(f"Search Performance: {performance.total_time_ms:.2f}ms")
+            
+            return "\n".join(formatted_parts) if formatted_parts else ""
         
-        formatted_parts = []
+        # Fallback for dictionary format
+        elif isinstance(rulebook_results, dict):
+            formatted_parts = []
+            
+            # Add rules content if available
+            if "rules_content" in rulebook_results:
+                formatted_parts.append(f"Rules Content:\n{rulebook_results['rules_content']}")
+            
+            # Add spell details if available
+            if "spell_details" in rulebook_results:
+                formatted_parts.append(f"Spell Details:\n{rulebook_results['spell_details']}")
+            
+            # Add equipment info if available
+            if "equipment_info" in rulebook_results:
+                formatted_parts.append(f"Equipment Information:\n{rulebook_results['equipment_info']}")
+            
+            # Add additional rulebook context
+            if "additional_context" in rulebook_results:
+                formatted_parts.append(f"Additional Rules Context:\n{rulebook_results['additional_context']}")
+            
+            # If we have raw rulebook results without specific keys, format them directly
+            if not formatted_parts and rulebook_results:
+                formatted_parts.append(f"Rulebook Results:\n{str(rulebook_results)}")
+            
+            return "\n\n".join(formatted_parts) if formatted_parts else ""
         
-        # Add rules content if available
-        if "rules_content" in rulebook_results:
-            formatted_parts.append(f"Rules Content:\n{rulebook_results['rules_content']}")
-        
-        # Add spell details if available
-        if "spell_details" in rulebook_results:
-            formatted_parts.append(f"Spell Details:\n{rulebook_results['spell_details']}")
-        
-        # Add equipment info if available
-        if "equipment_info" in rulebook_results:
-            formatted_parts.append(f"Equipment Information:\n{rulebook_results['equipment_info']}")
-        
-        # Add additional rulebook context
-        if "additional_context" in rulebook_results:
-            formatted_parts.append(f"Additional Rules Context:\n{rulebook_results['additional_context']}")
-        
-        # If we have raw rulebook results without specific keys, format them directly
-        if not formatted_parts and rulebook_results:
-            formatted_parts.append(f"Rulebook Results:\n{str(rulebook_results)}")
-        
-        return "\n\n".join(formatted_parts) if formatted_parts else ""
+        # Fallback for other types
+        else:
+            return f"Rulebook Results:\n{str(rulebook_results)}"
     
-    def _format_session_content(self, session_results: Dict[str, Any]) -> str:
+    def _format_session_content(self, session_results) -> str:
         """
         Format session notes results into narrative context.
         """
         if not session_results:
             return ""
+            
+        # Handle QueryEngineResult object
+        if hasattr(session_results, 'contexts'):
+            formatted_parts = []
+            
+            if session_results.contexts:
+                formatted_parts.append("SESSION NOTES CONTEXT:")
+                formatted_parts.append("-" * 40)
+                
+                for i, context in enumerate(session_results.contexts[:3], 1):  # Limit to top 3 contexts
+                    if hasattr(context, 'content'):
+                        content = context.content[:300] + "..." if len(context.content) > 300 else context.content
+                        formatted_parts.append(f"{i}. {content}")
+                    else:
+                        formatted_parts.append(f"{i}. {str(context)}")
+                    formatted_parts.append("")  # Empty line between contexts
+            
+            if hasattr(session_results, 'entities_resolved') and session_results.entities_resolved:
+                formatted_parts.append("ENTITIES RESOLVED:")
+                for entity in session_results.entities_resolved:
+                    formatted_parts.append(f"• {entity}")
+            
+            if hasattr(session_results, 'total_sessions_searched'):
+                formatted_parts.append(f"Sessions searched: {session_results.total_sessions_searched}")
+            
+            return "\n".join(formatted_parts) if formatted_parts else ""
         
-        formatted_parts = []
+        # Fallback for dictionary format
+        elif isinstance(session_results, dict):
+            formatted_parts = []
+            
+            # Add session events if available
+            if "session_events" in session_results:
+                formatted_parts.append(f"Session Events:\n{session_results['session_events']}")
+            
+            # Add character interactions if available
+            if "character_interactions" in session_results:
+                formatted_parts.append(f"Character Interactions:\n{session_results['character_interactions']}")
+            
+            # Add quest progression if available
+            if "quest_progression" in session_results:
+                formatted_parts.append(f"Quest Progression:\n{session_results['quest_progression']}")
+            
+            # Add additional session context
+            if "additional_context" in session_results:
+                formatted_parts.append(f"Additional Session Context:\n{session_results['additional_context']}")
+            
+            # If we have raw session results without specific keys, format them directly
+            if not formatted_parts and session_results:
+                formatted_parts.append(f"Session Results:\n{str(session_results)}")
+            
+            return "\n\n".join(formatted_parts) if formatted_parts else ""
         
-        # Add session events if available
-        if "session_events" in session_results:
-            formatted_parts.append(f"Session Events:\n{session_results['session_events']}")
-        
-        # Add character interactions if available
-        if "character_interactions" in session_results:
-            formatted_parts.append(f"Character Interactions:\n{session_results['character_interactions']}")
-        
-        # Add quest progression if available
-        if "quest_progression" in session_results:
-            formatted_parts.append(f"Quest Progression:\n{session_results['quest_progression']}")
-        
-        # Add additional session context
-        if "additional_context" in session_results:
-            formatted_parts.append(f"Additional Session Context:\n{session_results['additional_context']}")
-        
-        # If we have raw session results without specific keys, format them directly
-        if not formatted_parts and session_results:
-            formatted_parts.append(f"Session Results:\n{str(session_results)}")
-        
-        return "\n\n".join(formatted_parts) if formatted_parts else ""
+        # Fallback for other types
+        else:
+            return f"Session Results:\n{str(session_results)}"
     
     def _generate_synthesis_notes(self, raw_results: Dict[str, Any], user_query: str) -> List[str]:
         """

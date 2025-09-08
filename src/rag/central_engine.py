@@ -87,7 +87,7 @@ class CentralEngine:
         llm_clients = LLMClientFactory.create_default_clients()
         return cls(llm_clients, prompt_manager, character, rulebook_storage, campaign_session_notes)
     
-    def process_query(self, user_query: str, character_name: str) -> str:
+    async def process_query(self, user_query: str, character_name: str) -> str:
         """
         Main processing pipeline:
         1. Get router decision prompts from Prompt Manager
@@ -97,17 +97,13 @@ class CentralEngine:
         5. Make final LLM call and return response
         """
         # Step 1: Make parallel router decisions
-        router_outputs = asyncio.run(
-            self.make_parallel_router_decisions(user_query, character_name)
-        )
+        router_outputs = await self.make_parallel_router_decisions(user_query, character_name)
         
         # Step 2: Execute needed routers in parallel
-        raw_results = asyncio.run(
-            self.execute_needed_routers(router_outputs, user_query)
-        )
+        raw_results = await self.execute_needed_routers(router_outputs, user_query)
         
         # Step 3: Generate final response
-        final_response = self.generate_final_response(raw_results, user_query)
+        final_response = await self.generate_final_response(raw_results, user_query)
         
         return final_response
     
@@ -141,32 +137,65 @@ class CentralEngine:
         Execute only the needed query routers in parallel based on LLM decisions.
         Returns raw router results for context assembly.
         """
+        print("🔧 DEBUG: Starting router execution...")
         tasks = []
         result_keys = []
         
         # Character router execution
         if router_outputs.character_output and router_outputs.character_output.is_needed:
+            print(f"🔧 DEBUG: Scheduling Character router execution")
+            print(f"   • Character router available: {self.character_router is not None}")
+            print(f"   • User intention: {router_outputs.character_output.user_intention}")
             tasks.append(self._execute_character_router(router_outputs.character_output))
             result_keys.append("character")
+        else:
+            print("🔧 DEBUG: Character router NOT scheduled")
+            print(f"   • Output exists: {router_outputs.character_output is not None}")
+            print(f"   • Is needed: {router_outputs.character_output.is_needed if router_outputs.character_output else 'N/A'}")
         
         # Rulebook router execution
         if router_outputs.rulebook_output and router_outputs.rulebook_output.is_needed and self.rulebook_router:
+            print(f"🔧 DEBUG: Scheduling Rulebook router execution")
+            print(f"   • Rulebook router available: {self.rulebook_router is not None}")
+            print(f"   • User intention: {router_outputs.rulebook_output.user_intention}")
             tasks.append(self._execute_rulebook_router(router_outputs.rulebook_output, user_query))
             result_keys.append("rulebook")
+        else:
+            print("🔧 DEBUG: Rulebook router NOT scheduled")
+            print(f"   • Output exists: {router_outputs.rulebook_output is not None}")
+            print(f"   • Is needed: {router_outputs.rulebook_output.is_needed if router_outputs.rulebook_output else 'N/A'}")
+            print(f"   • Router available: {self.rulebook_router is not None}")
         
         # Session notes router execution
         if router_outputs.session_notes_output and router_outputs.session_notes_output.is_needed and self.session_notes_router:
+            print(f"🔧 DEBUG: Scheduling Session Notes router execution")
+            print(f"   • Session Notes router available: {self.session_notes_router is not None}")
+            print(f"   • User intention: {router_outputs.session_notes_output.user_intention}")
             tasks.append(self._execute_session_notes_router(router_outputs.session_notes_output, user_query))
             result_keys.append("session_notes")
+        else:
+            print("🔧 DEBUG: Session Notes router NOT scheduled")
+            print(f"   • Output exists: {router_outputs.session_notes_output is not None}")
+            print(f"   • Is needed: {router_outputs.session_notes_output.is_needed if router_outputs.session_notes_output else 'N/A'}")
+            print(f"   • Router available: {self.session_notes_router is not None}")
+        
+        print(f"🔧 DEBUG: Total tasks scheduled: {len(tasks)} - {result_keys}")
         
         # Execute all needed routers in parallel
         if tasks:
-            results = await asyncio.gather(*tasks)
-            return dict(zip(result_keys, results))
+            print("🔧 DEBUG: Executing scheduled router tasks...")
+            try:
+                results = await asyncio.gather(*tasks)
+                print(f"🔧 DEBUG: Router execution completed, got {len(results)} results")
+                return dict(zip(result_keys, results))
+            except Exception as e:
+                print(f"🔧 DEBUG: Router execution failed: {str(e)}")
+                raise e
         else:
+            print("🔧 DEBUG: No tasks to execute, returning empty results")
             return {}
     
-    def generate_final_response(self, raw_results: Dict[str, Any], user_query: str) -> str:
+    async def generate_final_response(self, raw_results: Dict[str, Any], user_query: str) -> str:
         """
         Get final response prompt from Prompt Manager and make final LLM call.
         Returns completed response to user.
@@ -181,8 +210,9 @@ class CentralEngine:
             final_client = self.llm_clients.get(provider)
             
             if not final_client:
-                # Fallback to available clients
-                final_client = self.llm_clients.get("openai_gpt4") or self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
+                # Fallback to available clients using new naming convention
+                final_client = (self.llm_clients.get("openai") or 
+                               self.llm_clients.get("anthropic"))
                 if not final_client:
                     return "Error: No suitable LLM client available for final response generation"
             
@@ -194,12 +224,14 @@ class CentralEngine:
             else:
                 model = None  # Use client default
             
-            response = asyncio.run(final_client.generate_response(
+            # Get LLM parameters from config
+            llm_params = self.config.get_final_llm_params(model)
+            
+            response = await final_client.generate_response(
                 final_prompt,
                 model=model,
-                temperature=0.7,
-                max_tokens=1500
-            ))
+                **llm_params
+            )
             
             if response.success:
                 return response.content
@@ -218,10 +250,13 @@ class CentralEngine:
             client = self.llm_clients.get(provider)
             
             if not client:
-                # Fallback to available clients
-                client = self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
+                # Fallback to router clients using new naming convention
+                client = (self.llm_clients.get("openai_router") or 
+                         self.llm_clients.get("anthropic_router") or
+                         self.llm_clients.get("openai") or 
+                         self.llm_clients.get("anthropic"))
                 if not client:
-                    return CharacterLLMRouterOutput(is_needed=False)
+                    raise RuntimeError("No suitable LLM client available for character router")
             
             # Select appropriate model based on provider
             if provider == "openai":
@@ -231,24 +266,50 @@ class CentralEngine:
             else:
                 model = None  # Use client default
             
+            # Get LLM parameters from config
+            llm_params = self.config.get_router_llm_params(model)
+            
             response = await client.generate_json_response(
                 prompt,
                 model=model,
-                temperature=0.3,
-                max_tokens=500
+                **llm_params
             )
             
+            # Strict validation of response format
             if "error" in response:
-                return CharacterLLMRouterOutput(is_needed=False)
+                raise RuntimeError(f"Character router LLM call failed: {response['error']}")
+            
+            # Validate required fields
+            if "is_needed" not in response:
+                raise ValueError("Character router response missing required field 'is_needed'")
+                
+            is_needed = response["is_needed"]
+            
+            # Validate intention requirement
+            if is_needed and (response.get("user_intention") is None or response.get("user_intention") == ""):
+                raise ValueError("Character router response has 'is_needed': true but missing valid 'user_intention'")
+            
+            # Validate entities format
+            entities = response.get("entities", [])
+            if not isinstance(entities, list):
+                raise ValueError("Character router response 'entities' must be a list")
+            
+            for entity in entities:
+                if not isinstance(entity, dict):
+                    raise ValueError("Character router response entities must be dictionaries")
+                if "name" not in entity:
+                    raise ValueError("Character router response entity missing required field 'name'")
+                if "type" not in entity:
+                    raise ValueError("Character router response entity missing required field 'type'")
             
             return CharacterLLMRouterOutput(
-                is_needed=response.get("is_needed", False),
+                is_needed=is_needed,
                 user_intention=response.get("user_intention"),
-                entities=response.get("entities", [])
+                entities=entities
             )
         except Exception as e:
-            # Fallback to not needed on error
-            return CharacterLLMRouterOutput(is_needed=False)
+            # Re-raise all exceptions instead of providing fallbacks
+            raise RuntimeError(f"Character router LLM call failed: {str(e)}") from e
     
     async def _make_rulebook_router_llm_call(self, prompt: str) -> RulebookLLMRouterOutput:
         """Make LLM call for rulebook router decision."""
@@ -258,10 +319,13 @@ class CentralEngine:
             client = self.llm_clients.get(provider)
             
             if not client:
-                # Fallback to available clients
-                client = self.llm_clients.get("anthropic") or self.llm_clients.get("openai")
+                # Fallback to router clients using new naming convention
+                client = (self.llm_clients.get("openai_router") or 
+                         self.llm_clients.get("anthropic_router") or
+                         self.llm_clients.get("openai") or 
+                         self.llm_clients.get("anthropic"))
                 if not client:
-                    return RulebookLLMRouterOutput(is_needed=False)
+                    raise RuntimeError("No suitable LLM client available for rulebook router")
             
             # Select appropriate model based on provider
             if provider == "openai":
@@ -271,25 +335,49 @@ class CentralEngine:
             else:
                 model = None  # Use client default
             
+            # Get LLM parameters from config
+            llm_params = self.config.get_router_llm_params(model)
+            
             response = await client.generate_json_response(
                 prompt,
                 model=model,
-                max_tokens=500
+                **llm_params
             )
             
+            # Strict validation of response format
             if "error" in response:
-                return RulebookLLMRouterOutput(is_needed=False)
+                raise RuntimeError(f"Rulebook router LLM call failed: {response['error']}")
+            
+            # Validate required fields
+            if "is_needed" not in response:
+                raise ValueError("Rulebook router response missing required field 'is_needed'")
+                
+            is_needed = response["is_needed"]
+            
+            # Validate intention requirement (note: uses 'intention' not 'user_intention' for rulebook)
+            if is_needed and (response.get("intention") is None or response.get("intention") == ""):
+                raise ValueError("Rulebook router response has 'is_needed': true but missing valid 'intention'")
+            
+            # Validate entities format
+            entities = response.get("entities", [])
+            if not isinstance(entities, list):
+                raise ValueError("Rulebook router response 'entities' must be a list")
+            
+            # Validate context_hints format
+            context_hints = response.get("context_hints", [])
+            if not isinstance(context_hints, list):
+                raise ValueError("Rulebook router response 'context_hints' must be a list")
             
             return RulebookLLMRouterOutput(
-                is_needed=response.get("is_needed", False),
-                user_intention=response.get("user_intention"),
-                entities=response.get("entities", []),
-                context_hints=response.get("context_hints", []),
+                is_needed=is_needed,
+                user_intention=response.get("intention"),
+                entities=entities,
+                context_hints=context_hints,
                 k=5  # Fixed internally
             )
         except Exception as e:
-            # Fallback to not needed on error
-            return RulebookLLMRouterOutput(is_needed=False)
+            # Re-raise validation errors and LLM errors
+            raise RuntimeError(f"Rulebook router failed: {str(e)}") from e
     
     async def _make_session_notes_router_llm_call(self, prompt: str, character_name: str) -> SessionNotesLLMRouterOutput:
         """Make LLM call for session notes router decision."""
@@ -299,10 +387,13 @@ class CentralEngine:
             client = self.llm_clients.get(provider)
             
             if not client:
-                # Fallback to available clients
-                client = self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
+                # Fallback to router clients using new naming convention
+                client = (self.llm_clients.get("openai_router") or 
+                         self.llm_clients.get("anthropic_router") or
+                         self.llm_clients.get("openai") or 
+                         self.llm_clients.get("anthropic"))
                 if not client:
-                    return SessionNotesLLMRouterOutput(is_needed=False, character_name=character_name)
+                    raise RuntimeError("No suitable LLM client available for session notes router")
             
             # Select appropriate model based on provider
             if provider == "openai":
@@ -312,55 +403,101 @@ class CentralEngine:
             else:
                 model = None  # Use client default
             
+            # Get LLM parameters from config
+            llm_params = self.config.get_router_llm_params(model)
+            
             response = await client.generate_json_response(
                 prompt,
                 model=model,
-                temperature=0.3,
-                max_tokens=500
+                **llm_params
             )
             
+            # Strict validation of response format
             if "error" in response:
-                return SessionNotesLLMRouterOutput(is_needed=False, character_name=character_name)
+                raise RuntimeError(f"Session notes router LLM call failed: {response['error']}")
+            
+            # Validate required fields
+            if "is_needed" not in response:
+                raise ValueError("Session notes router response missing required field 'is_needed'")
+                
+            is_needed = response["is_needed"]
+            
+            # Validate intention requirement
+            if is_needed and (response.get("intention") is None or response.get("intention") == ""):
+                raise ValueError("Session notes router response has 'is_needed': true but missing valid 'intention'")
+            
+            # Validate entities format
+            entities = response.get("entities", [])
+            if not isinstance(entities, list):
+                raise ValueError("Session notes router response 'entities' must be a list")
+            
+            # Validate context_hints format
+            context_hints = response.get("context_hints", [])
+            if not isinstance(context_hints, list):
+                raise ValueError("Session notes router response 'context_hints' must be a list")
             
             return SessionNotesLLMRouterOutput(
-                is_needed=response.get("is_needed", False),
+                is_needed=is_needed,
                 character_name=character_name,  # Set from engine class
-                user_intention=response.get("user_intention"),
-                entities=response.get("entities", []),
-                context_hints=response.get("context_hints", []),
+                user_intention=response.get("intention"),
+                entities=entities,
+                context_hints=context_hints,
                 top_k=5  # Fixed internally
             )
         except Exception as e:
-            # Fallback to not needed on error
-            return SessionNotesLLMRouterOutput(is_needed=False, character_name=character_name)
+            # Re-raise validation errors and LLM errors
+            raise RuntimeError(f"Session notes router failed: {str(e)}") from e
     
     # ===== PRIVATE ROUTER EXECUTION METHODS =====
     
     async def _execute_character_router(self, output: CharacterLLMRouterOutput) -> CharacterQueryResult:
         """Execute character query router with LLM-generated inputs."""
+        print(f"🔧 DEBUG: Executing Character router...")
+        print(f"   • User intention: {output.user_intention}")
+        print(f"   • Entities count: {len(output.entities) if output.entities else 0}")
+        
         if not output.user_intention:
+            print("🔧 DEBUG: No user intention, returning empty result")
             return CharacterQueryResult(character_data={})
         
+        if not self.character_router:
+            print("🔧 DEBUG: Character router not available!")
+            return CharacterQueryResult(character_data={}, warnings=["Character router not available"])
+        
         try:
+            print(f"🔧 DEBUG: Calling character_router.query_character() with intention '{output.user_intention}'")
             # Pass parameters directly from LLM router output (character is pre-loaded)
             result = self.character_router.query_character(
                 user_intention=output.user_intention,
                 entities=output.entities
             )
+            print(f"🔧 DEBUG: Character router returned result with {len(result.character_data) if result.character_data else 0} data items")
             return result
         except Exception as e:
+            print(f"🔧 DEBUG: Character router execution failed: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return CharacterQueryResult(character_data={}, warnings=[f"Character router error: {str(e)}"])
     
     async def _execute_rulebook_router(self, output: RulebookLLMRouterOutput, user_query: str) -> tuple[List[SearchResult], Optional[QueryPerformanceMetrics]]:
         """Execute rulebook query router with LLM-generated inputs."""
+        print(f"🔧 DEBUG: Executing Rulebook router...")
+        print(f"   • User intention: {output.user_intention}")
+        print(f"   • Entities count: {len(output.entities) if output.entities else 0}")
+        print(f"   • Context hints: {len(output.context_hints) if output.context_hints else 0}")
+        
         if not output.user_intention or not self.rulebook_router:
+            print("🔧 DEBUG: No intention or router unavailable, returning empty results")
             return [], None
         
         try:
+            print(f"🔧 DEBUG: Converting intention '{output.user_intention}' to enum")
             # Convert string intention to enum
             intention_enum = RulebookQueryIntent(output.user_intention.lower())
+            print(f"🔧 DEBUG: Converted to enum: {intention_enum}")
             
             # Pass all parameters directly from LLM router output
+            print(f"🔧 DEBUG: Calling rulebook_router.query() with {output.k} results")
             results, performance = self.rulebook_router.query(
                 intention=intention_enum,
                 user_query=user_query,  # Get from engine class
@@ -368,16 +505,28 @@ class CentralEngine:
                 context_hints=output.context_hints,
                 k=output.k
             )
+            print(f"🔧 DEBUG: Rulebook router returned {len(results) if results else 0} results")
             return results, performance
         except Exception as e:
+            print(f"🔧 DEBUG: Rulebook router execution failed: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return [], None
     
     async def _execute_session_notes_router(self, output: SessionNotesLLMRouterOutput, user_query: str) -> QueryEngineResult:
         """Execute session notes query router with LLM-generated inputs."""
+        print(f"🔧 DEBUG: Executing Session Notes router...")
+        print(f"   • User intention: {output.user_intention}")
+        print(f"   • Character name: {output.character_name}")
+        print(f"   • Entities count: {len(output.entities) if output.entities else 0}")
+        print(f"   • Context hints: {len(output.context_hints) if output.context_hints else 0}")
+        
         if not output.user_intention or not self.session_notes_router:
+            print("🔧 DEBUG: No intention or router unavailable, returning empty result")
             return QueryEngineResult(contexts=[], total_sessions_searched=0, entities_resolved=[])
         
         try:
+            print(f"🔧 DEBUG: Calling session_notes_router.query() with top_k={output.top_k}")
             # Pass all parameters directly from LLM router output
             result = self.session_notes_router.query(
                 character_name=output.character_name,
@@ -387,6 +536,10 @@ class CentralEngine:
                 context_hints=output.context_hints,
                 top_k=output.top_k
             )
+            print(f"🔧 DEBUG: Session Notes router returned {len(result.contexts) if result.contexts else 0} contexts")
             return result
         except Exception as e:
+            print(f"🔧 DEBUG: Session Notes router execution failed: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return QueryEngineResult(contexts=[], total_sessions_searched=0, entities_resolved=[])

@@ -291,7 +291,9 @@ class IntentionDataMapper:
                 category=IntentionCategory.INVENTORY,
                 required_fields={'inventory'},
                 optional_fields={'ability_scores', 'proficiencies'},
-                nested_requirements={'inventory': ['equipped_items', 'backpack']},
+                nested_requirements={
+                    'inventory': ['equipped_items', 'backpack']
+                },
                 entity_types={EntityType.WEAPON},
                 aggregation_required=True
             ),
