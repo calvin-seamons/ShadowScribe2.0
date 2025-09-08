@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 # Import LLM client abstraction
 from .llm_client import LLMClient, LLMClientFactory
 from .config import get_config
+from .json_repair import JSONRepair
 
 # Import query router types
 from .character.character_query_router import CharacterQueryRouter, CharacterQueryResult
@@ -275,37 +276,20 @@ class CentralEngine:
                 **llm_params
             )
             
-            # Strict validation of response format
-            if "error" in response:
-                raise RuntimeError(f"Character router LLM call failed: {response['error']}")
+            # Use JSON repair to fix and validate the response
+            repair_result = JSONRepair.repair_character_router_response(response)
             
-            # Validate required fields
-            if "is_needed" not in response:
-                raise ValueError("Character router response missing required field 'is_needed'")
-                
-            is_needed = response["is_needed"]
+            if repair_result.was_repaired:
+                print(f"🔧 JSON REPAIR: Character router response was repaired")
+                for detail in repair_result.repair_details:
+                    print(f"   • {detail}")
             
-            # Validate intention requirement
-            if is_needed and (response.get("user_intention") is None or response.get("user_intention") == ""):
-                raise ValueError("Character router response has 'is_needed': true but missing valid 'user_intention'")
-            
-            # Validate entities format
-            entities = response.get("entities", [])
-            if not isinstance(entities, list):
-                raise ValueError("Character router response 'entities' must be a list")
-            
-            for entity in entities:
-                if not isinstance(entity, dict):
-                    raise ValueError("Character router response entities must be dictionaries")
-                if "name" not in entity:
-                    raise ValueError("Character router response entity missing required field 'name'")
-                if "type" not in entity:
-                    raise ValueError("Character router response entity missing required field 'type'")
+            response = repair_result.data
             
             return CharacterLLMRouterOutput(
-                is_needed=is_needed,
+                is_needed=response.get("is_needed", False),
                 user_intention=response.get("user_intention"),
-                entities=entities
+                entities=response.get("entities", [])
             )
         except Exception as e:
             # Re-raise all exceptions instead of providing fallbacks
@@ -344,35 +328,21 @@ class CentralEngine:
                 **llm_params
             )
             
-            # Strict validation of response format
-            if "error" in response:
-                raise RuntimeError(f"Rulebook router LLM call failed: {response['error']}")
+            # Use JSON repair to fix and validate the response
+            repair_result = JSONRepair.repair_rulebook_router_response(response)
             
-            # Validate required fields
-            if "is_needed" not in response:
-                raise ValueError("Rulebook router response missing required field 'is_needed'")
-                
-            is_needed = response["is_needed"]
+            if repair_result.was_repaired:
+                print(f"🔧 JSON REPAIR: Rulebook router response was repaired")
+                for detail in repair_result.repair_details:
+                    print(f"   • {detail}")
             
-            # Validate intention requirement (note: uses 'intention' not 'user_intention' for rulebook)
-            if is_needed and (response.get("intention") is None or response.get("intention") == ""):
-                raise ValueError("Rulebook router response has 'is_needed': true but missing valid 'intention'")
-            
-            # Validate entities format
-            entities = response.get("entities", [])
-            if not isinstance(entities, list):
-                raise ValueError("Rulebook router response 'entities' must be a list")
-            
-            # Validate context_hints format
-            context_hints = response.get("context_hints", [])
-            if not isinstance(context_hints, list):
-                raise ValueError("Rulebook router response 'context_hints' must be a list")
+            response = repair_result.data
             
             return RulebookLLMRouterOutput(
-                is_needed=is_needed,
+                is_needed=response.get("is_needed", False),
                 user_intention=response.get("intention"),
-                entities=entities,
-                context_hints=context_hints,
+                entities=response.get("entities", []),
+                context_hints=response.get("context_hints", []),
                 k=5  # Fixed internally
             )
         except Exception as e:
@@ -412,36 +382,22 @@ class CentralEngine:
                 **llm_params
             )
             
-            # Strict validation of response format
-            if "error" in response:
-                raise RuntimeError(f"Session notes router LLM call failed: {response['error']}")
+            # Use JSON repair to fix and validate the response
+            repair_result = JSONRepair.repair_session_notes_router_response(response)
             
-            # Validate required fields
-            if "is_needed" not in response:
-                raise ValueError("Session notes router response missing required field 'is_needed'")
-                
-            is_needed = response["is_needed"]
+            if repair_result.was_repaired:
+                print(f"🔧 JSON REPAIR: Session notes router response was repaired")
+                for detail in repair_result.repair_details:
+                    print(f"   • {detail}")
             
-            # Validate intention requirement
-            if is_needed and (response.get("intention") is None or response.get("intention") == ""):
-                raise ValueError("Session notes router response has 'is_needed': true but missing valid 'intention'")
-            
-            # Validate entities format
-            entities = response.get("entities", [])
-            if not isinstance(entities, list):
-                raise ValueError("Session notes router response 'entities' must be a list")
-            
-            # Validate context_hints format
-            context_hints = response.get("context_hints", [])
-            if not isinstance(context_hints, list):
-                raise ValueError("Session notes router response 'context_hints' must be a list")
+            response = repair_result.data
             
             return SessionNotesLLMRouterOutput(
-                is_needed=is_needed,
+                is_needed=response.get("is_needed", False),
                 character_name=character_name,  # Set from engine class
                 user_intention=response.get("intention"),
-                entities=entities,
-                context_hints=context_hints,
+                entities=response.get("entities", []),
+                context_hints=response.get("context_hints", []),
                 top_k=5  # Fixed internally
             )
         except Exception as e:
