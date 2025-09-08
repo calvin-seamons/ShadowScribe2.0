@@ -65,73 +65,43 @@ class IntentionCategory(Enum):
     OPTIMIZATION = "optimization"
 
 
-# ===== USER INTENTIONS =====
+# ===== USER INTENTIONS - CONSOLIDATED =====
 
 class UserIntention(Enum):
-    """Streamlined list of user intentions that map directly to character data structure."""
+    """Consolidated user intentions that map to broad character data sections."""
     
-    # Core Character Information (maps to character_base, characteristics, ability_scores)
-    CHARACTER_BASICS = "character_basics"  # Name, race, class, level, alignment, physical traits
-    ABILITY_SCORES = "ability_scores"      # Strength, dex, con, int, wis, cha + modifiers
+    # Core Character Information - everything about the base character
+    CHARACTER_BASICS = "character_basics"  # character_base, characteristics, ability_scores
     
-    # Combat & Defense (maps to combat_stats, damage_modifiers, passive_scores)
-    COMBAT_INFO = "combat_info"            # HP, AC, initiative, speed, saving throws, resistances
-    ACTION_ECONOMY = "action_economy"      # Available actions, attacks, reactions, bonus actions
+    # Combat & Defense - all combat-related data
+    COMBAT_INFO = "combat_info"  # combat_stats, damage_modifiers, passive_scores, action_economy
     
-    # Skills & Proficiencies (maps to proficiencies, passive_scores)
-    PROFICIENCIES = "proficiencies"        # All proficiencies: skills, tools, languages, armor, weapons
-    PASSIVE_ABILITIES = "passive_abilities" # Passive perception, investigation, insight, etc.
+    # Skills & Abilities - all proficiencies and abilities
+    ABILITIES_INFO = "abilities_info"  # proficiencies, passive_scores, senses, features_and_traits
     
-    # Movement & Senses (maps to senses, combat_stats.speed)
-    MOVEMENT_SENSES = "movement_senses"    # Movement speed, special movement, senses, vision
+    # Equipment & Inventory - all items and equipment
+    INVENTORY_INFO = "inventory_info"  # complete inventory with all nested data
     
-    # Features & Abilities (maps to features_and_traits)
-    CLASS_FEATURES = "class_features"      # Class features and abilities
-    RACIAL_TRAITS = "racial_traits"       # Racial traits and abilities  
-    BACKGROUND_FEATURES = "background_features" # Background features
-    FEATS = "feats"                       # Feats and their effects
-    ALL_FEATURES = "all_features"         # All features and traits combined
+    # Magic & Spellcasting - all spell-related information
+    MAGIC_INFO = "magic_info"  # spell_list with all nested spellcasting data
     
-    # Inventory & Equipment (maps to inventory)
-    INVENTORY = "inventory"               # Full inventory, equipped items, carrying capacity
-    WEAPONS = "weapons"                   # Weapon details and attack options
-    ARMOR_EQUIPMENT = "armor_equipment"   # Armor and protective equipment
-    MAGICAL_ITEMS = "magical_items"       # Magic items and their properties
+    # Character Story - all narrative and background information
+    STORY_INFO = "story_info"  # background_info, personality, backstory
     
-    # Spellcasting (maps to spell_list)
-    SPELLCASTING = "spellcasting"         # Spell save DC, attack bonus, spellcasting ability
-    SPELL_LIST = "spell_list"             # Known/prepared spells by level
-    SPELL_DETAILS = "spell_details"       # Specific spell information
-    SPELL_SLOTS = "spell_slots"           # Available spell slots by level
+    # Social & Relationships - all social connections
+    SOCIAL_INFO = "social_info"  # organizations, allies, enemies
     
-    # Background & Story (maps to background_info, personality, backstory)
-    BACKGROUND_INFO = "background_info"   # Background, lifestyle, languages
-    PERSONALITY = "personality"           # Personality traits, ideals, bonds, flaws
-    BACKSTORY = "backstory"              # Character backstory and history
+    # Progress & Objectives - all goals and advancement
+    PROGRESS_INFO = "progress_info"  # objectives_and_contracts, notes, progression
     
-    # Relationships (maps to organizations, allies, enemies)
-    RELATIONSHIPS = "relationships"       # Organizations, allies, enemies, contacts
+    # Complete Character - everything
+    FULL_CHARACTER = "full_character"  # All character data
     
-    # Objectives & Progress (maps to objectives_and_contracts)
-    OBJECTIVES = "objectives"             # Active quests, contracts, goals
-    COMPLETED_OBJECTIVES = "completed_objectives" # Completed quests and contracts
-    
-    # Character Development (maps to character_base levels, notes)
-    PROGRESSION = "progression"           # Level, XP, advancement options
-    
-    # Full Character Data
-    FULL_CHARACTER_SHEET = "full_character_sheet" # Complete character information
-    CHARACTER_SUMMARY = "character_summary"       # High-level character overview
-    
-    # Calculations & Analysis (computed from multiple data sources)
-    CALCULATIONS = "calculations"         # Damage calculations, optimization analysis
-    
-    # Session & Roleplay (maps to notes, personality)
-    ROLEPLAY_INFO = "roleplay_info"      # Character voice, motivations, session prep
+    # Quick Summary - essential overview data only
+    CHARACTER_SUMMARY = "character_summary"  # Key fields for quick overview
 
 
 # ===== QUERY INPUT/OUTPUT TYPES =====
-
 
 @dataclass
 class DataRequirement:
@@ -174,243 +144,100 @@ class IntentionDataMapper:
     def get_mappings() -> Dict[UserIntention, IntentionMapping]:
         """Returns comprehensive mapping of intentions to data requirements."""
         return {
-            # Core Character Information
+            # Core Character Information - basic character identity and stats
             UserIntention.CHARACTER_BASICS: IntentionMapping(
                 intention=UserIntention.CHARACTER_BASICS,
                 category=IntentionCategory.CHARACTER_SHEET,
-                required_fields={'character_base', 'characteristics'},
-                entity_types={EntityType.RACE, EntityType.CLASS, EntityType.BACKGROUND}
-            ),
-            
-            UserIntention.ABILITY_SCORES: IntentionMapping(
-                intention=UserIntention.ABILITY_SCORES,
-                category=IntentionCategory.CHARACTER_SHEET,
-                required_fields={'ability_scores'},
-                optional_fields={'character_base'},  # For proficiency bonus
+                required_fields={'character_base', 'characteristics', 'ability_scores'},
+                entity_types={EntityType.RACE, EntityType.CLASS, EntityType.BACKGROUND},
                 calculation_required=True
             ),
             
-            # Combat & Defense
+            # Combat & Defense - everything needed for combat
             UserIntention.COMBAT_INFO: IntentionMapping(
                 intention=UserIntention.COMBAT_INFO,
                 category=IntentionCategory.COMBAT,
-                required_fields={'combat_stats', 'ability_scores', 'damage_modifiers'},
-                optional_fields={'inventory', 'features_and_traits', 'proficiencies'},
-                calculation_required=True
-            ),
-            
-            UserIntention.ACTION_ECONOMY: IntentionMapping(
-                intention=UserIntention.ACTION_ECONOMY,
-                category=IntentionCategory.COMBAT,
-                required_fields={'action_economy'},
-                optional_fields={'inventory', 'features_and_traits', 'spell_list'},
-                entity_types={EntityType.WEAPON, EntityType.ACTION, EntityType.SPELL},
+                required_fields={'combat_stats', 'damage_modifiers', 'passive_scores', 'action_economy'},
+                optional_fields={'ability_scores', 'inventory', 'features_and_traits', 'proficiencies'},
+                entity_types={EntityType.WEAPON, EntityType.ACTION, EntityType.ARMOR},
+                calculation_required=True,
                 aggregation_required=True
             ),
             
-            # Skills & Proficiencies
-            UserIntention.PROFICIENCIES: IntentionMapping(
-                intention=UserIntention.PROFICIENCIES,
+            # Skills & Abilities - all character capabilities and traits
+            UserIntention.ABILITIES_INFO: IntentionMapping(
+                intention=UserIntention.ABILITIES_INFO,
                 category=IntentionCategory.ABILITIES,
-                required_fields={'proficiencies'},
-                optional_fields={'background_info', 'character_base'},
-                entity_types={EntityType.SKILL},
+                required_fields={'proficiencies', 'passive_scores', 'senses', 'features_and_traits'},
+                optional_fields={'ability_scores', 'character_base', 'background_info'},
+                entity_types={EntityType.SKILL, EntityType.FEATURE, EntityType.TRAIT, EntityType.ABILITY},
                 aggregation_required=True
             ),
             
-            UserIntention.PASSIVE_ABILITIES: IntentionMapping(
-                intention=UserIntention.PASSIVE_ABILITIES,
-                category=IntentionCategory.ABILITIES,
-                required_fields={'passive_scores'},
-                optional_fields={'ability_scores', 'proficiencies', 'features_and_traits'},
-                calculation_required=True
-            ),
-            
-            # Movement & Senses
-            UserIntention.MOVEMENT_SENSES: IntentionMapping(
-                intention=UserIntention.MOVEMENT_SENSES,
-                category=IntentionCategory.EXPLORATION,
-                required_fields={'senses', 'combat_stats'},
-                optional_fields={'features_and_traits', 'inventory'},
-                calculation_required=True
-            ),
-            
-            # Features & Abilities
-            UserIntention.CLASS_FEATURES: IntentionMapping(
-                intention=UserIntention.CLASS_FEATURES,
-                category=IntentionCategory.ABILITIES,
-                required_fields={'features_and_traits', 'character_base'},
-                nested_requirements={'features_and_traits': ['class_features']},
-                entity_types={EntityType.FEATURE, EntityType.CLASS}
-            ),
-            
-            UserIntention.RACIAL_TRAITS: IntentionMapping(
-                intention=UserIntention.RACIAL_TRAITS,
-                category=IntentionCategory.ABILITIES,
-                required_fields={'features_and_traits', 'character_base'},
-                nested_requirements={'features_and_traits': ['racial_traits']},
-                entity_types={EntityType.TRAIT, EntityType.RACE}
-            ),
-            
-            UserIntention.BACKGROUND_FEATURES: IntentionMapping(
-                intention=UserIntention.BACKGROUND_FEATURES,
-                category=IntentionCategory.ABILITIES,
-                required_fields={'background_info'},
-                nested_requirements={'background_info': ['feature']},
-                entity_types={EntityType.FEATURE, EntityType.BACKGROUND}
-            ),
-            
-            UserIntention.FEATS: IntentionMapping(
-                intention=UserIntention.FEATS,
-                category=IntentionCategory.ABILITIES,
-                required_fields={'features_and_traits'},
-                nested_requirements={'features_and_traits': ['feats']},
-                entity_types={EntityType.FEATURE}
-            ),
-            
-            UserIntention.ALL_FEATURES: IntentionMapping(
-                intention=UserIntention.ALL_FEATURES,
-                category=IntentionCategory.ABILITIES,
-                required_fields={'features_and_traits', 'background_info'},
-                aggregation_required=True
-            ),
-            
-            # Inventory & Equipment
-            UserIntention.INVENTORY: IntentionMapping(
-                intention=UserIntention.INVENTORY,
+            # Equipment & Inventory - all items, weapons, armor, etc.
+            UserIntention.INVENTORY_INFO: IntentionMapping(
+                intention=UserIntention.INVENTORY_INFO,
                 category=IntentionCategory.INVENTORY,
                 required_fields={'inventory'},
-                optional_fields={'ability_scores'},  # For carrying capacity
-                entity_types={EntityType.ITEM, EntityType.WEAPON, EntityType.ARMOR},
-                aggregation_required=True,
-                calculation_required=True
-            ),
-            
-            UserIntention.WEAPONS: IntentionMapping(
-                intention=UserIntention.WEAPONS,
-                category=IntentionCategory.INVENTORY,
-                required_fields={'inventory'},
-                optional_fields={'ability_scores', 'proficiencies'},
+                optional_fields={'ability_scores', 'proficiencies'},  # For carrying capacity and proficiency
                 nested_requirements={
-                    'inventory': ['equipped_items', 'backpack']
+                    'inventory': ['equipped_items', 'backpack', 'carrying_capacity', 'currency']
                 },
-                entity_types={EntityType.WEAPON},
+                entity_types={EntityType.ITEM, EntityType.WEAPON, EntityType.ARMOR},
+                calculation_required=True,
                 aggregation_required=True
             ),
             
-            UserIntention.ARMOR_EQUIPMENT: IntentionMapping(
-                intention=UserIntention.ARMOR_EQUIPMENT,
-                category=IntentionCategory.INVENTORY,
-                required_fields={'inventory'},
-                nested_requirements={'inventory': ['equipped_items']},
-                entity_types={EntityType.ARMOR},
-                aggregation_required=True
-            ),
-            
-            UserIntention.MAGICAL_ITEMS: IntentionMapping(
-                intention=UserIntention.MAGICAL_ITEMS,
-                category=IntentionCategory.INVENTORY,
-                required_fields={'inventory'},
-                nested_requirements={'inventory': ['equipped_items', 'backpack']},
-                entity_types={EntityType.ITEM},
-                aggregation_required=True
-            ),
-            
-            # Spellcasting
-            UserIntention.SPELLCASTING: IntentionMapping(
-                intention=UserIntention.SPELLCASTING,
-                category=IntentionCategory.MAGIC,
-                required_fields={'spell_list', 'ability_scores', 'character_base'},
-                nested_requirements={'spell_list': ['spellcasting']},
-                calculation_required=True
-            ),
-            
-            UserIntention.SPELL_LIST: IntentionMapping(
-                intention=UserIntention.SPELL_LIST,
+            # Magic & Spellcasting - all spell-related data
+            UserIntention.MAGIC_INFO: IntentionMapping(
+                intention=UserIntention.MAGIC_INFO,
                 category=IntentionCategory.MAGIC,
                 required_fields={'spell_list'},
-                nested_requirements={'spell_list': ['spells', 'spellcasting']},
+                optional_fields={'ability_scores', 'character_base', 'features_and_traits'},
+                nested_requirements={
+                    'spell_list': ['spells', 'spellcasting', 'spell_slots', 'cantrips']
+                },
                 entity_types={EntityType.SPELL},
+                calculation_required=True,
                 aggregation_required=True
             ),
             
-            UserIntention.SPELL_DETAILS: IntentionMapping(
-                intention=UserIntention.SPELL_DETAILS,
-                category=IntentionCategory.MAGIC,
-                required_fields={'spell_list'},
-                nested_requirements={'spell_list': ['spells']},
-                entity_types={EntityType.SPELL}
-            ),
-            
-            UserIntention.SPELL_SLOTS: IntentionMapping(
-                intention=UserIntention.SPELL_SLOTS,
-                category=IntentionCategory.MAGIC,
-                required_fields={'spell_list'},
-                nested_requirements={'spell_list': ['spellcasting']},
-                calculation_required=True
-            ),
-            
-            # Background & Story
-            UserIntention.BACKGROUND_INFO: IntentionMapping(
-                intention=UserIntention.BACKGROUND_INFO,
+            # Character Story - all narrative and background
+            UserIntention.STORY_INFO: IntentionMapping(
+                intention=UserIntention.STORY_INFO,
                 category=IntentionCategory.BACKSTORY,
-                required_fields={'background_info'},
-                entity_types={EntityType.BACKGROUND}
+                required_fields={'background_info', 'personality', 'backstory'},
+                entity_types={EntityType.BACKGROUND},
+                aggregation_required=True
             ),
             
-            UserIntention.PERSONALITY: IntentionMapping(
-                intention=UserIntention.PERSONALITY,
-                category=IntentionCategory.BACKSTORY,
-                required_fields={'personality'}
-            ),
-            
-            UserIntention.BACKSTORY: IntentionMapping(
-                intention=UserIntention.BACKSTORY,
-                category=IntentionCategory.BACKSTORY,
-                required_fields={'backstory'},
-                optional_fields={'background_info', 'personality'}
-            ),
-            
-            # Relationships
-            UserIntention.RELATIONSHIPS: IntentionMapping(
-                intention=UserIntention.RELATIONSHIPS,
+            # Social & Relationships - all connections and organizations
+            UserIntention.SOCIAL_INFO: IntentionMapping(
+                intention=UserIntention.SOCIAL_INFO,
                 category=IntentionCategory.SOCIAL,
                 required_fields={'organizations', 'allies', 'enemies'},
+                optional_fields={'personality', 'background_info'},
                 entity_types={EntityType.ALLY, EntityType.ENEMY, EntityType.ORGANIZATION},
                 aggregation_required=True
             ),
             
-            # Objectives & Progress
-            UserIntention.OBJECTIVES: IntentionMapping(
-                intention=UserIntention.OBJECTIVES,
+            # Progress & Objectives - all goals, quests, and advancement
+            UserIntention.PROGRESS_INFO: IntentionMapping(
+                intention=UserIntention.PROGRESS_INFO,
                 category=IntentionCategory.PROGRESSION,
                 required_fields={'objectives_and_contracts'},
-                nested_requirements={'objectives_and_contracts': ['current_objectives', 'active_contracts']},
+                optional_fields={'character_base', 'notes'},
+                nested_requirements={
+                    'objectives_and_contracts': ['current_objectives', 'active_contracts', 'completed_objectives']
+                },
                 entity_types={EntityType.QUEST, EntityType.CONTRACT},
+                calculation_required=True,
                 aggregation_required=True
             ),
             
-            UserIntention.COMPLETED_OBJECTIVES: IntentionMapping(
-                intention=UserIntention.COMPLETED_OBJECTIVES,
-                category=IntentionCategory.PROGRESSION,
-                required_fields={'objectives_and_contracts'},
-                nested_requirements={'objectives_and_contracts': ['completed_objectives']},
-                entity_types={EntityType.QUEST, EntityType.CONTRACT},
-                aggregation_required=True
-            ),
-            
-            # Character Development
-            UserIntention.PROGRESSION: IntentionMapping(
-                intention=UserIntention.PROGRESSION,
-                category=IntentionCategory.PROGRESSION,
-                required_fields={'character_base'},
-                optional_fields={'notes'},
-                calculation_required=True
-            ),
-            
-            # Full Character Data
-            UserIntention.FULL_CHARACTER_SHEET: IntentionMapping(
-                intention=UserIntention.FULL_CHARACTER_SHEET,
+            # Complete Character - absolutely everything
+            UserIntention.FULL_CHARACTER: IntentionMapping(
+                intention=UserIntention.FULL_CHARACTER,
                 category=IntentionCategory.CHARACTER_SHEET,
                 required_fields={
                     'character_base', 'characteristics', 'ability_scores', 'combat_stats',
@@ -418,33 +245,20 @@ class IntentionDataMapper:
                     'enemies', 'proficiencies', 'damage_modifiers', 'passive_scores', 'senses',
                     'action_economy', 'features_and_traits', 'inventory', 'spell_list',
                     'objectives_and_contracts', 'notes'
-                }
+                },
+                entity_types=set(EntityType),  # All entity types
+                calculation_required=True,
+                aggregation_required=True
             ),
             
+            # Character Summary - essential overview only
             UserIntention.CHARACTER_SUMMARY: IntentionMapping(
                 intention=UserIntention.CHARACTER_SUMMARY,
                 category=IntentionCategory.CHARACTER_SHEET,
                 required_fields={'character_base', 'ability_scores', 'combat_stats'},
                 optional_fields={'background_info', 'personality'},
-                aggregation_required=True
-            ),
-            
-            # Calculations & Analysis
-            UserIntention.CALCULATIONS: IntentionMapping(
-                intention=UserIntention.CALCULATIONS,
-                category=IntentionCategory.OPTIMIZATION,
-                required_fields={'ability_scores', 'inventory', 'features_and_traits'},
-                optional_fields={'spell_list', 'proficiencies'},
                 calculation_required=True,
                 aggregation_required=True
-            ),
-            
-            # Session & Roleplay
-            UserIntention.ROLEPLAY_INFO: IntentionMapping(
-                intention=UserIntention.ROLEPLAY_INFO,
-                category=IntentionCategory.SOCIAL,
-                required_fields={'personality', 'backstory'},
-                optional_fields={'notes', 'relationships'}
             )
         }
     
@@ -528,37 +342,25 @@ class CharacterPromptHelper:
     def get_intent_definitions() -> Dict[str, str]:
         """Returns all character intentions with their definitions for prompts."""
         return {
-            "character_basics": "Name, race, class, level, alignment, physical traits",
-            "ability_scores": "STR, DEX, CON, INT, WIS, CHA scores and modifiers",
-            "combat_info": "HP, AC, initiative, speed, saving throws, resistances", 
-            "action_economy": "Available actions, attacks, reactions, bonus actions",
-            "proficiencies": "All proficiencies: skills, tools, languages, armor, weapons",
-            "passive_abilities": "Passive perception, investigation, insight, etc.",
-            "movement_senses": "Movement speed, special movement, senses, vision",
-            "class_features": "Class features and abilities",
-            "racial_traits": "Racial traits and abilities",
-            "background_features": "Background features",
-            "feats": "Feats and their effects",
-            "all_features": "All features and traits combined",
-            "inventory": "Full inventory, equipped items, carrying capacity",
-            "weapons": "Weapon details and attack options",
-            "armor_equipment": "Armor and protective equipment",
-            "magical_items": "Magic items and their properties",
-            "spellcasting": "Spell save DC, attack bonus, spellcasting ability",
-            "spell_list": "Known/prepared spells by level",
-            "spell_details": "Specific spell information",
-            "spell_slots": "Available spell slots by level",
-            "background_info": "Background, lifestyle, languages",
-            "personality": "Personality traits, ideals, bonds, flaws",
-            "backstory": "Character backstory and history",
-            "relationships": "Organizations, allies, enemies, contacts",
-            "objectives": "Active quests, contracts, goals",
-            "completed_objectives": "Completed quests and contracts",
-            "progression": "Level, XP, advancement options",
-            "full_character_sheet": "Complete character information",
-            "character_summary": "High-level character overview",
-            "calculations": "Damage calculations, optimization analysis",
-            "roleplay_info": "Character voice, motivations, session prep"
+            "character_basics": "Core character identity and stats: name, race, class, level, alignment, physical characteristics, ability scores (STR, DEX, CON, INT, WIS, CHA), and basic derived stats",
+            
+            "combat_info": "All combat capabilities and defensive stats: hit points, armor class, initiative bonus, speed, saving throw bonuses, damage resistances/immunities, attack bonuses, weapon proficiencies, combat actions, and action economy options",
+            
+            "abilities_info": "Character capabilities and expertise: skill proficiencies, tool proficiencies, languages, special senses (darkvision, etc.), class features, racial traits, feats, and passive abilities that define what the character can do",
+            
+            "inventory_info": "Complete equipment and possessions: all equipped items (weapons, armor, accessories), backpack contents, carrying capacity calculations, encumbrance, currency (gold, silver, copper), and item descriptions/properties",
+            
+            "magic_info": "All spellcasting capabilities: known spells by class and level, spell slots available/used, spellcasting ability modifiers, spell attack bonuses, spell save DCs, cantrips, ritual spells, and magical item usage",
+            
+            "story_info": "Character narrative and personality: background details, personality traits, ideals, bonds, flaws, detailed backstory, personal history, motivations, and roleplay elements that define who the character is",
+            
+            "social_info": "Relationships and affiliations: allied NPCs, enemy relationships, organizational memberships, faction standings, contacts, social connections, reputation, and interpersonal dynamics",
+            
+            "progress_info": "Goals, objectives, and advancement: current active quests, completed objectives, ongoing contracts, character progression notes, future goals, quest rewards, experience tracking, and milestone achievements",
+            
+            "full_character": "Complete comprehensive character data: absolutely everything including all stats, equipment, spells, story elements, relationships, objectives, notes, and every piece of character information available",
+            
+            "character_summary": "Essential character overview: key identifying information, primary stats, main equipment, important abilities, and critical story elements for quick reference and character introduction"
         }
     
     @staticmethod

@@ -116,18 +116,19 @@ class CharacterQueryRouter:
         mapping_end = time.perf_counter()
         performance.intention_mapping_ms += (mapping_end - mapping_start) * 1000
         
-        # 4. Extract required character data
+        # 4. Extract required character data (including optional fields)
         extract_start = time.perf_counter()
-        character_data = self._extract_character_data(character, mapping.required_fields)
+        all_fields = mapping.required_fields.union(mapping.optional_fields)
+        character_data = self._extract_character_data(character, all_fields)
         extract_end = time.perf_counter()
         performance.data_extraction_ms = (extract_end - extract_start) * 1000
         performance.fields_extracted = len(character_data)
         
-        # 5. Filter by entities if provided
+        # 5. Expand with additional sections based on entity matches if provided
         entity_matches = []
         if entities:
             filter_start = time.perf_counter()
-            character_data, entity_matches = self._filter_by_entities(character_data, entities)
+            character_data, entity_matches = self._expand_by_entity_matches(character_data, entities, character)
             filter_end = time.perf_counter()
             performance.entity_filtering_ms = (filter_end - filter_start) * 1000
             performance.entity_matches_found = len(entity_matches)
@@ -195,124 +196,60 @@ class CharacterQueryRouter:
             # Primitive type
             return obj
     
-    def _filter_by_entities(self, character_data: Dict[str, Any], entities: List[Dict[str, Any]]) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
-        """Filter character data to only include information related to specified entities."""
+    def _expand_by_entity_matches(self, character_data: Dict[str, Any], entities: List[Dict[str, Any]], character: Character) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+        """
+        Expand character data sections based on entity matches.
+        If entities match items outside the current sections, pull in those additional sections.
+        """
         if not entities:
             return character_data, []
         
-        # For inventory/equipment intentions, skip entity filtering entirely
-        # These queries need complete data to make comparisons and find best items
-        inventory_intentions = ['inventory', 'weapons', 'armor', 'equipment', 'items']
-        if any(section in character_data for section in inventory_intentions):
-            print(f"🔍 DEBUG: Skipping entity filtering for inventory/equipment data - returning complete unfiltered data")
-            return character_data, []  # Return unfiltered data
+        expanded_data = character_data.copy()
+        entity_matches = []
         
-        filtered_data = {}
-        all_entity_matches = []
+        # Map entity types to character sections they might be found in
+        entity_section_map = {
+            EntityType.ITEM: ['inventory'],
+            EntityType.WEAPON: ['inventory'],
+            EntityType.ARMOR: ['inventory'],
+            EntityType.SPELL: ['spell_list'],
+            EntityType.FEATURE: ['features_and_traits'],
+            EntityType.TRAIT: ['features_and_traits'],
+            EntityType.SKILL: ['proficiencies'],
+            EntityType.ABILITY: ['ability_scores', 'proficiencies'],
+            EntityType.ALLY: ['allies'],
+            EntityType.ENEMY: ['enemies'],
+            EntityType.ORGANIZATION: ['organizations'],
+            EntityType.QUEST: ['objectives_and_contracts'],
+            EntityType.CONTRACT: ['objectives_and_contracts']
+        }
         
-        # For each section of character data, filter based on entities
-        for section_name, section_data in character_data.items():
-            
-            if section_name == 'inventory' and isinstance(section_data, dict):
-                # Filter inventory items
-                filtered_inventory = {}
-                
-                # Handle equipped_items
-                if 'equipped_items' in section_data and isinstance(section_data['equipped_items'], dict):
-                    filtered_equipped_items = {}
-                    for slot, items in section_data['equipped_items'].items():
-                        if isinstance(items, list):
-                            # Convert serialized items back to a format the entity matcher can handle
-                            filtered_items, match_results = self.entity_matcher.filter_items_by_entities(items, entities)
-                            all_entity_matches.extend(match_results)
-                            
-                            if filtered_items:
-                                filtered_equipped_items[slot] = filtered_items
-                    
-                    if filtered_equipped_items:
-                        filtered_inventory['equipped_items'] = filtered_equipped_items
-                
-                # Handle backpack items
-                if 'backpack' in section_data and isinstance(section_data['backpack'], list):
-                    filtered_backpack, match_results = self.entity_matcher.filter_items_by_entities(section_data['backpack'], entities)
-                    all_entity_matches.extend(match_results)
-                    
-                    if filtered_backpack:
-                        filtered_inventory['backpack'] = filtered_backpack
-                
-                # Copy other inventory fields (weight, etc.)
-                for key, value in section_data.items():
-                    if key not in ['equipped_items', 'backpack']:
-                        filtered_inventory[key] = value
-                
-                if filtered_inventory:
-                    filtered_data[section_name] = filtered_inventory
-                    
-            elif section_name == 'spell_list' and isinstance(section_data, dict):
-                # Filter spells
-                filtered_spells = {}
-                
-                for spell_section, spell_data in section_data.items():
-                    if spell_section == 'spells' and isinstance(spell_data, dict):
-                        filtered_spell_classes = {}
-                        
-                        for class_name, class_spells in spell_data.items():
-                            if isinstance(class_spells, dict):
-                                filtered_levels = {}
-                                
-                                for level, spells in class_spells.items():
-                                    if isinstance(spells, list):
-                                        filtered_level_spells, match_results = self.entity_matcher.filter_spells_by_entities(spells, entities)
-                                        all_entity_matches.extend(match_results)
-                                        
-                                        if filtered_level_spells:
-                                            filtered_levels[level] = filtered_level_spells
-                                
-                                if filtered_levels:
-                                    filtered_spell_classes[class_name] = filtered_levels
-                        
-                        if filtered_spell_classes:
-                            filtered_spells[spell_section] = filtered_spell_classes
-                    else:
-                        filtered_spells[spell_section] = spell_data
-                
-                if filtered_spells:
-                    filtered_data[section_name] = filtered_spells
-            
-            else:
-                # For other sections, include as-is
-                filtered_data[section_name] = section_data
+        # Check which sections we need to add based on entity matches
+        sections_to_add = set()
         
-        return (filtered_data if filtered_data else character_data), all_entity_matches
-
-
-# Example usage function
-def example_usage():
-    """Example of how to use the CharacterQueryRouter."""
-    # Note: In practice, you would load a character object and pass it to the router
-    # router = CharacterQueryRouter(character)  
-    router = CharacterQueryRouter()  # This will return warnings since no character is loaded
-    
-    # Example 1: Get all inventory
-    result = router.query_character(
-        user_intention="inventory"
-    )
-    print("Full inventory:", result.character_data.keys())
-    
-    # Example 2: Get specific weapon
-    result = router.query_character(
-        user_intention="weapons",
-        entities=[{"name": "longsword", "type": "weapon"}]
-    )
-    print("Longsword data:", result.character_data)
-    
-    # Example 3: Get spell information
-    result = router.query_character(
-        user_intention="spell_details", 
-        entities=[{"name": "eldritch blast", "type": "spell"}]
-    )
-    print("Eldritch Blast data:", result.character_data)
-
-
-if __name__ == "__main__":
-    example_usage()
+        for entity in entities:
+            entity_type = entity.get('type')
+            if entity_type:
+                try:
+                    entity_enum = EntityType(entity_type.lower())
+                    if entity_enum in entity_section_map:
+                        for section in entity_section_map[entity_enum]:
+                            if section not in expanded_data:
+                                sections_to_add.add(section)
+                                entity_matches.append({
+                                    'entity': entity,
+                                    'matched_section': section,
+                                    'reason': f"Entity type {entity_type} maps to section {section}"
+                                })
+                except ValueError:
+                    # Unknown entity type, skip
+                    continue
+        
+        # Extract additional sections
+        for section in sections_to_add:
+            if hasattr(character, section):
+                field_value = getattr(character, section)
+                if field_value is not None:
+                    expanded_data[section] = self._serialize_object(field_value)
+        
+        return expanded_data, entity_matches
