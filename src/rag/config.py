@@ -5,10 +5,13 @@ Centralized configuration for embedding models, API keys, and system settings
 from typing import Literal, Optional
 from dataclasses import dataclass
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables at module level
-load_dotenv()
+# Load environment variables at module level - find .env in project root
+project_root = Path(__file__).parent.parent.parent  # Go up from src/rag/config.py to project root
+env_path = project_root / '.env'
+load_dotenv(env_path)
 
 
 EmbeddingModel = Literal[
@@ -72,10 +75,10 @@ class RAGConfig:
     anthropic_api_key: Optional[str] = None
     
     # LLM Client Settings
-    primary_llm_provider: str = "openai"  # "openai" or "anthropic"
-    router_llm_provider: str = "openai"   # Provider for router decisions
-    final_response_llm_provider: str = "openai"  # Provider for final response
-    
+    primary_llm_provider: str = "anthropic"  # "openai" or "anthropic"
+    router_llm_provider: str = "anthropic"   # Provider for router decisions
+    final_response_llm_provider: str = "anthropic"  # Provider for final response
+
     # Model Settings - Updated with latest available models (as of Sept 2025)
     # OpenAI Models
     openai_router_model: str = "gpt-4o-mini"  # Fast, cost-effective for routing
@@ -83,7 +86,7 @@ class RAGConfig:
     
     # Anthropic Models  
     anthropic_router_model: str = "claude-3-5-haiku-latest"   # Fast, cost-effective for routing
-    anthropic_final_model: str = "claude-opus-4-1"            # Latest, highest quality Claude 4
+    anthropic_final_model: str = "claude-3-5-haiku-latest"    # Latest, highest quality Claude 4
     
     # Embedding Model Settings
     embedding_model: EmbeddingModel = "text-embedding-3-small"  # Default: fast and good
@@ -112,12 +115,21 @@ class RAGConfig:
     
     def __post_init__(self):
         """Validate API keys after initialization"""
-        if not self.openai_api_key:
+        # Only require the API key for the providers you're actually using
+        providers_needed = {self.router_llm_provider, self.final_response_llm_provider, self.primary_llm_provider}
+        
+        if "openai" in providers_needed and not self.openai_api_key:
             raise ValueError("OPENAI_API_KEY is required but not found in environment variables")
         
-        # Anthropic is optional for now
-        if not self.anthropic_api_key:
-            print("⚠️  ANTHROPIC_API_KEY not found - Claude features will be unavailable")
+        if "anthropic" in providers_needed and not self.anthropic_api_key:
+            raise ValueError("ANTHROPIC_API_KEY is required but not found in environment variables")
+        
+        # Warn about unused API keys
+        if "openai" not in providers_needed and self.openai_api_key:
+            print("ℹ️  OpenAI API key found but not needed with current provider settings")
+        
+        if "anthropic" not in providers_needed and self.anthropic_api_key:
+            print("ℹ️  Anthropic API key found but not needed with current provider settings")
     
     @classmethod
     def from_env(cls) -> 'RAGConfig':
@@ -128,9 +140,9 @@ class RAGConfig:
             anthropic_api_key=os.getenv('ANTHROPIC_API_KEY'),
             
             # LLM Provider Settings
-            primary_llm_provider=os.getenv('RAG_PRIMARY_LLM_PROVIDER', 'openai'),
-            router_llm_provider=os.getenv('RAG_ROUTER_LLM_PROVIDER', 'openai'),
-            final_response_llm_provider=os.getenv('RAG_FINAL_LLM_PROVIDER', 'openai'),
+            primary_llm_provider=os.getenv('RAG_PRIMARY_LLM_PROVIDER', 'anthropic'),
+            router_llm_provider=os.getenv('RAG_ROUTER_LLM_PROVIDER', 'anthropic'),
+            final_response_llm_provider=os.getenv('RAG_FINAL_LLM_PROVIDER', 'anthropic'),
             
             # Model Settings - Updated defaults
             openai_router_model=os.getenv('RAG_OPENAI_ROUTER_MODEL', 'gpt-4o-mini'),
@@ -155,6 +167,21 @@ class RAGConfig:
             embedding_cache_size=int(os.getenv('RAG_CACHE_SIZE', '1000')),
             local_model_device=os.getenv('RAG_LOCAL_DEVICE', 'cpu')
         )
+    
+    @classmethod
+    def from_defaults(cls) -> 'RAGConfig':
+        """Create config using class defaults, only overriding with environment for API keys"""
+        # Get API keys from environment first
+        openai_key = os.getenv('OPENAI_API_KEY')
+        anthropic_key = os.getenv('ANTHROPIC_API_KEY')
+        
+        # Create instance with defaults, including the API keys
+        config = cls(
+            openai_api_key=openai_key,
+            anthropic_api_key=anthropic_key
+        )
+        
+        return config
     
     def get_embedding_dimensions(self) -> int:
         """Get the expected embedding dimensions for the current model"""
@@ -267,7 +294,7 @@ def get_config() -> RAGConfig:
     """Get the global RAG configuration instance"""
     global _config
     if _config is None:
-        _config = RAGConfig.from_env()
+        _config = RAGConfig.from_defaults()  # Use class defaults instead of env defaults
     return _config
 
 

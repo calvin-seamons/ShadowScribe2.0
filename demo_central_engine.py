@@ -183,6 +183,80 @@ class InteractiveCentralEngineDemo:
         
         return final_response
     
+    async def _debug_character_router_response(self, user_query: str):
+        """Debug the character router LLM response to see what's wrong"""
+        print("\n🔍 DEBUGGING CHARACTER ROUTER RESPONSE")
+        print("-" * 50)
+        
+        try:
+            character_prompt = self.prompt_manager.get_character_router_prompt(user_query, self.character_name)
+            
+            # Get the same client the engine would use
+            provider = self.config.router_llm_provider
+            client = self.engine.llm_clients.get(provider)
+            
+            if provider == "anthropic":
+                model = self.config.anthropic_router_model
+            else:
+                model = self.config.openai_router_model
+                
+            llm_params = self.config.get_router_llm_params(model)
+            
+            print(f"Provider: {provider}, Model: {model}")
+            print(f"LLM Params: {llm_params}")
+            print("\nPrompt:")
+            print("-" * 30)
+            print(character_prompt[:500] + "..." if len(character_prompt) > 500 else character_prompt)
+            print("-" * 30)
+            
+            # Make the raw call
+            response = await client.generate_json_response(character_prompt, model=model, **llm_params)
+            print("\nRAW RESPONSE:")
+            print(json.dumps(response, indent=2))
+            
+        except Exception as e:
+            print(f"Debug error: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    async def _debug_session_notes_router_response(self, user_query: str):
+        """Debug the session notes router LLM response to see what's wrong"""
+        print("\n🔍 DEBUGGING SESSION NOTES ROUTER RESPONSE")
+        print("-" * 50)
+        
+        try:
+            session_prompt = self.prompt_manager.get_session_notes_router_prompt(user_query, self.character_name)
+            
+            # Get the same client the engine would use
+            provider = self.config.router_llm_provider
+            client = self.engine.llm_clients.get(provider)
+            
+            if provider == "anthropic":
+                model = self.config.anthropic_router_model
+            else:
+                model = self.config.openai_router_model
+                
+            llm_params = self.config.get_router_llm_params(model)
+            
+            print(f"Provider: {provider}, Model: {model}")
+            print(f"LLM Params: {llm_params}")
+            print("\nPrompt:")
+            print("-" * 30)
+            print(session_prompt[:500] + "..." if len(session_prompt) > 500 else session_prompt)
+            print("-" * 30)
+            
+            # Make the raw call
+            response = await client.generate_json_response(session_prompt, model=model, **llm_params)
+            print("\nRAW RESPONSE:")
+            print(json.dumps(response, indent=2))
+            
+        except Exception as e:
+            print(f"Debug error: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    
+    
     def run_interactive_demo(self):
         """Run the interactive demo loop"""
         print("🎮 Interactive ShadowScribe2.0 Demo")
@@ -202,7 +276,15 @@ class InteractiveCentralEngineDemo:
                     continue
                 
                 # Process the query
-                asyncio.run(self.process_query_with_visibility(user_query))
+                try:
+                    asyncio.run(self.process_query_with_visibility(user_query))
+                except Exception as e:
+                    print(f"❌ Error processing query: {str(e)}")
+                    # Debug raw LLM response
+                    try:
+                        asyncio.run(self._debug_character_router_response(user_query))
+                    except Exception as debug_e:
+                        print(f"Debug failed: {debug_e}")
                 
                 print("\n" + "="*80 + "\n")
                 
@@ -218,6 +300,20 @@ def main():
     """Main entry point"""
     try:
         demo = InteractiveCentralEngineDemo()
+        
+        # Auto-test the failing query
+        test_query = "What is Duskryn's alignment and background?"
+        print(f"🧪 Auto-testing query: {test_query}")
+        
+        try:
+            asyncio.run(demo.process_query_with_visibility(test_query))
+        except Exception as e:
+            print(f"❌ Main process failed: {str(e)}")
+            asyncio.run(demo._debug_character_router_response(test_query))
+            asyncio.run(demo._debug_session_notes_router_response(test_query))
+        
+        print("\n" + "="*80 + "\n")
+        
         demo.run_interactive_demo()
     except Exception as e:
         print(f"❌ Failed to initialize demo: {str(e)}")

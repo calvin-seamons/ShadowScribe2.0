@@ -147,138 +147,82 @@ Return JSON:
     
     def get_final_response_prompt(self, raw_results: Dict[str, Any], user_query: str) -> str:
         """
-        Coordinate with Context Assembler to build final response prompt.
-        Context Assembler assembles context, this method builds the final LLM prompt.
-        
-        DEBUG MODE: Bypassing context assembler to show raw data directly.
+        Build the final response prompt using assembled context data.
+        Creates a professional prompt that makes the AI act as an authoritative knowledge source.
         """
-        # DEBUG: Skip context assembler and show raw data
         import json
         
-        print("🔍 DEBUG: Building final response prompt...")
-        print(f"🔍 Raw results keys: {list(raw_results.keys())}")
+        context_sections = []
         
-        prompt_parts = []
-        
-        # Add raw character data with debugging
+        # Process character data
         if "character" in raw_results and raw_results["character"]:
             char_result = raw_results["character"]
-            prompt_parts.append("=== CHARACTER DATA (RAW DEBUG) ===")
             
-            print(f"🔍 Character result type: {type(char_result)}")
-            print(f"🔍 Character result attributes: {dir(char_result)}")
-            
-            if hasattr(char_result, 'character_data'):
-                print(f"🔍 Character data type: {type(char_result.character_data)}")
-                print(f"🔍 Character data keys: {list(char_result.character_data.keys()) if isinstance(char_result.character_data, dict) else 'Not a dict'}")
-                
-                # Show inventory data specifically
-                if isinstance(char_result.character_data, dict) and 'inventory' in char_result.character_data:
-                    inventory_data = char_result.character_data['inventory']
-                    print(f"🔍 INVENTORY DATA TYPE: {type(inventory_data)}")
-                    print(f"🔍 INVENTORY KEYS: {list(inventory_data.keys()) if isinstance(inventory_data, dict) else 'Not a dict'}")
-                    
-                    if isinstance(inventory_data, dict):
-                        for key, value in inventory_data.items():
-                            print(f"🔍 INVENTORY[{key}]: {type(value)} - FULL DATA: {value}")  # NO TRUNCATION!
-                            
-                            # Specifically check equipped_items
-                            if key == 'equipped_items' and isinstance(value, dict):
-                                print(f"🔍 EQUIPPED_ITEMS SLOTS: {list(value.keys())}")
-                                for slot, items in value.items():
-                                    print(f"🔍 SLOT[{slot}]: {len(items) if isinstance(items, list) else 'Not a list'} items")
-                                    if isinstance(items, list):
-                                        for i, item in enumerate(items):  # Show ALL items
-                                            print(f"🔍   Item {i+1}: {item}")
-                
-                prompt_parts.append(f"Character Data Type: {type(char_result.character_data)}")
-                prompt_parts.append(f"Character Data Keys: {list(char_result.character_data.keys()) if isinstance(char_result.character_data, dict) else 'Not a dict'}")
-                
-                # Pretty print the character data - use custom serializer to include everything
+            if hasattr(char_result, 'character_data') and char_result.character_data:
                 try:
                     def custom_serializer(obj):
-                        """Custom serializer that includes everything"""
+                        """Custom serializer for complex objects"""
                         if hasattr(obj, '__dict__'):
                             return obj.__dict__
-                        elif hasattr(obj, '_asdict'):  # For namedtuples
+                        elif hasattr(obj, '_asdict'):
                             return obj._asdict()
                         else:
                             return str(obj)
                     
                     char_data_json = json.dumps(char_result.character_data, indent=2, default=custom_serializer)
-                    prompt_parts.append(f"Character Data JSON:\n{char_data_json}")
-                    
-                    print(f"🔍 JSON LENGTH: {len(char_data_json)} characters")
+                    context_sections.append(f"CHARACTER INFORMATION:\n{char_data_json}")
                     
                 except Exception as e:
-                    prompt_parts.append(f"Character Data (str): {str(char_result.character_data)}")
-                    prompt_parts.append(f"JSON serialization error: {e}")
-                    print(f"🔍 JSON ERROR: {e}")
-                
-                # Add metadata if available
-                if hasattr(char_result, 'metadata') and char_result.metadata:
-                    prompt_parts.append(f"Metadata: {json.dumps(char_result.metadata, indent=2, default=str)}")
-                
-                # Add warnings if any
-                if hasattr(char_result, 'warnings') and char_result.warnings:
-                    prompt_parts.append(f"Warnings: {char_result.warnings}")
-                    
-            else:
-                prompt_parts.append(f"Character Result: {str(char_result)}")
-                print(f"🔍 No character_data attribute found")
+                    context_sections.append(f"CHARACTER INFORMATION:\n{str(char_result.character_data)}")
         
-        # Add raw rulebook data with debugging - FULL DATA NO TRUNCATION
+        # Process rulebook data
         if "rulebook" in raw_results and raw_results["rulebook"]:
             rulebook_result = raw_results["rulebook"]
-            prompt_parts.append("=== RULEBOOK DATA (RAW DEBUG) ===")
-            prompt_parts.append(f"Rulebook Result Type: {type(rulebook_result)}")
             
             if isinstance(rulebook_result, tuple) and len(rulebook_result) >= 2:
                 search_results, performance = rulebook_result
-                prompt_parts.append(f"Search Results Count: {len(search_results) if search_results else 0}")
                 if search_results:
-                    for i, result in enumerate(search_results, 1):  # ALL RESULTS
+                    rulebook_content = []
+                    for i, result in enumerate(search_results, 1):
                         if hasattr(result, 'section'):
-                            prompt_parts.append(f"Result {i}: {result.section.title}")
-                            # COMPLETE CONTENT - NO TRUNCATION
-                            prompt_parts.append(f"Content: {result.section.content}")
-            else:
-                prompt_parts.append(f"Rulebook Result: {str(rulebook_result)}")
+                            rulebook_content.append(f"RULE SECTION: {result.section.title}")
+                            rulebook_content.append(f"{result.section.content}")
+                    
+                    if rulebook_content:
+                        context_sections.append("RULES REFERENCE:\n" + "\n\n".join(rulebook_content))
         
-        # Add raw session data with debugging - FULL DATA NO TRUNCATION  
+        # Process session notes data
         if "session_notes" in raw_results and raw_results["session_notes"]:
             session_result = raw_results["session_notes"]
-            prompt_parts.append("=== SESSION NOTES DATA (RAW DEBUG) ===")
-            prompt_parts.append(f"Session Result Type: {type(session_result)}")
             
-            if hasattr(session_result, 'contexts'):
-                prompt_parts.append(f"Contexts Count: {len(session_result.contexts)}")
-                if session_result.contexts:
-                    for i, context in enumerate(session_result.contexts, 1):  # ALL CONTEXTS
-                        # COMPLETE CONTEXT - NO TRUNCATION
-                        prompt_parts.append(f"Context {i}: {str(context)}")
-            else:
-                prompt_parts.append(f"Session Result: {str(session_result)}")
+            if hasattr(session_result, 'contexts') and session_result.contexts:
+                session_content = []
+                for i, context in enumerate(session_result.contexts, 1):
+                    session_content.append(f"SESSION CONTEXT {i}: {str(context)}")
+                
+                if session_content:
+                    context_sections.append("CAMPAIGN HISTORY:\n" + "\n\n".join(session_content))
         
-        # Join all debug sections
-        debug_content = "\n\n".join(prompt_parts)
+        # Assemble the full context
+        full_context = "\n\n".join(context_sections) if context_sections else "No relevant data found."
         
-        # Build final prompt with debug data
-        final_prompt = f"""DEBUG MODE: Raw data analysis for query optimization.
+        # Build the final authoritative prompt
+        final_prompt = f"""You are an expert D&D assistant with comprehensive knowledge of characters, rules, and campaign history. Answer the user's question directly and authoritatively using the provided information.
 
-{debug_content}
+AVAILABLE INFORMATION:
+{full_context}
 
-Original Query: {user_query}
+USER QUESTION: {user_query}
 
-ANALYSIS TASK: Based on the RAW DATA above, provide a comprehensive answer to the user's query. 
-Pay special attention to the character data structure and ensure you're accessing the correct fields.
-Look specifically for inventory data, equipped items, weapons, and any relevant character information.
+RESPONSE GUIDELINES:
+- Answer the question directly and confidently
+- Present information as established facts, not as "based on data" or "according to records"
+- Be comprehensive but focused on what the user asked
+- If multiple data sources are relevant, synthesize them naturally
+- Use a knowledgeable, helpful tone as if you personally know this information
+- Do not mention data sources, JSON structures, or technical implementation details
+- If you don't have the specific information requested, say so clearly
 
-If you see character inventory data, make sure to examine the equipped_items section for weapons.
-Focus on finding the most powerful weapon based on damage values and magical properties."""
-        
-        print(f"🔍 FINAL PROMPT LENGTH: {len(final_prompt)} characters")
-        # NEVER TRUNCATE THE PREVIEW - SHOW EVERYTHING
-        print(f"🔍 FULL PROMPT:\n{final_prompt}")
+Provide your response:"""
         
         return final_prompt
