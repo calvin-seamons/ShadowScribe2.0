@@ -114,7 +114,7 @@ class InteractiveCentralEngineDemo:
         if router_outputs.character_output:
             print(f"📊 Character Router:")
             print(f"   • Needed: {router_outputs.character_output.is_needed}")
-            print(f"   • Intention: {router_outputs.character_output.user_intention}")
+            print(f"   • Intentions: {router_outputs.character_output.user_intentions}")
             print(f"   • Entities: {len(router_outputs.character_output.entities)} found")
             if router_outputs.character_output.entities:
                 for entity in router_outputs.character_output.entities[:3]:  # Show first 3

@@ -289,6 +289,55 @@ class IntentionDataMapper:
             nested_objects=nested_objects,
             include_relationships=True
         )
+    
+    @staticmethod
+    def combine_mappings(mappings: List[IntentionMapping]) -> IntentionMapping:
+        """Combine multiple IntentionMapping objects into a single mapping."""
+        if not mappings:
+            raise ValueError("Cannot combine empty list of mappings")
+        
+        if len(mappings) == 1:
+            return mappings[0]
+        
+        # Merge all fields and properties
+        combined_required_fields = set()
+        combined_optional_fields = set()
+        combined_nested_requirements = {}
+        combined_entity_types = set()
+        combined_calculation_required = False
+        combined_aggregation_required = False
+        
+        # Use the first mapping's intention and category as base
+        base_mapping = mappings[0]
+        
+        for mapping in mappings:
+            combined_required_fields.update(mapping.required_fields)
+            combined_optional_fields.update(mapping.optional_fields)
+            combined_entity_types.update(mapping.entity_types)
+            
+            # Merge nested requirements
+            for field, nested_list in mapping.nested_requirements.items():
+                if field not in combined_nested_requirements:
+                    combined_nested_requirements[field] = []
+                combined_nested_requirements[field].extend(nested_list)
+            
+            # Set flags if any mapping requires them
+            if mapping.calculation_required:
+                combined_calculation_required = True
+            if mapping.aggregation_required:
+                combined_aggregation_required = True
+        
+        # Create combined mapping
+        return IntentionMapping(
+            intention=base_mapping.intention,  # Use first intention as primary
+            category=base_mapping.category,    # Use first category as primary
+            required_fields=combined_required_fields,
+            optional_fields=combined_optional_fields,
+            nested_requirements=combined_nested_requirements,
+            entity_types=combined_entity_types,
+            calculation_required=combined_calculation_required,
+            aggregation_required=combined_aggregation_required
+        )
 
 
 @dataclass

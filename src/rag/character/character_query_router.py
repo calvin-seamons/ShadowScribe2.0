@@ -43,14 +43,14 @@ class CharacterQueryRouter:
     
     def query_character(
         self, 
-        user_intention: str, 
+        user_intentions: List[str], 
         entities: List[Dict[str, Any]] = None
     ) -> CharacterQueryResult:
         """
         Main method to query character information.
         
         Args:
-            user_intention: String representing what user wants (e.g., "inventory", "spell_list")
+            user_intentions: List of intention strings (max 2) representing what user wants (e.g., ["inventory", "spell_list"])
             entities: List of entity dicts with keys like {'name': 'Longsword', 'type': 'weapon'}
         
         Returns:
@@ -60,6 +60,12 @@ class CharacterQueryRouter:
         
         entities = entities or []
         warnings = []
+        
+        # Validate intentions count
+        if len(user_intentions) == 0:
+            warnings.append("No intentions provided")
+        elif len(user_intentions) > 2:
+            raise ValueError(f"Maximum 2 intentions allowed, got {len(user_intentions)}")
         
         # Initialize performance tracking
         performance = CharacterQueryPerformanceMetrics()
@@ -76,13 +82,28 @@ class CharacterQueryRouter:
         
         character = self.character
         
-        # 2. Map user intention to UserIntention enum
+        # 2. Map user intentions to UserIntention enums and get mappings
         intention_start = time.perf_counter()
-        try:
-            intention_enum = UserIntention(user_intention.lower())
-        except ValueError:
-            warnings.append(f"Unknown user intention: {user_intention}")
-            # Return basic character info as fallback
+        intention_enums = []
+        individual_mappings = []
+        mappings = self.intention_mapper.get_mappings()
+        
+        for user_intention in user_intentions:
+            try:
+                intention_enum = UserIntention(user_intention.lower())
+                intention_enums.append(intention_enum)
+                
+                if intention_enum not in mappings:
+                    warnings.append(f"No mapping found for intention: {user_intention}")
+                    continue
+                    
+                individual_mappings.append(mappings[intention_enum])
+                
+            except ValueError:
+                warnings.append(f"Unknown user intention: {user_intention}")
+        
+        # If no valid mappings found, return basic character info as fallback
+        if not individual_mappings:
             fallback_start = time.perf_counter()
             basic_data = {
                 "character_base": character.character_base.__dict__,
@@ -97,28 +118,21 @@ class CharacterQueryRouter:
                 warnings=warnings,
                 performance_metrics=performance
             )
+        
+        # 3. Combine mappings if multiple intentions
+        mapping_start = time.perf_counter()
+        if len(individual_mappings) == 1:
+            combined_mapping = individual_mappings[0]
+        else:
+            combined_mapping = self.intention_mapper.combine_mappings(individual_mappings)
+        
+        mapping_end = time.perf_counter()
         intention_end = time.perf_counter()
         performance.intention_mapping_ms = (intention_end - intention_start) * 1000
         
-        # 3. Get data requirements for this intention
-        mapping_start = time.perf_counter()
-        mappings = self.intention_mapper.get_mappings()
-        if intention_enum not in mappings:
-            warnings.append(f"No mapping found for intention: {user_intention}")
-            performance.total_time_ms = (time.perf_counter() - start_time) * 1000
-            return CharacterQueryResult(
-                character_data={}, 
-                warnings=warnings,
-                performance_metrics=performance
-            )
-        
-        mapping = mappings[intention_enum]
-        mapping_end = time.perf_counter()
-        performance.intention_mapping_ms += (mapping_end - mapping_start) * 1000
-        
         # 4. Extract required character data (including optional fields)
         extract_start = time.perf_counter()
-        all_fields = mapping.required_fields.union(mapping.optional_fields)
+        all_fields = combined_mapping.required_fields.union(combined_mapping.optional_fields)
         character_data = self._extract_character_data(character, all_fields)
         extract_end = time.perf_counter()
         performance.data_extraction_ms = (extract_end - extract_start) * 1000
@@ -147,9 +161,9 @@ class CharacterQueryRouter:
         return CharacterQueryResult(
             character_data=character_data,
             metadata={
-                "intention": user_intention,
+                "intentions": user_intentions,
                 "entities": entities,
-                "required_fields": list(mapping.required_fields)
+                "required_fields": list(combined_mapping.required_fields)
             },
             warnings=warnings,
             entity_matches=entity_matches,

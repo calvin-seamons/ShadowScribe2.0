@@ -3,6 +3,9 @@ Test Character Query Router
 
 Comprehensive test for the CharacterQueryRouter using multiple intentions and entities
 to query information about Duskryn Nightwarden.
+
+NOTE: Updated for multi-intention support - all user_intention parameters now use
+user_intentions arrays for consistency with new multi-intention functionality.
 """
 
 import sys
@@ -12,9 +15,9 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.rag.character.character_query_router import CharacterQueryRouter, QueryResult
+from src.rag.character.character_query_router import CharacterQueryRouter, CharacterQueryResult
 from src.rag.character.character_query_types import UserIntention
-from src.rag.character.character_manager import CharacterManager
+from src.utils.character_manager import CharacterManager
 import json
 
 
@@ -27,7 +30,7 @@ def print_section(title: str, content: str = ""):
         print(content)
 
 
-def print_query_result(result: QueryResult, intention: str):
+def print_query_result(result: CharacterQueryResult, intention: str):
     """Print formatted query result."""
     print(f"\n--- Query: {intention} ---")
     
@@ -98,7 +101,8 @@ def test_single_intentions():
     
     # Use the correct path for knowledge_base/saved_characters
     character_manager = CharacterManager("knowledge_base/saved_characters")
-    router = CharacterQueryRouter(character_manager)
+    character = character_manager.load_character("Duskryn Nightwarden")
+    router = CharacterQueryRouter(character)
     character_name = "Duskryn Nightwarden"
     
     # Test core intentions based on the UserIntention enum
@@ -120,8 +124,7 @@ def test_single_intentions():
     for intention in test_intentions:
         try:
             result = router.query_character(
-                character_name=character_name,
-                user_intention=intention
+                user_intentions=[intention]
             )
             print_query_result(result, intention)
         except Exception as e:
@@ -143,8 +146,7 @@ def test_entity_filtering():
     ]
     
     result = router.query_character(
-        character_name=character_name,
-        user_intention="weapons",
+        user_intentions=["weapons"],
         entities=weapon_entities
     )
     print_query_result(result, "weapons with specific entities")

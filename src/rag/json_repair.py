@@ -125,7 +125,7 @@ class JSONRepair:
         {
           "is_needed": boolean,
           "confidence": float,
-          "user_intention": string or null,
+          "user_intentions": array of strings,
           "entities": array
         }
         """
@@ -158,18 +158,38 @@ class JSONRepair:
             data["entities"] = []
             repair_details.append("Added missing 'entities' field (defaulted to empty array)")
         
-        # Handle user_intention field
+        # Handle user_intentions field
         if data.get("is_needed", False):
-            if "user_intention" not in data or data["user_intention"] is None:
-                # Check for alternative field names
-                if "intention" in data:
-                    data["user_intention"] = data["intention"]
-                    repair_details.append("Mapped 'intention' to 'user_intention'")
-                else:
-                    data["user_intention"] = "character_basics"  # Safe default
-                    repair_details.append("Added missing 'user_intention' field (defaulted to 'character_basics')")
+            # Handle both old and new field names for backwards compatibility
+            user_intentions = None
+            
+            if "user_intentions" in data:
+                user_intentions = data["user_intentions"]
+            elif "user_intention" in data and data["user_intention"] is not None:
+                # Convert single intention to array
+                user_intentions = [data["user_intention"]]
+                repair_details.append("Converted single 'user_intention' to 'user_intentions' array")
+            elif "intention" in data and data["intention"] is not None:
+                # Convert alternative field name
+                user_intentions = [data["intention"]]
+                repair_details.append("Mapped 'intention' to 'user_intentions' array")
+            
+            if user_intentions is None or len(user_intentions) == 0:
+                user_intentions = ["character_basics"]  # Safe default
+                repair_details.append("Added missing 'user_intentions' field (defaulted to ['character_basics'])")
+            elif len(user_intentions) > 2:
+                user_intentions = user_intentions[:2]
+                repair_details.append("Truncated 'user_intentions' to maximum of 2 items")
+            
+            data["user_intentions"] = user_intentions
         else:
-            data["user_intention"] = None
+            data["user_intentions"] = []
+        
+        # Clean up old fields
+        if "user_intention" in data:
+            del data["user_intention"]
+        if "intention" in data:
+            del data["intention"]
         
         # Validate and fix entities format
         if not isinstance(data["entities"], list):

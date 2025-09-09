@@ -41,10 +41,17 @@ Character: "{character_name}"
 
 TASK: Determine if this query needs CHARACTER DATA (stats, inventory, spells, abilities) and generate inputs.
 
+CRITICAL MULTI-INTENTION RULES:
+- ONLY return multiple intentions for clear two-part questions that need different data types
+- Single concepts should use ONE intention only
+- Maximum 2 intentions allowed - NEVER return more than 2
+- Examples of valid multi-intention: "show my spells and inventory", "what are my combat stats and abilities"
+- Examples of single intention: "what spells do I have", "show my combat info", "tell me about my character"
+
 IMPORTANT RULES:
-- If "is_needed" is true, you MUST provide a valid "user_intention" from the list below
-- If "is_needed" is false, set "user_intention" to null
-- Never return "is_needed": true with "user_intention": null
+- If "is_needed" is true, you MUST provide valid intention(s) from the list below
+- If "is_needed" is false, set "user_intentions" to empty array []
+- Never return "is_needed": true with empty "user_intentions"
 
 CHARACTER INTENTIONS (choose the most relevant):
 {intentions_text}
@@ -56,7 +63,7 @@ Return JSON:
 {{
   "is_needed": boolean,
   "confidence": float,
-  "user_intention": "intention_name" or null,
+  "user_intentions": ["intention_name"] or ["intention_1", "intention_2"] or [],
   "entities": [{{"name": "string", "type": "type", "confidence": float}}]
 }}'''
     

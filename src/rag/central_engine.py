@@ -31,8 +31,12 @@ from .session_notes.session_types import QueryEngineResult
 class CharacterLLMRouterOutput:
     """Output from Character Router LLM call."""
     is_needed: bool
-    user_intention: Optional[str] = None
+    user_intentions: List[str] = field(default_factory=list)
     entities: List[Dict[str, Any]] = field(default_factory=list)
+    
+    def validate_intentions_count(self) -> bool:
+        """Validate that we don't have more than 2 intentions."""
+        return len(self.user_intentions) <= 2
 
 
 @dataclass
@@ -146,7 +150,7 @@ class CentralEngine:
         if router_outputs.character_output and router_outputs.character_output.is_needed:
             print(f"🔧 DEBUG: Scheduling Character router execution")
             print(f"   • Character router available: {self.character_router is not None}")
-            print(f"   • User intention: {router_outputs.character_output.user_intention}")
+            print(f"   • User intentions: {router_outputs.character_output.user_intentions}")
             tasks.append(self._execute_character_router(router_outputs.character_output))
             result_keys.append("character")
         else:
@@ -286,9 +290,15 @@ class CentralEngine:
             
             response = repair_result.data
             
+            # Validate max 2 intentions
+            user_intentions = response.get("user_intentions", [])
+            if len(user_intentions) > 2:
+                print(f"🔧 WARNING: LLM returned {len(user_intentions)} intentions, truncating to 2")
+                user_intentions = user_intentions[:2]
+            
             return CharacterLLMRouterOutput(
                 is_needed=response.get("is_needed", False),
-                user_intention=response.get("user_intention"),
+                user_intentions=user_intentions,
                 entities=response.get("entities", [])
             )
         except Exception as e:
@@ -409,11 +419,12 @@ class CentralEngine:
     async def _execute_character_router(self, output: CharacterLLMRouterOutput) -> CharacterQueryResult:
         """Execute character query router with LLM-generated inputs."""
         print(f"🔧 DEBUG: Executing Character router...")
-        print(f"   • User intention: {output.user_intention}")
+        print(f"   • User intentions: {output.user_intentions}")
+        print(f"   • Intention count: {len(output.user_intentions)}")
         print(f"   • Entities count: {len(output.entities) if output.entities else 0}")
         
-        if not output.user_intention:
-            print("🔧 DEBUG: No user intention, returning empty result")
+        if not output.user_intentions or len(output.user_intentions) == 0:
+            print("🔧 DEBUG: No user intentions, returning empty result")
             return CharacterQueryResult(character_data={})
         
         if not self.character_router:
@@ -421,10 +432,10 @@ class CentralEngine:
             return CharacterQueryResult(character_data={}, warnings=["Character router not available"])
         
         try:
-            print(f"🔧 DEBUG: Calling character_router.query_character() with intention '{output.user_intention}'")
+            print(f"🔧 DEBUG: Calling character_router.query_character() with intentions {output.user_intentions}")
             # Pass parameters directly from LLM router output (character is pre-loaded)
             result = self.character_router.query_character(
-                user_intention=output.user_intention,
+                user_intentions=output.user_intentions,
                 entities=output.entities
             )
             print(f"🔧 DEBUG: Character router returned result with {len(result.character_data) if result.character_data else 0} data items")
