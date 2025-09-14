@@ -24,7 +24,17 @@ from datetime import datetime
 
 @dataclass
 class AbilityScores:
-    """Represents the six core ability scores."""
+    """Represents the six core ability scores.
+    
+    EXTRACTION PATHS:
+    - stats[0].value (id=1 = strength)
+    - stats[1].value (id=2 = dexterity) 
+    - stats[2].value (id=3 = constitution)
+    - stats[3].value (id=4 = intelligence)
+    - stats[4].value (id=5 = wisdom)
+    - stats[5].value (id=6 = charisma)
+    - overrideStats can override base values if not null
+    """
     strength: int
     dexterity: int
     constitution: int
@@ -35,7 +45,15 @@ class AbilityScores:
 
 @dataclass
 class CombatStats:
-    """Core combat statistics."""
+    """Core combat statistics.
+    
+    EXTRACTION PATHS:
+    - max_hp: overrideHitPoints (if not null) or baseHitPoints + bonusHitPoints
+    - armor_class: calculated from equipped armor items in inventory[].definition.armorClass
+    - initiative_bonus: calculated from dex modifier + modifiers
+    - speed: race.weightSpeeds.normal.walk (base walking speed)
+    - hit_dice: classes[].definition.hitDice (per class level)
+    """
     max_hp: int
     armor_class: int
     initiative_bonus: int
@@ -45,7 +63,19 @@ class CombatStats:
 
 @dataclass
 class CharacterBase:
-    """Basic character information."""
+    """Basic character information.
+    
+    EXTRACTION PATHS:
+    - name: data.name
+    - race: race.fullName (e.g., "Hill Dwarf") or race.baseName for base race
+    - character_class: classes[0].definition.name (primary/starting class)
+    - total_level: sum of all classes[].level
+    - alignment: lookup alignmentId in alignment reference table
+    - background: background.definition.name
+    - subrace: race.subRaceShortName (if race.isSubRace is true)
+    - multiclass_levels: {classes[].definition.name: classes[].level} for each class
+    - lifestyle: lookup lifestyleId in lifestyle reference table
+    """
     name: str
     race: str
     character_class: str  # Primary class
