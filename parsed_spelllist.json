@@ -1,0 +1,682 @@
+{
+  "spellcasting": {
+    "Warlock": {
+      "ability": "charisma",
+      "spell_save_dc": 20,
+      "spell_attack_bonus": 12,
+      "cantrips_known": [
+        "Infestation",
+        "Prestidigitation",
+        "Eldritch Blast"
+      ],
+      "spells_known": [
+        "Hex",
+        "Witch Bolt",
+        "Charm Person",
+        "Hellish Rebuke",
+        "Counterspell",
+        "Intellect Fortress",
+        "Detect Thoughts",
+        "Suggestion",
+        "Plane Shift",
+        "Greater Invisibility",
+        "Call Lightning",
+        "Divine Word",
+        "Finger of Death",
+        "Misty Step",
+        "Bane"
+      ],
+      "spell_slots": {
+        "3": 2
+      }
+    },
+    "Paladin": {
+      "ability": "charisma",
+      "spell_save_dc": 20,
+      "spell_attack_bonus": 12,
+      "cantrips_known": [],
+      "spells_known": [
+        "Zone of Truth",
+        "Shining Smite",
+        "Shield of Faith",
+        "Find Steed",
+        "Prayer of Healing",
+        "Detect Magic",
+        "Detect Poison and Disease",
+        "Locate Object",
+        "Ceremony"
+      ],
+      "spell_slots": {
+        "1": 4,
+        "2": 3
+      }
+    }
+  },
+  "spells": {
+    "Warlock": {
+      "1st_level": [
+        {
+          "name": "Hex",
+          "level": 1,
+          "school": "Enchantment",
+          "casting_time": "1 reaction",
+          "range": "90 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "the petrified eye of a newt"
+          },
+          "duration": "Concentration, up to 1 hour",
+          "description": "You place a curse on a creature that you can see within range. Until the spell ends, you deal an extra 1d6 Necrotic damage to the target whenever you hit it with an attack roll. Also, choose one ability when you cast the spell. The target has Disadvantage on ability checks made with the chosen ability. If the target drops to 0 Hit Points before this spell ends, you can take a Bonus Action on a later turn to curse a new creature. Using a Higher-Level Spell Slot. Your Concentration can last longer with a spell slot of level 2 (up to 4 hours), 3–4 (up to 8 hours), or 5+ (24 hours).",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Damage",
+            "Debuff"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Witch Bolt",
+          "level": 1,
+          "school": "Evocation",
+          "casting_time": "1 action",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "a twig from a tree that has been struck by lightning"
+          },
+          "duration": "Concentration, up to 1 minute",
+          "description": "A beam of crackling, blue energy lances out toward a creature within range, forming a sustained arc of lightning between you and the target. Make a ranged spell attack against that creature. On a hit, the target takes 1d12 lightning damage, and on each of your turns for the duration, you can use your action to deal 1d12 lightning damage to the target automatically. The spell ends if you use your action to do anything else. The spell also ends if the target is ever outside the spell’s range or if it has total cover from you. At Higher Levels. When you cast this spell using a spell slot of 2nd level or higher, the initial damage increases by 1d12 for each slot level above 1st.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Damage"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Charm Person",
+          "level": 1,
+          "school": "Enchantment",
+          "casting_time": "1 action",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "1 hour",
+          "description": "One Humanoid you can see within range makes a Wisdom saving throw. It does so with Advantage if you or your allies are fighting it. On a failed save, the target has the Charmed condition until the spell ends or until you or your allies damage it. The Charmed creature is Friendly to you. When the spell ends, the target knows it was Charmed by you. Using a Higher-Level Spell Slot. You can target one additional creature for each spell slot level above 1.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Control",
+            "Social"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Hellish Rebuke",
+          "level": 1,
+          "school": "Evocation",
+          "casting_time": "0 minute",
+          "range": "60 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "instantaneous",
+          "description": "The creature that damaged you is momentarily surrounded by green flames. It makes a Dexterity saving throw, taking 2d10 Fire damage on a failed save or half as much damage on a successful one. Using a Higher-Level Spell Slot. The damage increases by 1d10 for each spell slot level above 1.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Damage"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Bane",
+          "level": 1,
+          "school": "Enchantment",
+          "casting_time": "1 action",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "a drop of blood"
+          },
+          "duration": "Concentration, up to 1 minute",
+          "description": "Up to three creatures of your choice that you can see within range must make Charisma saving throws. Whenever a target that fails this saving throw makes an attack roll or a saving throw before the spell ends, the target must roll a d4 and subtract the number rolled from the attack roll or saving throw. At Higher Levels. When you cast this spell using a spell slot of 2nd level or higher, you can target one additional creature for each slot level above 1st.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Debuff"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        }
+      ],
+      "cantrip": [
+        {
+          "name": "Infestation",
+          "level": 0,
+          "school": "Conjuration",
+          "casting_time": "1 action",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "a living flea"
+          },
+          "duration": "instantaneous",
+          "description": "You cause a cloud of mites, fleas, and other parasites to appear momentarily on one creature you can see within range. The target must succeed on a Constitution saving throw, or it takes 1d6 poison damage and moves 5 feet in a random direction if it can move and its speed is at least 5 feet. Roll a d4 for the direction: 1, north; 2, south; 3, east; or 4, west. This movement doesn’t provoke opportunity attacks, and if the direction rolled is blocked, the target doesn’t move. The spell’s damage increases by 1d6 when you reach 5th level (2d6), 11th level (3d6), and 17th level (4d6).",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Summoning",
+            "Damage",
+            "Control"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Prestidigitation",
+          "level": 0,
+          "school": "Transmutation",
+          "casting_time": "1 action",
+          "range": "10 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "1 hour",
+          "description": "You create a magical effect within range. Choose the effect from the options below. If you cast this spell multiple times, you can have up to three of its non-instantaneous effects active at a time. Sensory Effect. You create an instantaneous, harmless sensory effect, such as a shower of sparks, a puff of wind, faint musical notes, or an odd odor. Fire Play. You instantaneously light or snuff out a candle, a torch, or a small campfire. Clean or Soil. You instantaneously clean or soil an object no larger than 1 cubic foot. Minor Sensation. You chill, warm, or flavor up to 1 cubic foot of nonliving material for 1 hour. Magic Mark. You make a color, a small mark, or a symbol appear on an object or a surface for 1 hour. Minor Creation. You create a nonmagical trinket or an illusory image that can fit in your hand. It lasts until the end of your next turn. A trinket can deal no damage and has no monetary worth.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Utility"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Eldritch Blast",
+          "level": 0,
+          "school": "Evocation",
+          "casting_time": "1 action",
+          "range": "120 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "instantaneous",
+          "description": "You hurl a beam of crackling energy. Make a ranged spell attack against one creature or object in range. On a hit, the target takes 1d10 Force damage. Cantrip Upgrade. The spell creates two beams at level 5, three beams at level 11, and four beams at level 17. You can direct the beams at the same target or at different ones. Make a separate attack roll for each beam.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Damage"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        }
+      ],
+      "3rd_level": [
+        {
+          "name": "Counterspell",
+          "level": 3,
+          "school": "Abjuration",
+          "casting_time": "1 minute",
+          "range": "60 feet",
+          "components": {
+            "verbal": false,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "instantaneous",
+          "description": "You attempt to interrupt a creature in the process of casting a spell. The creature makes a Constitution saving throw. On a failed save, the spell dissipates with no effect, and the action, Bonus Action, or Reaction used to cast it is wasted. If that spell was cast with a spell slot, the slot isn’t expended.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Negation"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Intellect Fortress",
+          "level": 3,
+          "school": "Abjuration",
+          "casting_time": "1 action",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": false,
+            "material": false
+          },
+          "duration": "Concentration, up to 1 hour",
+          "description": "For the duration, you or one willing creature you can see within range has resistance to psychic damage, as well as advantage on Intelligence, Wisdom, and Charisma saving throws. At Higher Levels. When you cast this spell using a spell slot of 4th level or higher, you can target one additional creature for each slot level above 3rd. The creatures must be within 30 feet of each other when you target them.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Buff"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Call Lightning",
+          "level": 3,
+          "school": "Conjuration",
+          "casting_time": "1 action",
+          "range": "120 feet (60-foot cylinder)",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "Concentration, up to 10 minutes",
+          "description": "A storm cloud appears in the shape of a cylinder that is 10 feet tall with a 60-foot radius, centered on a point you can see within range directly above you. The spell fails if you can’t see a point in the air where the storm cloud could appear (for example, if you are in a room that can’t accommodate the cloud). When you cast the spell, choose a point you can see under the cloud. A bolt of lightning flashes down from the cloud to that point. Each creature within 5 feet of that point must make a Dexterity saving throw. A creature takes 3d10 lightning damage on a failed save, or half as much damage on a successful one. On each of your turns until the spell ends, you can use your action to call down lightning in this way again, targeting the same point or a different one. If you are outdoors in stormy conditions when you cast this spell, the spell gives you control over the existing storm instead of creating a new one. Under such conditions, the spell’s damage increases by 1d10. At Higher Levels. When you cast this spell using a spell slot of 4th or higher level, the damage increases by 1d10 for each slot level above 3rd.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Damage"
+          ],
+          "area": "60-foot cylinder",
+          "rites": null,
+          "charges": null
+        }
+      ],
+      "2nd_level": [
+        {
+          "name": "Detect Thoughts",
+          "level": 2,
+          "school": "Divination",
+          "casting_time": "1 action",
+          "range": "Self",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "a copper piece"
+          },
+          "duration": "Concentration, up to 1 minute",
+          "description": "For the duration, you can read the thoughts of certain creatures. When you cast the spell and as your action on each turn until the spell ends, you can focus your mind on any one creature that you can see within 30 feet of you. If the creature you choose has an Intelligence of 3 or lower or doesn’t speak any language, the creature is unaffected. You initially learn the surface thoughts of the creature—what is most on its mind in that moment. As an action, you can either shift your attention to another creature’s thoughts or attempt to probe deeper into the same creature’s mind. If you probe deeper, the target must make a Wisdom saving throw. If it fails, you gain insight into its reasoning (if any), its emotional state, and something that looms large in its mind (such as something it worries over, loves, or hates). If it succeeds, the spell ends. Either way, the target knows that you are probing into its mind, and unless you shift your attention to another creature’s thoughts, the creature can use its action on its turn to make an Intelligence check contested by your Intelligence check; if it succeeds, the spell ends. Questions verbally directed at the target creature naturally shape the course of its thoughts, so this spell is particularly effective as part of an interrogation. You can also use this spell to detect the presence of thinking creatures you can’t see. When you cast the spell or as your action during the duration, you can search for thoughts within 30 feet of you. The spell can penetrate barriers, but 2 feet of rock, 2 inches of any metal other than lead, or a thin sheet of lead blocks you. You can’t detect a creature with an Intelligence of 3 or lower or one that doesn’t speak any language. Once you detect the presence of a creature in this way, you can read its thoughts for the rest of the duration as described above, even if you can’t see it, but it must still be within range.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Social",
+            "Detection"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Suggestion",
+          "level": 2,
+          "school": "Enchantment",
+          "casting_time": "1 action",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": false,
+            "material": "a snake's tongue and either a bit of honeycomb or a drop of sweet oil"
+          },
+          "duration": "Concentration, up to 8 hours",
+          "description": "You suggest a course of activity (limited to a sentence or two) and magically influence a creature you can see within range that can hear and understand you. Creatures that can't be charmed are immune to this effect. The suggestion must be worded in such a manner as to make the course of action sound reasonable. Asking the creature to stab itself, throw itself onto a spear, immolate itself, or do some other obviously harmful act ends the spell. The target must make a Wisdom saving throw. On a failed save, it pursues the course of action you described to the best of its ability. The suggested course of action can continue for the entire duration. If the suggested activity can be completed in a shorter time, the spell ends when the subject finishes what it was asked to do. You can also specify conditions that will trigger a special activity during the duration. For example, you might suggest that a knight give her warhorse to the first beggar she meets. If the condition isn't met before the spell expires, the activity isn't performed. If you or any of your companions damage the target, the spell ends.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Control",
+            "Social"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Misty Step",
+          "level": 2,
+          "school": "Conjuration",
+          "casting_time": "1 reaction",
+          "range": "Self",
+          "components": {
+            "verbal": true,
+            "somatic": false,
+            "material": false
+          },
+          "duration": "instantaneous",
+          "description": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Teleportation"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        }
+      ],
+      "7th_level": [
+        {
+          "name": "Plane Shift",
+          "level": 7,
+          "school": "Conjuration",
+          "casting_time": "1 action",
+          "range": "Touch",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "a forked, metal rod worth at least 250 gp, attuned to a particular plane of existence"
+          },
+          "duration": "instantaneous",
+          "description": "You and up to eight willing creatures who link hands in a circle are transported to a different plane of existence. You can specify a target destination in general terms, such as the City of Brass on the Elemental Plane of Fire or the palace of Dispater on the second level of the Nine Hells, and you appear in or near that destination. If you are trying to reach the City of Brass, for example, you might arrive in its Street of Steel, before its Gate of Ashes, or looking at the city from across the Sea of Fire, at the GM's discretion. Alternatively, if you know the sigil sequence of a teleportation circle on another plane of existence, this spell can take you to that circle. If the teleportation circle is too small to hold all the creatures you transported, they appear in the closest unoccupied spaces next to the circle. You can use this spell to banish an unwilling creature to another plane. Choose a creature within your reach and make a melee spell attack against it. On a hit, the creature must make a Charisma saving throw. If the creature fails this save, it is transported to a random location on the plane of existence you specify. A creature so transported must find its own way back to your current plane of existence.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Teleportation",
+            "Banishment"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Divine Word",
+          "level": 7,
+          "school": "Evocation",
+          "casting_time": "1 reaction",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": false,
+            "material": false
+          },
+          "duration": "instantaneous",
+          "description": "You utter a divine word, imbued with the power that shaped the world at the dawn of creation. Choose any number of creatures you can see within range. Each creature that can hear you must make a Charisma saving throw. On a failed save, a creature suffers an effect based on its current hit points: 50 hit points or fewer: deafened for 1 minute 40 hit points or fewer: deafened and blinded for 10 minutes 30 hit points or fewer: blinded, deafened, and stunned for 1 hour 20 hit points or fewer: killed instantly Regardless of its current hit points, a celestial, an elemental, a fey, or a fiend that fails its save is forced back to its plane of origin (if it isn't there already) and can't return to your current plane for 24 hours by any means short of a wish spell.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Control",
+            "Debuff",
+            "Banishment"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Finger of Death",
+          "level": 7,
+          "school": "Necromancy",
+          "casting_time": "1 action",
+          "range": "60 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "instantaneous",
+          "description": "You send negative energy coursing through a creature that you can see within range, causing it searing pain. The target must make a Constitution saving throw. It takes 7d8 + 30 necrotic damage on a failed save, or half as much damage on a successful one. A humanoid killed by this spell rises at the start of your next turn as a zombie that is permanently under your command, following your verbal orders to the best of its ability.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Creation",
+            "Damage",
+            "Control"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        }
+      ],
+      "4th_level": [
+        {
+          "name": "Greater Invisibility",
+          "level": 4,
+          "school": "Illusion",
+          "casting_time": "1 action",
+          "range": "Touch",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "Concentration, up to 1 minute",
+          "description": "A creature you touch has the Invisible condition until the spell ends.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Buff"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        }
+      ]
+    },
+    "Paladin": {
+      "2nd_level": [
+        {
+          "name": "Zone of Truth",
+          "level": 2,
+          "school": "Enchantment",
+          "casting_time": "1 action",
+          "range": "60 feet (15-foot sphere)",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "10 minutes",
+          "description": "You create a magical zone that guards against deception in a 15-foot-radius Sphere centered on a point within range. Until the spell ends, a creature that enters the spell’s area for the first time on a turn or starts its turn there makes a Charisma saving throw. On a failed save, a creature can’t speak a deliberate lie while in the radius. You know whether a creature succeeds or fails on this save. An affected creature is aware of the spell and can avoid answering questions to which it would normally respond with a lie. Such a creature can be evasive yet must be truthful.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Control"
+          ],
+          "area": "15-foot sphere",
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Shining Smite",
+          "level": 2,
+          "school": "Transmutation",
+          "casting_time": "1 reaction",
+          "range": "Self",
+          "components": {
+            "verbal": true,
+            "somatic": false,
+            "material": false
+          },
+          "duration": "Concentration, up to 1 minute",
+          "description": "The target hit by the strike takes an extra 2d6 Radiant damage from the attack. Until the spell ends, the target sheds Bright Light in a 5-foot radius, attack rolls against it have Advantage, and it can’t benefit from the Invisible condition. Using a Higher-Level Spell Slot. The damage increases by 1d6 for each spell slot level above 2.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Find Steed",
+          "level": 2,
+          "school": "Conjuration",
+          "casting_time": "1 action",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "instantaneous",
+          "description": "You summon an otherworldly being that appears as a loyal steed in an unoccupied space of your choice within range. This creature uses the Otherworldly Steed stat block. If you already have a steed from this spell, the steed is replaced by the new one. The steed resembles a Large, rideable animal of your choice, such as a horse, a camel, a dire wolf, or an elk. Whenever you cast the spell, choose the steed’s creature type—Celestial, Fey, or Fiend—which determines certain traits in the stat block. Combat. The steed is an ally to you and your allies. In combat, it shares your Initiative count, and it functions as a controlled mount while you ride it (as defined in the rules on mounted combat). If you have the Incapacitated condition, the steed takes its turn immediately after yours and acts independently, focusing on protecting you. Disappearance of the Steed. The steed disappears if it drops to 0 Hit Points or if you die. When it disappears, it leaves behind anything it was wearing or carrying. If you cast this spell again, you decide whether you summon the steed that disappeared or a different one. Using a Higher-Level Spell Slot. Use the spell slot’s level for the spell’s level in the stat block. Otherworldly Steed Large Celestial, Fey, or Fiend (Your Choice), Neutral AC 10 + 1 per spell level HP 5 + 10 per spell level (the steed has a number of Hit Dice [d10s] equal to the spell’s level) Speed 60 ft., Fly 60 ft. (requires level 4+ spell) Mod Save STR 18 +4 +4 DEX 12 +1 +1 CON 14 +2 +2 Mod Save INT 6 −2 −2 WIS 12 +1 +1 CHA 8 −1 −1 Senses Passive Perception 11 Languages Telepathy 1 mile (works only with you) CR None (XP 0; PB equals your Proficiency Bonus) Traits Life Bond. When you regain Hit Points from a level 1+ spell, the steed regains the same number of Hit Points if you’re within 5 feet of it. Actions Otherworldly Slam. Melee Attack Roll: Bonus equals your spell attack modifier, reach 5 ft. Hit: 1d8 plus the spell’s level of Radiant (Celestial), Psychic (Fey), or Necrotic (Fiend) damage. Bonus Actions Fell Glare (Fiend Only; Recharges after a Long Rest). Wisdom Saving Throw: DC equals your spell save DC, one creature within 60 feet the steed can see. Failure: The target has the Frightened condition until the end of your next turn. Fey Step (Fey Only; Recharges after a Long Rest). The steed teleports, along with its rider, to an unoccupied space of your choice up to 60 feet away from itself. Healing Touch (Celestial Only; Recharges after a Long Rest). One creature within 5 feet of the steed regains a number of Hit Points equal to 2d8 plus the spell’s level.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Summoning"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Prayer of Healing",
+          "level": 2,
+          "school": "Abjuration",
+          "casting_time": "10 hours",
+          "range": "30 feet",
+          "components": {
+            "verbal": true,
+            "somatic": false,
+            "material": false
+          },
+          "duration": "instantaneous",
+          "description": "Up to five creatures of your choice who remain within range for the spell’s entire casting gain the benefits of a Short Rest and also regain 2d8 Hit Points. A creature can’t be affected by this spell again until that creature finishes a Long Rest. Using a Higher-Level Spell Slot. The healing increases by 1d8 for each spell slot level above 2.",
+          "concentration": false,
+          "ritual": false,
+          "tags": [
+            "Healing"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Locate Object",
+          "level": 2,
+          "school": "Divination",
+          "casting_time": "1 action",
+          "range": "Self",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "a forked twig"
+          },
+          "duration": "Concentration, up to 10 minutes",
+          "description": "Describe or name an object that is familiar to you. You sense the direction to the object’s location if that object is within 1,000 feet of you. If the object is in motion, you know the direction of its movement. The spell can locate a specific object known to you if you have seen it up close—within 30 feet—at least once. Alternatively, the spell can locate the nearest object of a particular kind, such as a certain kind of apparel, jewelry, furniture, tool, or weapon. This spell can’t locate an object if any thickness of lead blocks a direct path between you and the object.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Detection"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        }
+      ],
+      "1st_level": [
+        {
+          "name": "Shield of Faith",
+          "level": 1,
+          "school": "Abjuration",
+          "casting_time": "1 reaction",
+          "range": "60 feet",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "a prayer scroll"
+          },
+          "duration": "Concentration, up to 10 minutes",
+          "description": "A shimmering field surrounds a creature of your choice within range, granting it a +2 bonus to AC for the duration.",
+          "concentration": true,
+          "ritual": false,
+          "tags": [
+            "Buff",
+            "Warding"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Detect Magic",
+          "level": 1,
+          "school": "Divination",
+          "casting_time": "1 action",
+          "range": "Self (30-foot sphere)",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": false
+          },
+          "duration": "Concentration, up to 10 minutes",
+          "description": "For the duration, you sense the presence of magical effects within 30 feet of yourself. If you sense such effects, you can take the Magic action to see a faint aura around any visible creature or object in the area that bears the magic, and if an effect was created by a spell, you learn the spell’s school of magic. The spell is blocked by 1 foot of stone, dirt, or wood; 1 inch of metal; or a thin sheet of lead.",
+          "concentration": true,
+          "ritual": true,
+          "tags": [
+            "Detection"
+          ],
+          "area": "30-foot sphere",
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Detect Poison and Disease",
+          "level": 1,
+          "school": "Divination",
+          "casting_time": "1 action",
+          "range": "Self (30-foot sphere)",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "a yew leaf"
+          },
+          "duration": "Concentration, up to 10 minutes",
+          "description": "For the duration, you sense the location of poisons, poisonous or venomous creatures, and magical contagions within 30 feet of yourself. You sense the kind of poison, creature, or contagion in each case. The spell is blocked by 1 foot of stone, dirt, or wood; 1 inch of metal; or a thin sheet of lead.",
+          "concentration": true,
+          "ritual": true,
+          "tags": [
+            "Detection"
+          ],
+          "area": "30-foot sphere",
+          "rites": null,
+          "charges": null
+        },
+        {
+          "name": "Ceremony",
+          "level": 1,
+          "school": "Abjuration",
+          "casting_time": "8 hours",
+          "range": "Touch",
+          "components": {
+            "verbal": true,
+            "somatic": true,
+            "material": "25 gp worth of powdered silver, which the spell consumes"
+          },
+          "duration": "instantaneous",
+          "description": "You perform a special religious ceremony that is infused with magic. When you cast the spell, choose one of the following rites, the target of which must be within 10 feet of you throughout the casting. Atonement. You touch one willing creature whose alignment has changed, and you make a DC 20 Wisdom (Insight) check. On a successful check, you restore the target to its original alignment. Bless Water. You touch one vial of water and cause it to become holy water. Coming of Age. You touch one humanoid who is a young adult. For the next 24 hours, whenever the target makes an ability check, it can roll a d4 and add the number rolled to the ability check. A creature can benefit from this rite only once. Dedication. You touch one humanoid who wishes to be dedicated to your god’s service. For the next 24 hours, whenever the target makes a saving throw, it can roll a d4 and add the number rolled to the save. A creature can benefit from this rite only once. Funeral Rite. You touch one corpse, and for the next 7 days, the target can’t become undead by any means short of a wish spell. Wedding. You touch adult humanoids willing to be bonded together in marriage. For the next 7 days, each target gains a +2 bonus to AC while they are within 30 feet of each other. A creature can benefit from this rite again only if widowed.",
+          "concentration": false,
+          "ritual": true,
+          "tags": [
+            "Buff",
+            "Utility"
+          ],
+          "area": null,
+          "rites": null,
+          "charges": null
+        }
+      ]
+    }
+  }
+}

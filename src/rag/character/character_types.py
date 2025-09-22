@@ -89,7 +89,20 @@ class CharacterBase:
 
 @dataclass
 class PhysicalCharacteristics:
-    """Physical appearance and traits."""
+    """Physical appearance and traits.
+    
+    EXTRACTION PATHS:
+    - alignment: lookup data.alignmentId in alignment reference table
+    - gender: data.gender
+    - eyes: data.eyes
+    - size: lookup data.race.sizeId in size reference table (4 = Medium)
+    - height: data.height
+    - hair: data.hair
+    - skin: data.skin
+    - age: data.age
+    - weight: data.weight (may need to add unit like "lb")
+    - faith: data.faith
+    """
     alignment: str
     gender: str
     eyes: str
@@ -104,21 +117,53 @@ class PhysicalCharacteristics:
 
 @dataclass
 class Proficiency:
-    """Represents a skill, tool, language, or armor proficiency."""
+    """Represents a skill, tool, language, or armor proficiency.
+    
+    EXTRACTION PATHS:
+    - Extract from data.modifiers[category] where category in ["race", "class", "background", "item", "feat"]
+    - Filter modifiers where modifier.type == "proficiency"
+    - type: map modifier.subType to appropriate category:
+      * weapon subtypes (e.g., "warhammer", "battleaxe") -> "weapon"
+      * tool subtypes (e.g., "smiths-tools", "poisoners-kit") -> "tool" 
+      * skill subtypes (e.g., "insight", "religion") -> "skill"
+      * armor subtypes -> "armor"
+      * language subtypes -> "language"
+      * saving throw subtypes -> "saving_throw"
+    - name: modifier.friendlySubtypeName (e.g., "Smith's Tools", "Warhammer")
+    """
     type: Literal["armor", "weapon", "tool", "language", "skill", "saving_throw"]
     name: str
 
 
 @dataclass
 class DamageModifier:
-    """Damage resistance, immunity, or vulnerability."""
+    """Damage resistance, immunity, or vulnerability.
+    
+    EXTRACTION PATHS:
+    - Extract from data.modifiers[category] where category in ["race", "class", "background", "item", "feat"]
+    - Filter modifiers where modifier.type in ["resistance", "immunity", "vulnerability"]
+    - damage_type: modifier.subType (e.g., "poison", "acid", "fire")
+    - modifier_type: modifier.type ("resistance", "immunity", or "vulnerability")
+    """
     damage_type: str
     modifier_type: Literal["resistance", "immunity", "vulnerability"]
 
 
 @dataclass
 class PassiveScores:
-    """Passive perception and other passive abilities."""
+    """Passive perception and other passive abilities.
+    
+    EXTRACTION PATHS:
+    NOTE: D&D Beyond does not store pre-calculated passive scores in the JSON.
+    These must be calculated from ability scores and proficiencies:
+    - perception: 10 + WIS modifier + proficiency bonus (if proficient in Perception)
+    - investigation: 10 + INT modifier + proficiency bonus (if proficient in Investigation)
+    - insight: 10 + WIS modifier + proficiency bonus (if proficient in Insight) 
+    - stealth: 10 + DEX modifier + proficiency bonus (if proficient in Stealth)
+    
+    Base ability scores from data.stats[] and overrideStats[]
+    Proficiencies from data.modifiers[category] where type="proficiency" and subType matches skill name
+    """
     perception: int
     investigation: Optional[int] = None
     insight: Optional[int] = None
@@ -129,6 +174,18 @@ class PassiveScores:
 class Senses:
     """
     Special senses in D&D 5e.
+
+    EXTRACTION PATHS:
+    - Extract from data.modifiers[category] where category in ["race", "class", "background", "item", "feat"]
+    - Filter modifiers where modifier.type == "set-base" and modifier.subType contains sense names:
+      * "darkvision": modifier.value (range in feet, e.g., 60)
+      * "blindsight": modifier.value (range in feet)
+      * "tremorsense": modifier.value (range in feet) 
+      * "truesight": modifier.value (range in feet)
+      * Other special senses as they appear
+    - Some senses may also be found in class features or spell descriptions
+    
+    NOTE: Not all characters will have special senses beyond normal vision.
 
     A flexible dictionary to store any type of sense with its range or description.
     Common examples:
@@ -150,14 +207,36 @@ class Senses:
 
 @dataclass
 class BackgroundFeature:
-    """A background feature with name and description."""
+    """A background feature with name and description.
+    
+    EXTRACTION PATHS:
+    - name: data.background.definition.featureName
+    - description: data.background.definition.featureDescription (HTML content, may need cleaning)
+    
+    Example from Acolyte background:
+    - name: "Shelter of the Faithful"
+    - description: HTML description of the feature's mechanics and benefits
+    """
     name: str
     description: str
 
 
 @dataclass
 class BackgroundInfo:
-    """Character background information."""
+    """Character background information.
+    
+    EXTRACTION PATHS:
+    - name: data.background.definition.name
+    - feature: Create BackgroundFeature from data.background.definition.featureName and featureDescription
+    - skill_proficiencies: Parse from data.background.definition.skillProficienciesDescription (comma-separated list)
+    - tool_proficiencies: Parse from data.background.definition.toolProficienciesDescription (comma-separated list, may be empty)
+    - language_proficiencies: Parse from data.background.definition.languagesDescription (descriptive text, may need interpretation)
+    - equipment: Parse from data.background.definition.equipmentDescription (descriptive text listing items)
+    - feature_description: Same as data.background.definition.featureDescription (duplicate of feature.description)
+    
+    NOTE: Proficiency descriptions are text that need parsing, not structured arrays.
+    Language descriptions may be vague (e.g., "Two of your choice").
+    """
     name: str
     feature: BackgroundFeature
     skill_proficiencies: List[str] = field(default_factory=list)
@@ -169,7 +248,18 @@ class BackgroundInfo:
 
 @dataclass
 class PersonalityTraits:
-    """Personality traits, ideals, bonds, and flaws."""
+    """Personality traits, ideals, bonds, and flaws.
+    
+    EXTRACTION PATHS:
+    - personality_traits: Split data.traits.personalityTraits on newlines (\n)
+    - ideals: Split data.traits.ideals on newlines (\n)
+    - bonds: Split data.traits.bonds on newlines (\n) 
+    - flaws: Split data.traits.flaws on newlines (\n)
+    
+    NOTE: These are stored as single strings with newline separators, not arrays.
+    May contain multiple entries per field separated by \n characters.
+    Probably will need to ask LLM to parse into lists.
+    """
     personality_traits: List[str] = field(default_factory=list)
     ideals: List[str] = field(default_factory=list)
     bonds: List[str] = field(default_factory=list)
@@ -178,21 +268,64 @@ class PersonalityTraits:
 
 @dataclass
 class BackstorySection:
-    """A section of the character's backstory."""
+    """A section of the character's backstory.
+    
+    EXTRACTION PATHS:
+    WARNING: D&D Beyond does NOT store backstory as structured sections.
+    
+    - Backstory is stored as single markdown text: data.notes.backstory
+    - Contains markdown formatting (**, \n\n for sections)
+    - Must parse markdown headers (** text **) to extract section headings
+    - Must split content between headers to create sections
+    
+    ALTERNATIVE EXTRACTION:
+    - heading: Extract from markdown headers in data.notes.backstory
+    - content: Extract content between headers
+    
+    NOTE: This requires custom parsing of markdown-formatted text.
+    Example structure in JSON: "**Header**\n\nContent text\n\n**Next Header**\n\nMore content"
+    Might need to ask LLM to parse into structured sections.
+    """
     heading: str
     content: str
 
 
 @dataclass
 class FamilyBackstory:
-    """Family background information."""
+    """Family background information.
+    
+    EXTRACTION PATHS:
+    WARNING: D&D Beyond does NOT store family backstory as a separate structured field.
+    
+    - parents: Must be extracted from the main backstory text (data.notes.backstory)
+    - sections: Must parse markdown sections from data.notes.backstory
+    
+    NOTE: This entire dataclass represents data that must be extracted using an LLM
+    to parse unstructured backstory text and identify family-related information.
+    The backstory is stored as free-form markdown text, not structured data.
+    """
     parents: str
     sections: List[BackstorySection] = field(default_factory=list)
 
 
 @dataclass
 class Backstory:
-    """Complete character backstory."""
+    """Complete character backstory.
+    
+    EXTRACTION PATHS:
+    - title: Extract first markdown header from data.notes.backstory
+    - family_backstory: Must be parsed from data.notes.backstory using LLM
+    - sections: Parse all markdown sections from data.notes.backstory
+    
+    Example structure in JSON:
+    data.notes.backstory: "**The Battle of Shadow's Edge**\n\nUnder the tutelage..."
+    
+    NOTE: Requires LLM parsing of markdown-formatted free text to extract:
+    - Section headers (** Header **)
+    - Section content (text between headers)
+    - Family information (parents, relationships)
+    - Story structure and organization
+    """
     title: str
     family_backstory: FamilyBackstory
     sections: List[BackstorySection] = field(default_factory=list)
@@ -200,7 +333,21 @@ class Backstory:
 
 @dataclass
 class Organization:
-    """An organization the character belongs to."""
+    """An organization the character belongs to.
+    
+    EXTRACTION PATHS:
+    - Parse from data.notes.organizations (free text with organization descriptions)
+    
+    Example structure:
+    "The Holy Knights of Kluntul: As a high-ranking officer, Duskryn plays a significant role..."
+    
+    NOTE: Requires LLM parsing of free text to extract:
+    - name: Organization name (e.g., "The Holy Knights of Kluntul")
+    - role: Character's role/position in the organization
+    - description: Organization's purpose and character's involvement
+    
+    The JSON stores this as unstructured descriptive text, not separate fields.
+    """
     name: str
     role: str
     description: str
@@ -208,7 +355,22 @@ class Organization:
 
 @dataclass
 class Ally:
-    """An ally or contact."""
+    """An ally or contact.
+    
+    EXTRACTION PATHS:
+    - Parse from data.notes.allies (numbered list with markdown formatting)
+    
+    Example structure:
+    "1. **High Acolyte Aldric**: His mentor and leader of the Holy Knights of Kluntul..."
+    
+    NOTE: Requires LLM parsing of markdown-formatted text to extract:
+    - name: Extract from markdown bold text (e.g., "High Acolyte Aldric")
+    - description: Extract descriptive text after the colon
+    - title: May be part of the name or description (e.g., "High Acolyte")
+    
+    The JSON stores allies as a formatted string with numbered entries,
+    not as an array of structured objects.
+    """
     name: str
     description: str
     title: Optional[str] = None
@@ -216,7 +378,22 @@ class Ally:
 
 @dataclass
 class Enemy:
-    """An enemy or rival."""
+    """An enemy or rival.
+    
+    EXTRACTION PATHS:
+    - Parse from data.notes.enemies (simple text list)
+    
+    Example structure:
+    "Xurmurrin, The Voiceless One\nAnyone who is an enemy of Etherena"
+    
+    NOTE: Requires LLM parsing of free text to extract:
+    - name: Extract enemy names from newline-separated text
+    - description: May need to infer from context or backstory
+    
+    The JSON stores enemies as simple newline-separated text,
+    not structured data with separate name/description fields.
+    Enemy descriptions may need to be extracted from the backstory text.
+    """
     name: str
     description: str
 
@@ -225,7 +402,23 @@ class Enemy:
 
 @dataclass
 class DamageInfo:
-    """Damage information for attacks."""
+    """Damage information for attacks.
+    
+    EXTRACTION PATHS:
+    - one_handed: NOT DIRECTLY AVAILABLE - Must be calculated from weapon properties
+    - two_handed: NOT DIRECTLY AVAILABLE - Must be calculated from weapon properties  
+    - base: inventory[].definition.damage (damage dice) or actions[].dice structure
+    - type: inventory[].definition.damageType or actions[].damageTypeId (requires lookup)
+    
+    MISSING INFORMATION:
+    - D&D Beyond doesn't separate one/two-handed damage explicitly
+    - Need to analyze weapon properties to determine handedness capabilities
+    
+    LLM ASSISTANCE NEEDED:
+    - Parse weapon properties arrays to determine if weapon can be used one/two-handed
+    - Interpret damage dice notation (e.g., "1d8", "1d10") 
+    - Map damageTypeId integers to damage type names
+    """
     one_handed: Optional[str] = None
     two_handed: Optional[str] = None
     base: Optional[str] = None
@@ -234,7 +427,34 @@ class DamageInfo:
 
 @dataclass
 class AttackAction:
-    """An attack action or weapon attack."""
+    """An attack action or weapon attack.
+    
+    EXTRACTION PATHS:
+    - name: actions.class[].name or inventory[].definition.name (for weapons)
+    - type: REQUIRES MAPPING - actions.class[].actionType (integer 1-8) needs conversion to literals
+    - damage: Create DamageInfo from actions[].dice or inventory[].definition.damage
+    - properties: inventory[].definition.properties array (for weapons)
+    - range: actions.class[].range.range or inventory[].definition.range
+    - reach: NOT EXPLICIT - must derive from weapon properties ("reach" property)
+    - attack_bonus: CALCULATED - ability modifier + proficiency + magic bonuses
+    - damage_type: inventory[].definition.damageType or actions[].damageTypeId
+    - charges: actions.class[].limitedUse structure (convert to simpler format)
+    - weapon_properties: Same as properties but filtered for weapon-specific ones
+    - special_options: NOT AVAILABLE - no structured field in JSON
+    - required_items: Can derive from actions that reference inventory items
+    
+    MISSING INFORMATION:
+    - No explicit reach boolean (must parse from properties)
+    - No structured special_options field
+    - Attack bonuses need calculation from multiple sources
+    
+    LLM ASSISTANCE NEEDED:
+    - Map actionType integers (1=action, 3=bonus_action, etc.) to your literals
+    - Parse HTML descriptions to extract special options
+    - Determine reach from weapon properties array
+    - Calculate attack bonuses from ability scores + modifiers + magic items
+    - Categorize general properties vs weapon-specific properties
+    """
     name: str
     type: Literal["weapon_attack", "melee_attack", "ranged_attack", "spell_attack"]
     damage: Optional[DamageInfo] = None
@@ -251,7 +471,45 @@ class AttackAction:
 
 @dataclass
 class SpecialAction:
-    """A special action like Channel Divinity."""
+    """A special action like Channel Divinity.
+    
+    EXTRACTION PATHS:
+    - name: actions.class[].name
+    - type: REQUIRES MAPPING - actions.class[].actionType integer to literals:
+      * 1 = "action", 3 = "bonus_action", 4 = "reaction", 8 = "no_action", etc.
+    - description: actions.class[].description (HTML content, needs cleaning)
+    - uses: actions.class[].limitedUse structure:
+      * maxUses, numberUsed, resetType (1=short rest, 2=long rest, etc.)
+    - save_dc: actions.class[].fixedSaveDc
+    - range: actions.class[].range.range (may be null)
+    - effect: NOT SEPARATE FIELD - must extract from description
+    - options: NOT AVAILABLE - no structured options in JSON
+    - trigger: actions.class[].activation data (partial info)
+    - sub_actions: NOT AVAILABLE - no nested action structure
+    - required_items: Can derive from inventory items that grant actions
+    
+    ACTION TYPE MAPPING (from JSON actionType integers):
+    - 1: "action"
+    - 2: "no_action" (passive)
+    - 3: "bonus_action" 
+    - 4: "reaction"
+    - 6: "reaction" (opportunity attack)
+    - 8: "no_action" (other)
+    
+    MISSING INFORMATION:
+    - No separate effect field (embedded in description)
+    - No structured options array
+    - No sub_actions nesting
+    - Limited trigger information
+    
+    LLM ASSISTANCE NEEDED:
+    - Convert actionType integers to your literal types
+    - Clean HTML from descriptions (remove tags, format text)
+    - Extract structured effect information from descriptions
+    - Parse trigger conditions from activation data and descriptions
+    - Convert limitedUse structure to simpler uses format
+    - Identify any options embedded in descriptions
+    """
     name: str
     type: Literal["action", "bonus_action", "reaction", "no_action", "feature"]
     description: Optional[str] = None
@@ -267,7 +525,29 @@ class SpecialAction:
 
 @dataclass
 class ActionEconomy:
-    """Character's action economy information."""
+    """Character's action economy information.
+    
+    EXTRACTION PATHS:
+    - attacks_per_action: NOT DIRECTLY AVAILABLE - Must be calculated from class features
+      * Look for "Extra Attack" features in classes[].classFeatures[]
+      * Default is 1, increases based on fighter/ranger/paladin levels
+      * Some subclasses grant additional attacks
+    - actions: Aggregate from multiple sources:
+      * actions.class[] (class features that are actions)
+      * actions.race[] (racial abilities)
+      * actions.feat[] (feat-granted actions)
+      * Convert each to SpecialAction objects
+    
+    MISSING INFORMATION:
+    - No explicit "attacks per action" field in JSON
+    - Must derive from class features and levels
+    
+    LLM ASSISTANCE NEEDED:
+    - Parse class features to identify "Extra Attack" or similar abilities
+    - Calculate attacks per action based on class levels and features
+    - Convert various action sources into unified SpecialAction format
+    - Identify passive vs active abilities
+    """
     attacks_per_action: int = 1
     actions: List[SpecialAction] = field(default_factory=list)
 
@@ -276,7 +556,51 @@ class ActionEconomy:
 
 @dataclass
 class Feature:
-    """A class feature, racial trait, or feat."""
+    """A class feature, racial trait, or feat.
+    
+    EXTRACTION PATHS:
+    - name: Multiple sources depending on feature type:
+      * race.racialTraits[].definition.name (racial traits)
+      * classes[].classFeatures[].definition.name (class features)
+      * feats[].definition.name (feats)
+    - description: Corresponding .definition.description (HTML, needs cleaning)
+    - action_type: REQUIRES MAPPING from actions data if feature grants actions
+      * Check if feature appears in actions.class[], actions.race[], etc.
+      * Map actionType integer to literal
+    - passive: DERIVED - true if no corresponding action entry exists
+    - uses: From corresponding limitedUse structure if feature grants actions
+    - effect: NOT SEPARATE FIELD - extract from description
+    - cost: NOT AVAILABLE - no cost field in D&D Beyond
+    - damage: From actions data if feature grants damage
+    - trigger: From activation data if available
+    - subclass: DERIVED - true if from subclass features vs base class
+    - channel_divinity: SPECIAL CASE - identify if feature name contains "Channel Divinity"
+    - duration: From actions data or parse from description
+    - range: From actions.range data if applicable
+    - save_dc: From actions.fixedSaveDc if applicable
+    - focus: NOT AVAILABLE - no focus field
+    - preparation: NOT AVAILABLE - no preparation field
+    
+    FEATURE SOURCES IN JSON:
+    1. Racial Traits: race.racialTraits[].definition
+    2. Class Features: classes[].classFeatures[].definition
+    3. Subclass Features: classes[].subclassDefinition.classFeatures[].definition
+    4. Feats: feats[].definition
+    
+    MISSING INFORMATION:
+    - No explicit passive flag (must derive from presence/absence in actions)
+    - No separate effect field (embedded in descriptions)
+    - No cost, focus, or preparation fields
+    - Limited trigger information
+    
+    LLM ASSISTANCE NEEDED:
+    - Clean HTML from descriptions
+    - Extract structured effect information from descriptions
+    - Determine if feature is passive vs active
+    - Identify Channel Divinity features from names
+    - Parse duration and trigger information from descriptions
+    - Map feature types (racial vs class vs subclass vs feat)
+    """
     name: str
     description: Optional[str] = None
     action_type: Optional[Literal["action", "bonus_action", "reaction", "no_action"]] = None
@@ -297,14 +621,75 @@ class Feature:
 
 @dataclass
 class ClassFeatures:
-    """Features for a specific class."""
+    """Features for a specific class.
+    
+    EXTRACTION PATHS:
+    - level: classes[].level (the level at which features are gained)
+    - features: Extract from classes[].classFeatures[] where:
+      * Filter classFeatures by requiredLevel <= character's class level
+      * Convert each classFeature.definition to Feature object
+      * Include both base class and subclass features
+    
+    CLASS FEATURE STRUCTURE IN JSON:
+    - classes[].classFeatures[] - base class features
+    - classes[].subclassDefinition.classFeatures[] - subclass-specific features
+    - Each feature has: name, description, requiredLevel, etc.
+    
+    MISSING INFORMATION:
+    - Features aren't pre-organized by level in JSON
+    - Must filter and group features by their requiredLevel
+    
+    LLM ASSISTANCE NEEDED:
+    - Group features by the level they're gained
+    - Distinguish between base class vs subclass features
+    - Parse feature descriptions and convert to Feature objects
+    - Handle multiclass scenarios (features from multiple classes)
+    """
     level: int
     features: List[Feature] = field(default_factory=list)
 
 
 @dataclass
 class FeaturesAndTraits:
-    """All character features and traits organized by class."""
+    """All character features and traits organized by class.
+    
+    EXTRACTION PATHS:
+    - class_features: Organize from classes[] data:
+      * Key: classes[].definition.name (e.g., "Warlock", "Cleric")
+      * Value: ClassFeatures object with features grouped by level
+      * Include both base class and subclass features
+    - racial_traits: Extract from race.racialTraits[]:
+      * Convert each racialTrait.definition to Feature object
+      * Include both base race and subrace traits
+    - feats: Extract from feats[]:
+      * Convert each feat.definition to Feature object
+      * Include all character-selected feats
+    
+    FEATURE SOURCES IN JSON:
+    1. Class Features:
+       - classes[].classFeatures[].definition
+       - classes[].subclassDefinition.classFeatures[].definition
+    2. Racial Traits:
+       - race.racialTraits[].definition (base race + subrace)
+    3. Feats:
+       - feats[].definition
+    
+    ORGANIZATION REQUIREMENTS:
+    - class_features must be organized by class name and level
+    - racial_traits are flat list (no level organization)
+    - feats are flat list (no level organization)
+    
+    MISSING INFORMATION:
+    - No pre-organized structure by class/level
+    - Must manually group and organize features
+    
+    LLM ASSISTANCE NEEDED:
+    - Group class features by class name and level gained
+    - Convert various feature definition formats to unified Feature objects
+    - Distinguish between different feature types (class vs racial vs feat)
+    - Handle subclass features separately or merged with base class
+    - Parse and clean HTML descriptions for all feature types
+    """
     class_features: Dict[str, ClassFeatures] = field(default_factory=dict)
     racial_traits: List[Feature] = field(default_factory=list)
     feats: List[Feature] = field(default_factory=list)
@@ -314,7 +699,30 @@ class FeaturesAndTraits:
 
 @dataclass
 class ItemProperty:
-    """A magical property of an item."""
+    """A magical property of an item.
+    
+    EXTRACTION PATHS:
+    - name: NOT DIRECTLY AVAILABLE as separate properties in D&D Beyond JSON
+    - description: inventory[].definition.description (HTML content, needs cleaning)
+    - effect: NOT SEPARATE FIELD - must extract from description
+    
+    ITEM PROPERTY SOURCES:
+    - Basic item properties come from inventory[].definition.grantedModifiers[]
+    - Magical effects embedded in inventory[].definition.description
+    - Tags available in inventory[].definition.tags[] (e.g., "Damage", "Control")
+    
+    MISSING INFORMATION:
+    - D&D Beyond doesn't separate item properties into discrete name/description pairs
+    - Properties are embedded within item descriptions or represented as modifiers
+    - No structured property system like your dataclass expects
+    
+    LLM ASSISTANCE NEEDED:
+    - Parse item descriptions to extract individual magical properties
+    - Convert HTML descriptions to clean text
+    - Identify and separate multiple properties within single description
+    - Extract property names from descriptive text
+    - Distinguish between mechanical effects and flavor text
+    """
     name: str
     description: Optional[str] = None
     effect: Optional[str] = None
@@ -322,7 +730,36 @@ class ItemProperty:
 
 @dataclass
 class SpellCharges:
-    """Spell charges for magical items."""
+    """Spell charges for magical items.
+    
+    EXTRACTION PATHS:
+    - save_dc: NOT DIRECTLY AVAILABLE in item definitions
+    - recharge: NOT DIRECTLY AVAILABLE as structured field
+    - spells: Must extract from item descriptions or actions granted by items
+    
+    SPELL-GRANTING ITEM SOURCES:
+    - Some items in inventory[] may grant spells via grantedModifiers
+    - Spell information might be in item descriptions
+    - Item actions in actions.item[] may reference spell-like abilities
+    - Limited use items may have limitedUse structure
+    
+    ITEMS WITH SPELL CHARGES (from JSON example):
+    - Helm of Telepathy: grants detect thoughts and suggestion spells
+    - Other magical items may have spell charges but not explicitly structured
+    
+    MISSING INFORMATION:
+    - No explicit "spell charges" structure in D&D Beyond JSON
+    - Save DCs not typically stored at item level
+    - Recharge information usually in descriptions, not structured data
+    - Spell lists not organized as arrays for items
+    
+    LLM ASSISTANCE NEEDED:
+    - Parse item descriptions to identify spell-granting abilities
+    - Extract save DC information from descriptions
+    - Identify recharge mechanics ("once per day", "recharges at dawn", etc.)
+    - Build spell lists from item descriptions or granted actions
+    - Convert limitedUse structures to spell charge format
+    """
     save_dc: int
     recharge: str
     spells: List[Dict[str, Any]] = field(default_factory=list)
@@ -330,7 +767,39 @@ class SpellCharges:
 
 @dataclass
 class SpecialFeatures:
-    """Special features of magical items."""
+    """Special features of magical items.
+    
+    EXTRACTION PATHS:
+    - critical_range: NOT AVAILABLE - D&D Beyond doesn't track expanded crit ranges at item level
+    - extra_damage: inventory[].definition.grantedModifiers[] (damage modifiers)
+    - curse: NOT AVAILABLE - curse information typically in descriptions only
+    - random_properties: NOT AVAILABLE - no structured random property system
+    - spell_charges: Must build from item descriptions and actions (see SpellCharges)
+    - lore: inventory[].definition.description (extract lore portions)
+    - tags: inventory[].definition.tags[] (e.g., ["Damage", "Control", "Utility"])
+    
+    AVAILABLE ITEM DATA IN JSON:
+    - inventory[].definition.grantedModifiers[] - mechanical bonuses/effects
+    - inventory[].definition.tags[] - categorization tags
+    - inventory[].definition.description - full item description with lore
+    - inventory[].definition.rarity - magic item rarity
+    - inventory[].isAttuned - attunement status
+    - inventory[].limitedUse - usage tracking for charged items
+    
+    MISSING INFORMATION:
+    - No explicit critical range tracking
+    - No structured curse system
+    - No random property arrays
+    - Lore mixed with mechanical descriptions
+    
+    LLM ASSISTANCE NEEDED:
+    - Parse descriptions to separate lore from mechanics
+    - Identify curse information from item descriptions
+    - Extract critical range modifications from descriptions
+    - Build spell_charges from item abilities
+    - Distinguish between flavor text and mechanical effects
+    - Identify random properties mentioned in descriptions
+    """
     critical_range: Optional[str] = None
     extra_damage: Optional[str] = None
     curse: Optional[Dict[str, Any]] = None
@@ -342,7 +811,50 @@ class SpecialFeatures:
 
 @dataclass
 class InventoryItem:
-    """An item in the character's inventory."""
+    """An item in the character's inventory.
+    
+    EXTRACTION PATHS:
+    - name: inventory[].definition.name
+    - type: inventory[].definition.type (e.g., "Wondrous item", "Ring", "Potion")
+    - rarity: inventory[].definition.rarity (e.g., "Common", "Uncommon", "Rare")
+    - requires_attunement: inventory[].definition.canAttune
+    - attunement_process: NOT AVAILABLE - no detailed attunement process in JSON
+    - proficient: DERIVED - assume true unless weapon/armor proficiency check needed
+    - attack_type: inventory[].definition.attackType (1=Melee, 2=Ranged) - requires mapping
+    - reach: NOT EXPLICIT - derive from properties if weapon has "reach"
+    - damage: Create DamageInfo from inventory[].definition.damage/damageType
+    - damage_type: inventory[].definition.damageType
+    - weight: inventory[].definition.weight
+    - cost: inventory[].definition.cost (may be null for many items)
+    - properties: inventory[].definition.properties (weapon/armor properties)
+    - version: inventory[].definition.version
+    - magical_bonus: NOT EXPLICIT - extract from grantedModifiers or name parsing
+    - special_features: Create SpecialFeatures from various item data
+    - equipped: inventory[].equipped
+    - armor_class: inventory[].definition.armorClass (for armor items)
+    - quantity: inventory[].quantity
+    
+    ITEM STRUCTURE IN JSON:
+    - inventory[] array contains all character items
+    - Each item has definition object with core properties
+    - grantedModifiers[] for mechanical effects
+    - limitedUse for charged items
+    - equipped/isAttuned status tracking
+    
+    MISSING INFORMATION:
+    - No detailed attunement process descriptions
+    - Magical bonuses often embedded in names (e.g., "Splint, +1")
+    - Reach property must be derived from weapon properties
+    - Proficiency must be calculated based on character abilities
+    
+    LLM ASSISTANCE NEEDED:
+    - Parse item names to extract magical bonuses (e.g., "+1", "+2")
+    - Map attackType integers to "Melee"/"Ranged" literals
+    - Determine weapon reach from properties arrays
+    - Extract magical bonuses from grantedModifiers
+    - Build SpecialFeatures from item descriptions and modifiers
+    - Calculate proficiency based on character's weapon/armor proficiencies
+    """
     name: str
     type: str
     rarity: str = "Common"
@@ -366,7 +878,47 @@ class InventoryItem:
 
 @dataclass
 class Inventory:
-    """Character's complete inventory."""
+    """Character's complete inventory.
+    
+    EXTRACTION PATHS:
+    - total_weight: CALCULATED - sum all inventory[].definition.weight * inventory[].quantity
+      * Consider inventory[].definition.weightMultiplier (usually 1 or 0)
+      * Some items like Bag of Holding have weightMultiplier = 0
+    - weight_unit: NOT EXPLICIT - assume "lb" (pounds) as D&D standard
+    - equipped_items: Organize inventory[] where inventory[].equipped == true
+      * Group by equipment slot (though slot info not explicit in JSON)
+      * Key could be item type or custom categorization
+    - backpack: All inventory[] items where inventory[].equipped == false
+    - valuables: NOT AVAILABLE - no separate valuables tracking in D&D Beyond
+    
+    INVENTORY ORGANIZATION IN JSON:
+    - Single inventory[] array contains all items
+    - equipped status tracked per item
+    - containerEntityId links items to containers (like Bag of Holding)
+    - No explicit equipment slot categorization
+    
+    CONTAINER ITEMS:
+    - Some items are containers (inventory[].definition.isContainer == true)
+    - Items can be stored in containers via containerEntityId
+    - Bag of Holding example: other items reference its ID as container
+    
+    CURRENCY TRACKING:
+    - Separate currencies object: {"cp": int, "sp": int, "gp": int, "ep": int, "pp": int}
+    - Not included in regular inventory weight calculations
+    
+    MISSING INFORMATION:
+    - No explicit equipment slot categorization
+    - No separate valuables vs regular items distinction
+    - Weight unit not specified (assumed to be pounds)
+    - No pre-calculated total weight
+    
+    LLM ASSISTANCE NEEDED:
+    - Calculate total weight from all items and their quantities
+    - Categorize equipped items by logical slots (armor, weapons, accessories, etc.)
+    - Handle container relationships (items stored in other items)
+    - Distinguish between valuable items and regular equipment for organization
+    - Account for special weight rules (like Bag of Holding weightMultiplier)
+    """
     total_weight: float
     weight_unit: str = "lb"
     equipped_items: Dict[str, List[InventoryItem]] = field(default_factory=dict)
@@ -378,7 +930,28 @@ class Inventory:
 
 @dataclass
 class SpellComponents:
-    """Components required for spellcasting."""
+    """Components required for spellcasting.
+    
+    EXTRACTION PATHS:
+    - verbal: NOT DIRECTLY AVAILABLE - must parse from spell definitions
+    - somatic: NOT DIRECTLY AVAILABLE - must parse from spell definitions
+    - material: NOT DIRECTLY AVAILABLE - must parse from spell definitions
+    
+    SPELL COMPONENT SOURCES:
+    - D&D Beyond doesn't store spell components in character JSON
+    - Spell definitions would need to be fetched from separate API/database
+    - Character JSON only contains spell references, not full spell data
+    
+    MISSING INFORMATION:
+    - No spell component data in character JSON
+    - Would need external spell database lookup
+    - Components typically stored as text strings in spell descriptions
+    
+    LLM ASSISTANCE NEEDED:
+    - Parse spell descriptions to identify V/S/M components
+    - Extract material component details from spell text
+    - Convert component text to boolean/string format
+    """
     verbal: bool = False
     somatic: bool = False
     material: Union[bool, str] = False
@@ -386,14 +959,77 @@ class SpellComponents:
 
 @dataclass
 class SpellRite:
-    """A rite option for certain spells."""
+    """A rite option for certain spells.
+    
+    EXTRACTION PATHS:
+    - name: NOT AVAILABLE - D&D Beyond doesn't use rite system
+    - effect: NOT AVAILABLE - D&D Beyond doesn't use rite system
+    
+    RITE SYSTEM:
+    - This appears to be a custom system not used by D&D Beyond
+    - D&D Beyond doesn't have spell "rites" as separate options
+    - May be specific to your campaign/system
+    
+    MISSING INFORMATION:
+    - No rite data in D&D Beyond JSON
+    - Would need custom implementation or campaign-specific data
+    
+    LLM ASSISTANCE NEEDED:
+    - Identify if any spells have variant options that could be considered "rites"
+    - Extract spell options from descriptions if present
+    - Create rite structures from spell variant text
+    """
     name: str
     effect: str
 
 
 @dataclass
 class Spell:
-    """A spell definition."""
+    """A spell definition.
+    
+    EXTRACTION PATHS:
+    - name: spells.*.*.definition.name (from character's known spells)
+    - level: spells.*.*.definition.level
+    - school: spells.*.*.definition.school (may need lookup)
+    - casting_time: spells.*.*.activation.activationTime + activationType
+    - range: spells.*.*.range.range
+    - components: Create SpellComponents from spell definition (limited data)
+    - duration: spells.*.*.duration (may need parsing)
+    - description: spells.*.*.definition.description (HTML, needs cleaning)
+    - concentration: spells.*.*.concentration
+    - ritual: spells.*.*.castOnlyAsRitual or ritualCastingType
+    - tags: spells.*.*.definition.tags (if available)
+    - area: spells.*.*.range.aoeType + aoeSize
+    - rites: NOT AVAILABLE - see SpellRite comments
+    - charges: spells.*.*.charges (for item spells)
+    
+    SPELL SOURCES IN JSON:
+    - spells.race[] - racial spells
+    - spells.class[] - class spells
+    - spells.background[] - background spells (rare)
+    - spells.item[] - item-granted spells
+    - spells.feat[] - feat-granted spells
+    
+    SPELL STRUCTURE:
+    - Each spell has definition object with basic info
+    - Range object with range/aoe data
+    - Activation object with casting time info
+    - Limited use tracking for charged spells
+    
+    MISSING INFORMATION:
+    - Spell components not fully detailed in character JSON
+    - School might be ID that needs lookup
+    - Duration often needs parsing from description
+    - Tags may not be present for all spells
+    
+    LLM ASSISTANCE NEEDED:
+    - Parse HTML descriptions to clean text
+    - Extract spell components from description text
+    - Convert activation data to readable casting time
+    - Parse duration information from various formats
+    - Map school IDs to school names if needed
+    - Extract area information from range data
+    """
     name: str
     level: int
     school: str
@@ -412,7 +1048,42 @@ class Spell:
 
 @dataclass
 class SpellcastingInfo:
-    """Spellcasting ability information."""
+    """Spellcasting ability information.
+    
+    EXTRACTION PATHS:
+    - ability: classes[].definition.spellCastingAbilityId (requires lookup to ability name)
+    - spell_save_dc: CALCULATED - 8 + proficiency bonus + ability modifier
+    - spell_attack_bonus: CALCULATED - proficiency bonus + ability modifier
+    - cantrips_known: Filter spells where level == 0
+    - spells_known: Filter spells where level > 0
+    - spell_slots: spellSlots[] array with level/available/used
+    
+    SPELLCASTING ABILITY MAPPING:
+    - spellCastingAbilityId to ability name:
+      * 1 = "strength", 2 = "dexterity", 3 = "constitution"
+      * 4 = "intelligence", 5 = "wisdom", 6 = "charisma"
+    
+    SPELL SLOT STRUCTURE:
+    - spellSlots[] array with objects: {level, used, available}
+    - Separate pactMagic[] array for warlock slots
+    
+    SPELL ORGANIZATION:
+    - Spells organized by source: spells.class[], spells.race[], etc.
+    - Each source contains spells for that category
+    - prepared/known status tracked per spell
+    
+    MISSING INFORMATION:
+    - Save DC and attack bonus not pre-calculated
+    - Must derive ability name from ID
+    - Need to filter and organize spells by level
+    
+    LLM ASSISTANCE NEEDED:
+    - Map spellCastingAbilityId to ability names
+    - Calculate save DC and attack bonus from ability scores
+    - Filter and organize spells by level (cantrips vs leveled)
+    - Handle multiclass spellcasting scenarios
+    - Convert spell slot structure to level:count format
+    """
     ability: str
     spell_save_dc: int
     spell_attack_bonus: int
@@ -423,7 +1094,49 @@ class SpellcastingInfo:
 
 @dataclass
 class SpellList:
-    """Complete spell list organized by class."""
+    """Complete spell list organized by class.
+    
+    EXTRACTION PATHS:
+    - spellcasting: Create SpellcastingInfo for each spellcasting class
+      * Key: class name from classes[].definition.name
+      * Value: SpellcastingInfo with that class's spellcasting data
+    - spells: Organize all character spells by class and level
+      * Outer key: class name
+      * Inner key: spell level ("cantrip", "1st_level", etc.)
+      * Value: List of Spell objects
+    
+    SPELLCASTING CLASSES:
+    - Only classes with canCastSpells == true have spellcasting
+    - Each class has spellCastingAbilityId for their casting ability
+    - Spell preparation varies by class (spellPrepareType)
+    
+    SPELL ORGANIZATION IN JSON:
+    - spells object contains arrays by source:
+      * spells.class[] - spells from class features
+      * spells.race[] - racial spells
+      * spells.item[] - item-granted spells
+      * spells.feat[] - feat-granted spells
+      * spells.background[] - background spells
+    
+    MULTICLASS SPELLCASTING:
+    - Each class tracked separately in classSpells[]
+    - Different classes may have different spell lists
+    - Some classes share spell slots, others don't
+    
+    MISSING INFORMATION:
+    - No pre-organized structure by class and level
+    - Must manually group spells by source class
+    - Spell level organization needs custom logic
+    
+    LLM ASSISTANCE NEEDED:
+    - Identify which classes are spellcasting classes
+    - Group spells by their source class
+    - Organize spells by level within each class
+    - Handle multiclass spellcasting rules
+    - Convert spell level numbers to string format
+    - Create SpellcastingInfo for each casting class
+    - Handle different spell preparation types
+    """
     spellcasting: Dict[str, SpellcastingInfo] = field(default_factory=dict)
     spells: Dict[str, Dict[str, List[Spell]]] = field(default_factory=dict)
 
