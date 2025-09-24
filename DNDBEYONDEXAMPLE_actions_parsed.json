@@ -1,0 +1,259 @@
+[
+  {
+    "name": "Aura of the Guardian",
+    "description": "",
+    "shortDescription": "When a creature within {{scalevalue}} ft. of you takes damage, you can use your reaction to magically take that damage instead.",
+    "activation": {
+      "activationType": "reaction",
+      "activationTime": 1
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Channel Divinity",
+    "description": "",
+    "shortDescription": "Your oath allows you to channel divine energy to fuel magical effects. When you use your Channel Divinity, you choose which option to use. You must then finish a short or long rest to use your Channel Divinity again. Some Channel Divinity effects require saving throws (DC {{savedc:cha}}).",
+    "activation": {
+      "activationType": "bonus_action",
+      "activationTime": 1
+    },
+    "usage": {
+      "maxUses": 1,
+      "resetType": "short_rest",
+      "usesPerActivation": 1
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Channel Divinity: Emissary of Peace",
+    "description": "You can use your Channel Divinity to augment your presence with divine power. As a bonus action, you grant yourself a +5 bonus to Charisma ([skill]Persuasion[/skill]) checks for the next 10 minutes.",
+    "shortDescription": "As a bonus action, you grant yourself a +5 bonus to Charisma (Persuasion) checks for the next 10 minutes.",
+    "activation": {
+      "activationType": "bonus_action"
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Channel Divinity: Rebuke the Violent",
+    "description": "You can use your Channel Divinity to rebuke those who use violence. Immediately after an attacker within 30 feet of you deals damage with an attack against a creature other than you, you can use your reaction to force the attacker to make a Wisdom saving throw. On a failed save, the attacker takes radiant damage equal to the damage it just dealt. On a successful save, it takes half as much damage.",
+    "shortDescription": "Immediately after an attacker within 30 ft. deals damage with an attack against a creature other than you, you can use your reaction to force the attacker to make a WIS saving throw (DC {{savedc:cha}}). On failure, the attacker takes radiant damage equal to the damage it just dealt, or half damage on success.",
+    "activation": {
+      "activationType": "reaction"
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Create Pact Weapon",
+    "description": "",
+    "shortDescription": "As an action, you can create a pact weapon in your hand (you choose the form, you're proficient with it, and it counts as magical). You can also transform a magic weapon into your pact weapon by performing a special ritual.",
+    "activation": {
+      "activationType": "action",
+      "activationTime": 1
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Dagger Attack (Unequipped)",
+    "description": "Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it. This weapon has the following mastery property. To use this property, you must have a feature that lets you use it. Nick. When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.",
+    "shortDescription": "Requires drawing Dagger first (free object interaction or action).",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionRange": {
+      "range": 20,
+      "longRange": 60,
+      "rangeDescription": "20 feet (long: 60 feet)"
+    },
+    "damage": {
+      "diceNotation": "1d4",
+      "damageType": "piercing"
+    },
+    "actionCategory": "unequipped_weapon",
+    "source": "item",
+    "sourceFeature": "Dagger",
+    "isWeaponAttack": true,
+    "requiresAmmo": true
+  },
+  {
+    "name": "Divine Sense",
+    "description": "The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in your ears. As an action, you can open your awareness to detect such forces. Until the end of your next turn, you know the location of any celestial, fiend, or undead within 60 feet of you that is not behind total cover. You know the type (celestial, fiend, or undead) of any being whose presence you sense, but not its identity (the vampire Count Strahd von Zarovich, for instance). Within the same radius, you also detect the presence of any place or object that has been consecrated or desecrated, as with the [spell]hallow[/spell] spell. You can use this feature a number of times equal to 1 + your Charisma modifier. When you finish a long rest, you regain all expended uses.",
+    "shortDescription": "As an action, you can detect good and evil. Until the end of your next turn, you can sense anything affected by the hallow spell or know the location of any celestial, fiend, undead within 60 ft. that is not behind total cover. You can use this feature {{(modifier:cha)+1#unsigned}} times per long rest.",
+    "activation": {
+      "activationType": "action",
+      "activationTime": 1
+    },
+    "usage": {
+      "maxUses": 1,
+      "resetType": "long_rest",
+      "usesPerActivation": 1
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Divine Smite",
+    "description": "Starting at 2nd level, when you hit a creature with a melee weapon attack, you can expend one spell slot to deal radiant damage to the target, in addition to the weapon's damage. The extra damage is 2d8 for a 1st-level spell slot, plus 1d8 for each spell level higher than 1st, to a maximum of 5d8. The damage increases by 1d8 if the target is an undead or a fiend, to a maximum of 6d8.",
+    "shortDescription": "When you hit with a melee weapon attack, you can expend one spell slot to deal 2d8 extra radiant damage to the target plus 1d8 for each spell level higher than 1st (max 5d8) and plus 1d8 against undead or fiends.",
+    "activation": {
+      "activationType": "bonus_action"
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Eldaryth of Regret (I) Attack",
+    "description": "When [REDACTED] grew in power, he appointed an evil and ruthless lieutenant, [REDACTED], to act as his bodyguard and right hand. This despicable villain served as advisor, warlord, and assassin. His successes earned him [REDACTED] admiration and a reward: a sword with as dark a pedigree as the man who would wield it. For a long time, [REDACTED] faithfully served the [REDACTED], but as [REDACTED] power grew, so did his hubris. He aimed to supplant [REDACTED], so that they could rule the [REDACTED] empire in [REDACTED] stead. Legend says [REDACTED] destruction came at [REDACTED] hand, but [REDACTED] also wrought his rebellious lieutenant’s doom, leaving only [REDACTED] sword behind. The world was made brighter thereby. The Eldaryth of Regret is a magic longsword that grants a +3 bonus to attack and damage rolls made with it. It scores a critical hit on a roll of 19 or 20, and deals an extra 2d10 slashing damage. If the sword isn’t bathed in tears or blood within 1 minute of being drawn from its scabbard, its wielder must make a DC 20 Charisma saving throw. On a successful save, the wielder take 3d6 psychic damage. On a failed save, the wielder is dominated by the sword, as if by the dominate monster spell, and the sword demands that it be bathed in blood or tears. The spell effect ends when the sword’s demand is met. Random Properties. The Eldaryth of Regret has the following random properties: While attuned to the Eldaryth of Regret you are immune to cold damage. While attuned to the Eldaryth of Regret your Charisma score is increased by 2 to a maximum of 24. While attuned to the Eldaryth of Regret you cannot smell. While attuned to the Eldaryth of Regret all magical potions within 10 feet of the user become diluted and non-magical and all magical scrolls within 10 feet of the user become erased. Spirit of Regret. While the sword is on your person, you add a d10 to your initiative at the start of every combat. In addition, when you use an action to attack with the sword, you can transfer some or all of its attack bonus to your Armor Class instead. The adjusted bonuses remain in effect until the start of your next turn. When doing so under the first iteration of the Eldaryth of Regret, the user must make a DC 20 Charisma Saving throw. On a successful save the user is able to convert their choice of attack bonus to their armor class without complication. On a failed save, the sword begins to weep and emit water and compels the user to sheath it until the beginning of their next turn. Spells. While the sword is on your person, you can use an action to cast one of the following spells (save DC 18) from it: call lightning, divine word, or finger of death. Once you use the sword to cast a spell, you can’t cast that spell again from it until the next dawn.",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionRange": {
+      "range": 5,
+      "longRange": 5,
+      "rangeDescription": "5 feet (long: 5 feet)"
+    },
+    "damage": {
+      "diceNotation": "1d8",
+      "damageType": "slashing"
+    },
+    "actionCategory": "attack",
+    "source": "item",
+    "sourceFeature": "Eldaryth of Regret (I)",
+    "isWeaponAttack": true,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Extra Attack",
+    "description": "",
+    "shortDescription": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+    "activation": {
+      "activationType": "bonus_action"
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Harness Divine Power",
+    "description": "3rd-level paladin featureYou can expend a use of your Channel Divinity to fuel your spells. As a bonus action, you touch your holy symbol, utter a prayer, and regain one expended spell slot, the level of which can be no higher than half your proficiency bonus (rounded up). The number of times you can use this feature is based on the level you've reached in this class: 3rd level, once; 7th level, twice; and 15th level, thrice. You regain all expended uses when you finish a long rest.",
+    "shortDescription": "You can expend a use of your Channel Divinity to fuel your spells. As a bonus action, you touch your holy symbol, utter a prayer, and regain one expended spell slot, which can be no higher than level {{(proficiency/2)@roundup#unsigned}}. You regain all expended uses when you finish a long rest.",
+    "activation": {
+      "activationType": "bonus_action"
+    },
+    "usage": {
+      "maxUses": 2,
+      "resetType": "long_rest",
+      "usesPerActivation": 1
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Hex Warrior",
+    "description": "",
+    "shortDescription": "You gain proficiency with medium armor, shields, and martial weapons. Whenever you finish a long rest, you can touch one weapon that you are proficient with and that lacks the two-handed property. With that weapon, you can use your CHA modifier for the attack and damage rolls until you finish your next long rest. You can also use your CHA modifier for the attack and damage rolls for any of your pact weapons if you have that feature.",
+    "activation": {
+      "activationType": "bonus_action"
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Hexblade’s Curse",
+    "description": "Starting at 1st level, you gain the ability to place a baleful curse on someone. As a bonus action, choose one creature you can see within 30 feet of you. The target is cursed for 1 minute. The curse ends early if the target dies, you die, or you are [condition]incapacitated[/condition]. Until the curse ends, you gain the following benefits: You gain a bonus to damage rolls against the cursed target. The bonus equals your proficiency bonus. Any attack roll you make against the cursed target is a critical hit on a roll of 19 or 20 on the d20. If the cursed target dies, you regain hit points equal to your warlock level + your Charisma modifier (minimum of 1 hit point). You can't use this feature again until you finish a short or long rest.",
+    "shortDescription": "Once per short rest, as a bonus action, choose one creature you can see within 30 ft. to curse it for 1 minute (or until the target dies, you die, or you are incapacitated). Against the cursed target, you gain a {{proficiency#signed}} bonus to damage rolls, score a critical hit on a roll of 19 or 20, and you regain {{(classlevel+modifier:cha)@min:1#unsigned}} HP if it dies.",
+    "activation": {
+      "activationType": "bonus_action",
+      "activationTime": 1
+    },
+    "usage": {
+      "maxUses": 1,
+      "resetType": "short_rest",
+      "usesPerActivation": 1
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Lay on Hands Pool",
+    "description": "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest. With that pool, you can restore a total number of hit points equal to your paladin level &times; 5. As an action, you can touch a creature and draw power from the pool to restore a number of hit points to that creature, up to the maximum amount remaining in your pool. Alternatively, you can expend 5 hit points from your pool of healing to cure the target of one disease or neutralize one poison affecting it. You can cure multiple diseases and neutralize multiple poisons with a single use of Lay on Hands, expending hit points separately for each one. This feature has no effect on undead and constructs.",
+    "shortDescription": "You have a pool of healing power that can restore {{classlevel*5#unsigned}} HP per long rest. As an action, you can touch a creature to restore any number of HP remaining in the pool, or 5 HP to either cure a disease or neutralize a poison affecting the creature.",
+    "activation": {
+      "activationType": "action",
+      "activationTime": 1
+    },
+    "usage": {
+      "maxUses": 40,
+      "resetType": "long_rest",
+      "usesPerActivation": 1
+    },
+    "actionCategory": "feature",
+    "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Lucky",
+    "description": "",
+    "shortDescription": "You have 3 luck points per long rest. Whenever you make an attack roll, an ability check, or a saving throw (or when an attack roll is made against you), you can spend one to roll an additional d20 and you choose which die to use. You can choose to spend luck points after you roll the die, but before the outcome is determined.",
+    "activation": {
+      "activationType": "bonus_action"
+    },
+    "usage": {
+      "maxUses": 3,
+      "resetType": "long_rest",
+      "usesPerActivation": 1
+    },
+    "actionCategory": "feature",
+    "source": "feat",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Nightwarden's Hammer Attack (Unequipped)",
+    "description": "You gain a +2 bonus to attack rolls and damage rolls made with this magic weapon. Life Stealing. The weapon has 1d8 + 1 charges. When you attack a creature that has fewer than 100 hit points with this weapon and roll a 20 on the d20 for the attack roll, the creature must succeed on a DC 15 Constitution saving throw or be slain instantly as the sword tears its life force from its body. Constructs and Undead succeed on the save automatically. The weapon loses 1 charge if the creature is slain. When the weapon has no charges remaining, it loses this property. Runic Focus. This magic hammer has 4 charges. As a bonus action, you can expend 1 charge and slam this hammer on the ground, creating a 15-foot-radius circle of glowing runes centered on the point of impact. While you’re inside that area, your hammer glows with matching runes, and you gain a +3 bonus to attack and damage rolls made with this hammer. The rune circle disappears after 1 minute, when you create another rune circle, or when you dismiss the rune circle as a bonus action. This hammer regains 1d4 expended charges daily at dawn. Amesite Imbuement. This hammer has been imbued with a large Obsidian-colored Amesite Gem in the center. As an action, the user can cast Eldritch Blast using their spellcasting modifier as normal. If used inside Runic Focus, the same bonus to attack and damage rolls can be applied.",
+    "shortDescription": "Requires drawing Nightwarden's Hammer first (free object interaction or action).",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionRange": {
+      "range": 5,
+      "longRange": 5,
+      "rangeDescription": "5 feet (long: 5 feet)"
+    },
+    "damage": {
+      "diceNotation": "1d8",
+      "damageType": "bludgeoning"
+    },
+    "actionCategory": "unequipped_weapon",
+    "source": "item",
+    "sourceFeature": "Nightwarden's Hammer",
+    "isWeaponAttack": true,
+    "requiresAmmo": false
+  }
+]
