@@ -8,6 +8,7 @@ no important information is lost in the conversion.
 
 import json
 import os
+import re
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from src.rag.character.character_types import (
@@ -17,7 +18,7 @@ from src.rag.character.character_types import (
     BackstorySection, FamilyBackstory, Organization, Ally, Enemy,
     ActionEconomy, SpecialAction, AttackAction, DamageInfo,
     FeaturesAndTraits, ClassFeatures, Feature,
-    Inventory, InventoryItem, DamageInfo as ItemDamageInfo,
+    Inventory, InventoryItem, InventoryItemDefinition, Modifier, LimitedUse,
     SpellList, SpellcastingInfo, Spell, SpellComponents, SpellRite,
     ObjectivesAndContracts, BaseObjective, Quest, Contract, ContractTemplate
 )
@@ -399,37 +400,111 @@ def convert_inventory(data: Dict[str, Any]) -> Inventory:
     backpack = []
     valuables = []
 
+    def _parse_cost(value: Any) -> Optional[int]:
+        if isinstance(value, (int, float)):
+            return int(value)
+        if isinstance(value, str):
+            cleaned = re.sub(r"[^0-9]", "", value)
+            if cleaned:
+                return int(cleaned)
+        return None
+
+    def _requires_attunement(value: Any) -> Optional[bool]:
+        if isinstance(value, bool):
+            return value
+        if value:
+            return True
+        return None
+
+    def _convert_modifiers(modifiers: Optional[List[Dict[str, Any]]]) -> List[Modifier]:
+        result: List[Modifier] = []
+        if not modifiers:
+            return result
+        for modifier in modifiers:
+            dice = modifier.get("dice", {}) if isinstance(modifier, dict) else {}
+            result.append(
+                Modifier(
+                    type=modifier.get("type"),
+                    subType=modifier.get("subType"),
+                    restriction=modifier.get("restriction"),
+                    friendlyTypeName=modifier.get("friendlyTypeName"),
+                    friendlySubtypeName=modifier.get("friendlySubtypeName"),
+                    duration=modifier.get("duration"),
+                    fixedValue=modifier.get("fixedValue"),
+                    diceString=dice.get("diceString")
+                )
+            )
+        return result
+
+    def _convert_limited_use(data: Optional[Dict[str, Any]]) -> Optional[LimitedUse]:
+        if not data:
+            return None
+        return LimitedUse(
+            resetType=data.get("resetType"),
+            numberUsed=data.get("numberUsed"),
+            maxUses=data.get("maxUses")
+        )
+
+    def _convert_properties(properties: Optional[List[Any]]) -> List[str]:
+        if not properties:
+            return []
+        names: List[str] = []
+        for prop in properties:
+            if isinstance(prop, dict) and "name" in prop:
+                names.append(prop["name"])
+            elif isinstance(prop, str):
+                names.append(prop)
+        return names
+
+    def _convert_range(item_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        normal = item_data.get("range")
+        long_range = item_data.get("long_range") or item_data.get("longRange")
+        reach = item_data.get("reach")
+        if normal is None and long_range is None and reach is None:
+            return None
+        result = {"normal": normal, "long": long_range}
+        if reach is not None:
+            result["reach"] = reach
+        return result
+
     # Helper function to convert any item data to InventoryItem
     def convert_to_inventory_item(item_data: Dict[str, Any], equipped: bool = False) -> InventoryItem:
-        # Convert damage info if present
-        damage = None
-        if "damage" in item_data:
-            damage = ItemDamageInfo(
-                one_handed=item_data["damage"].get("one_handed"),
-                two_handed=item_data["damage"].get("two_handed"),
-                type=item_data.get("damage_type")
-            )
+        attack_type = item_data.get("attack_type")
+
+        definition = InventoryItemDefinition(
+            name=item_data["name"],
+            type=item_data.get("type"),
+            rarity=item_data.get("rarity"),
+            isAttunable=_requires_attunement(item_data.get("requires_attunement")),
+            attunementDescription=item_data.get("attunement_process") if isinstance(item_data.get("attunement_process"), str) else None,
+            description=item_data.get("description"),
+            grantedModifiers=_convert_modifiers(item_data.get("granted_modifiers")),
+            limitedUse=_convert_limited_use(item_data.get("definition_limited_use")),
+            weight=item_data.get("weight"),
+            cost=_parse_cost(item_data.get("cost")),
+            armorClass=item_data.get("armor_class"),
+            damage=item_data.get("damage"),
+            damageType=item_data.get("damage_type"),
+            properties=_convert_properties(item_data.get("properties")),
+            attackType=attack_type if isinstance(attack_type, int) else None,
+            range=_convert_range(item_data),
+            isContainer=item_data.get("is_container"),
+            capacityWeight=item_data.get("capacity_weight"),
+            contentsWeightMultiplier=item_data.get("weight_multiplier") or item_data.get("contents_weight_multiplier"),
+            tags=item_data.get("tags", [])
+        )
+
+        limited_use = _convert_limited_use(item_data.get("limited_use"))
 
         return InventoryItem(
-            name=item_data["name"],
-            type=item_data.get("type", "Item"),
-            rarity=item_data.get("rarity", "Common"),
-            requires_attunement=item_data.get("requires_attunement", False),
-            attunement_process=item_data.get("attunement_process"),
-            proficient=item_data.get("proficient", True),
-            attack_type=item_data.get("attack_type"),
-            reach=item_data.get("reach"),
-            damage=damage,
-            damage_type=item_data.get("damage_type"),
-            weight=item_data.get("weight"),
-            cost=item_data.get("cost"),
-            properties=item_data.get("properties", []),
-            version=item_data.get("version"),
-            magical_bonus=item_data.get("magical_bonus"),
-            special_features=item_data.get("special_features"),
+            definition=definition,
+            id=item_data.get("id", 0),
+            entityTypeId=item_data.get("entity_type_id", 0),
+            quantity=item_data.get("quantity", 1),
+            isAttuned=item_data.get("is_attuned"),
             equipped=equipped,
-            armor_class=item_data.get("armor_class"),
-            quantity=item_data.get("quantity", 1)
+            limitedUse=limited_use,
+            containerEntityId=item_data.get("container_entity_id")
         )
 
     # Convert equipped items
@@ -712,10 +787,11 @@ def link_actions_to_inventory(action_economy: ActionEconomy, inventory: Inventor
     # Helper function to find matching item by name
     def find_item_by_name(item_name: str) -> Optional[InventoryItem]:
         for item in all_items:
-            if item.name.lower() == item_name.lower():
+            definition_name = (item.definition.name or "").lower()
+            if definition_name == item_name.lower():
                 return item
             # Also check for partial matches (e.g., "Eldaryth" matches "Eldaryth of Regret (I)")
-            if item_name.lower() in item.name.lower() or item.name.lower() in item_name.lower():
+            if item_name.lower() in definition_name or definition_name in item_name.lower():
                 return item
         return None
     
@@ -1073,22 +1149,22 @@ def export_character_to_text(character: Character, filename: str = "character_ex
                 if items:
                     f.write(f"{category.title()} ({len(items)} items):\n")
                     for item in items:
-                        f.write(f"  - {item.name}")
-                        if item.magical_bonus:
-                            f.write(f" {item.magical_bonus}")
-                        if item.rarity != "Common":
-                            f.write(f" ({item.rarity})")
+                        definition = item.definition
+                        f.write(f"  - {definition.name}")
+                        if definition.rarity and definition.rarity != "Common":
+                            f.write(f" ({definition.rarity})")
                         f.write(f"\n")
-                        if item.weight:
-                            f.write(f"    Weight: {item.weight} {character.inventory.weight_unit}\n")
-                        if item.properties:
-                            f.write(f"    Properties: {', '.join(item.properties)}\n")
+                        if definition.weight:
+                            f.write(f"    Weight: {definition.weight} {character.inventory.weight_unit}\n")
+                        if definition.properties:
+                            f.write(f"    Properties: {', '.join(definition.properties)}\n")
                     f.write("\n")
             
             if character.inventory.backpack:
                 f.write(f"Backpack ({len(character.inventory.backpack)} items):\n")
                 for item in character.inventory.backpack:
-                    f.write(f"  - {item.name}")
+                    definition = item.definition
+                    f.write(f"  - {definition.name}")
                     if item.quantity > 1:
                         f.write(f" (x{item.quantity})")
                     f.write(f"\n")

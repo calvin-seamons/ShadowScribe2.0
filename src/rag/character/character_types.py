@@ -698,182 +698,59 @@ class FeaturesAndTraits:
 # ===== INVENTORY TYPES =====
 
 @dataclass
-class ItemProperty:
-    """A magical property of an item.
-    
-    EXTRACTION PATHS:
-    - name: NOT DIRECTLY AVAILABLE as separate properties in D&D Beyond JSON
-    - description: inventory[].definition.description (HTML content, needs cleaning)
-    - effect: NOT SEPARATE FIELD - must extract from description
-    
-    ITEM PROPERTY SOURCES:
-    - Basic item properties come from inventory[].definition.grantedModifiers[]
-    - Magical effects embedded in inventory[].definition.description
-    - Tags available in inventory[].definition.tags[] (e.g., "Damage", "Control")
-    
-    MISSING INFORMATION:
-    - D&D Beyond doesn't separate item properties into discrete name/description pairs
-    - Properties are embedded within item descriptions or represented as modifiers
-    - No structured property system like your dataclass expects
-    
-    LLM ASSISTANCE NEEDED:
-    - Parse item descriptions to extract individual magical properties
-    - Convert HTML descriptions to clean text
-    - Identify and separate multiple properties within single description
-    - Extract property names from descriptive text
-    - Distinguish between mechanical effects and flavor text
-    """
+class Modifier:
+    """Represents a modifier applied to an item or ability."""
+    type: Optional[str] = None
+    subType: Optional[str] = None
+    restriction: Optional[str] = None
+    friendlyTypeName: Optional[str] = None
+    friendlySubtypeName: Optional[str] = None
+    duration: Optional[Dict[str, Any]] = None
+    fixedValue: Optional[int] = None
+    diceString: Optional[str] = None
+
+@dataclass
+class LimitedUse:
+    """Represents limited use information for an item."""
+    resetType: Optional[str] = None
+    numberUsed: Optional[int] = None
+    maxUses: Optional[int] = None
+
+@dataclass
+class InventoryItemDefinition:
+    """Represents the definition of an inventory item."""
     name: str
+    type: Optional[str] = None
+    rarity: Optional[str] = None
+    isAttunable: Optional[bool] = None
+    attunementDescription: Optional[str] = None
     description: Optional[str] = None
-    effect: Optional[str] = None
-
-
-@dataclass
-class SpellCharges:
-    """Spell charges for magical items.
-    
-    EXTRACTION PATHS:
-    - save_dc: NOT DIRECTLY AVAILABLE in item definitions
-    - recharge: NOT DIRECTLY AVAILABLE as structured field
-    - spells: Must extract from item descriptions or actions granted by items
-    
-    SPELL-GRANTING ITEM SOURCES:
-    - Some items in inventory[] may grant spells via grantedModifiers
-    - Spell information might be in item descriptions
-    - Item actions in actions.item[] may reference spell-like abilities
-    - Limited use items may have limitedUse structure
-    
-    ITEMS WITH SPELL CHARGES (from JSON example):
-    - Helm of Telepathy: grants detect thoughts and suggestion spells
-    - Other magical items may have spell charges but not explicitly structured
-    
-    MISSING INFORMATION:
-    - No explicit "spell charges" structure in D&D Beyond JSON
-    - Save DCs not typically stored at item level
-    - Recharge information usually in descriptions, not structured data
-    - Spell lists not organized as arrays for items
-    
-    LLM ASSISTANCE NEEDED:
-    - Parse item descriptions to identify spell-granting abilities
-    - Extract save DC information from descriptions
-    - Identify recharge mechanics ("once per day", "recharges at dawn", etc.)
-    - Build spell lists from item descriptions or granted actions
-    - Convert limitedUse structures to spell charge format
-    """
-    save_dc: int
-    recharge: str
-    spells: List[Dict[str, Any]] = field(default_factory=list)
-
-
-@dataclass
-class SpecialFeatures:
-    """Special features of magical items.
-    
-    EXTRACTION PATHS:
-    - critical_range: NOT AVAILABLE - D&D Beyond doesn't track expanded crit ranges at item level
-    - extra_damage: inventory[].definition.grantedModifiers[] (damage modifiers)
-    - curse: NOT AVAILABLE - curse information typically in descriptions only
-    - random_properties: NOT AVAILABLE - no structured random property system
-    - spell_charges: Must build from item descriptions and actions (see SpellCharges)
-    - lore: inventory[].definition.description (extract lore portions)
-    - tags: inventory[].definition.tags[] (e.g., ["Damage", "Control", "Utility"])
-    
-    AVAILABLE ITEM DATA IN JSON:
-    - inventory[].definition.grantedModifiers[] - mechanical bonuses/effects
-    - inventory[].definition.tags[] - categorization tags
-    - inventory[].definition.description - full item description with lore
-    - inventory[].definition.rarity - magic item rarity
-    - inventory[].isAttuned - attunement status
-    - inventory[].limitedUse - usage tracking for charged items
-    
-    MISSING INFORMATION:
-    - No explicit critical range tracking
-    - No structured curse system
-    - No random property arrays
-    - Lore mixed with mechanical descriptions
-    
-    LLM ASSISTANCE NEEDED:
-    - Parse descriptions to separate lore from mechanics
-    - Identify curse information from item descriptions
-    - Extract critical range modifications from descriptions
-    - Build spell_charges from item abilities
-    - Distinguish between flavor text and mechanical effects
-    - Identify random properties mentioned in descriptions
-    """
-    critical_range: Optional[str] = None
-    extra_damage: Optional[str] = None
-    curse: Optional[Dict[str, Any]] = None
-    random_properties: Optional[List[str]] = None
-    spell_charges: Optional[SpellCharges] = None
-    lore: Optional[str] = None
+    grantedModifiers: List[Modifier] = field(default_factory=list)
+    limitedUse: Optional[LimitedUse] = None
+    weight: Optional[float] = None
+    cost: Optional[int] = None
+    armorClass: Optional[int] = None
+    damage: Optional[Dict[str, Any]] = None
+    damageType: Optional[str] = None
+    properties: List[str] = field(default_factory=list)
+    attackType: Optional[int] = None
+    range: Optional[Dict[str, Any]] = None
+    isContainer: Optional[bool] = None
+    capacityWeight: Optional[float] = None
+    contentsWeightMultiplier: Optional[float] = None
     tags: List[str] = field(default_factory=list)
-
 
 @dataclass
 class InventoryItem:
-    """An item in the character's inventory.
-    
-    EXTRACTION PATHS:
-    - name: inventory[].definition.name
-    - type: inventory[].definition.type (e.g., "Wondrous item", "Ring", "Potion")
-    - rarity: inventory[].definition.rarity (e.g., "Common", "Uncommon", "Rare")
-    - requires_attunement: inventory[].definition.canAttune
-    - attunement_process: NOT AVAILABLE - no detailed attunement process in JSON
-    - proficient: DERIVED - assume true unless weapon/armor proficiency check needed
-    - attack_type: inventory[].definition.attackType (1=Melee, 2=Ranged) - requires mapping
-    - reach: NOT EXPLICIT - derive from properties if weapon has "reach"
-    - damage: Create DamageInfo from inventory[].definition.damage/damageType
-    - damage_type: inventory[].definition.damageType
-    - weight: inventory[].definition.weight
-    - cost: inventory[].definition.cost (may be null for many items)
-    - properties: inventory[].definition.properties (weapon/armor properties)
-    - version: inventory[].definition.version
-    - magical_bonus: NOT EXPLICIT - extract from grantedModifiers or name parsing
-    - special_features: Create SpecialFeatures from various item data
-    - equipped: inventory[].equipped
-    - armor_class: inventory[].definition.armorClass (for armor items)
-    - quantity: inventory[].quantity
-    
-    ITEM STRUCTURE IN JSON:
-    - inventory[] array contains all character items
-    - Each item has definition object with core properties
-    - grantedModifiers[] for mechanical effects
-    - limitedUse for charged items
-    - equipped/isAttuned status tracking
-    
-    MISSING INFORMATION:
-    - No detailed attunement process descriptions
-    - Magical bonuses often embedded in names (e.g., "Splint, +1")
-    - Reach property must be derived from weapon properties
-    - Proficiency must be calculated based on character abilities
-    
-    LLM ASSISTANCE NEEDED:
-    - Parse item names to extract magical bonuses (e.g., "+1", "+2")
-    - Map attackType integers to "Melee"/"Ranged" literals
-    - Determine weapon reach from properties arrays
-    - Extract magical bonuses from grantedModifiers
-    - Build SpecialFeatures from item descriptions and modifiers
-    - Calculate proficiency based on character's weapon/armor proficiencies
-    """
-    name: str
-    type: str
-    rarity: str = "Common"
-    requires_attunement: bool = False
-    attunement_process: Optional[str] = None
-    proficient: bool = True
-    attack_type: Optional[Literal["Melee", "Ranged"]] = None
-    reach: Optional[str] = None
-    damage: Optional[DamageInfo] = None
-    damage_type: Optional[str] = None
-    weight: Optional[Union[int, float]] = None
-    cost: Optional[str] = None
-    properties: List[str] = field(default_factory=list)
-    version: Optional[int] = None
-    magical_bonus: Optional[str] = None
-    special_features: Optional[SpecialFeatures] = None
-    equipped: bool = False
-    armor_class: Optional[int] = None
-    quantity: int = 1
+    """Represents an inventory item with its definition and quantity."""
+    definition: InventoryItemDefinition
+    id: int
+    entityTypeId: int
+    quantity: int
+    equipped: bool
+    isAttuned: Optional[bool] = None
+    limitedUse: Optional[LimitedUse] = None
+    containerEntityId: Optional[int] = None
 
 
 @dataclass

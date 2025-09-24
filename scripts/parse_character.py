@@ -555,42 +555,102 @@ class DnDBeyondParser:
         inventory = Inventory(total_weight=0.0)
         
         for item in self.data.get('inventory', []):
-            inv_item = InventoryItem(
-                name=item.get('name', 'Unknown'),
-                type=item.get('type', 'Gear'),
-                rarity=item.get('rarity', 'Common'),
-                requires_attunement=item.get('requires_attunement', False),
-                equipped=item.get('equipped', False),
-                weight=item.get('weight', 0),
-                cost=str(item.get('cost', 0)) if item.get('cost') else None,
-                quantity=item.get('quantity', 1),
-                armor_class=item.get('armor_class')
-            )
-            
-            # Parse damage if present
-            if item.get('damage'):
-                damage_data = item['damage']
-                inv_item.damage = DamageInfo(
-                    base=damage_data.get('diceString'),
-                    type=item.get('damage_type', 'slashing')
+            definition_data = item.get('definition', {}) or {}
+
+            granted_modifiers = []
+            for modifier in definition_data.get('grantedModifiers') or []:
+                dice = modifier.get('dice') or {}
+                granted_modifiers.append(
+                    Modifier(
+                        type=modifier.get('type'),
+                        subType=modifier.get('subType'),
+                        restriction=modifier.get('restriction'),
+                        friendlyTypeName=modifier.get('friendlyTypeName'),
+                        friendlySubtypeName=modifier.get('friendlySubtypeName'),
+                        duration=modifier.get('duration'),
+                        fixedValue=modifier.get('fixedValue'),
+                        diceString=dice.get('diceString')
+                    )
                 )
-            
-            # Parse properties
-            if item.get('properties'):
-                for prop in item['properties']:
-                    inv_item.properties.append(prop.get('name', ''))
-            
+
+            definition_limited_use = None
+            if definition_data.get('limitedUse'):
+                def_limited = definition_data['limitedUse']
+                definition_limited_use = LimitedUse(
+                    resetType=def_limited.get('resetType'),
+                    numberUsed=def_limited.get('numberUsed'),
+                    maxUses=def_limited.get('maxUses')
+                )
+
+            properties = []
+            for prop in definition_data.get('properties') or []:
+                if isinstance(prop, dict) and 'name' in prop:
+                    properties.append(prop['name'])
+                elif isinstance(prop, str):
+                    properties.append(prop)
+
+            range_info = None
+            range_value = definition_data.get('range')
+            long_range = definition_data.get('longRange')
+            if range_value is not None or long_range is not None:
+                range_info = {'normal': range_value, 'long': long_range}
+
+            definition = InventoryItemDefinition(
+                name=definition_data.get('name', item.get('name', 'Unknown')),
+                type=definition_data.get('type'),
+                rarity=definition_data.get('rarity'),
+                isAttunable=definition_data.get('canAttune'),
+                attunementDescription=definition_data.get('attunementDescription'),
+                description=definition_data.get('description'),
+                grantedModifiers=granted_modifiers,
+                limitedUse=definition_limited_use,
+                weight=definition_data.get('weight'),
+                cost=definition_data.get('cost'),
+                armorClass=definition_data.get('armorClass'),
+                damage=definition_data.get('damage'),
+                damageType=definition_data.get('damageType'),
+                properties=properties,
+                attackType=definition_data.get('attackType') if isinstance(definition_data.get('attackType'), int) else None,
+                range=range_info,
+                isContainer=definition_data.get('isContainer'),
+                capacityWeight=definition_data.get('capacityWeight'),
+                contentsWeightMultiplier=definition_data.get('weightMultiplier') or definition_data.get('contentsWeightMultiplier'),
+                tags=definition_data.get('tags') or []
+            )
+
+            limited_use = None
+            if item.get('limitedUse'):
+                limited = item['limitedUse']
+                limited_use = LimitedUse(
+                    resetType=limited.get('resetType'),
+                    numberUsed=limited.get('numberUsed'),
+                    maxUses=limited.get('maxUses')
+                )
+
+            inv_item = InventoryItem(
+                definition=definition,
+                id=item.get('id', 0),
+                entityTypeId=item.get('entityTypeId', 0),
+                quantity=item.get('quantity', 1),
+                isAttuned=item.get('isAttuned'),
+                equipped=item.get('equipped', False),
+                limitedUse=limited_use,
+                containerEntityId=item.get('containerEntityId')
+            )
+
             # Add to appropriate category
             if inv_item.equipped:
-                category = 'armor' if 'armor' in inv_item.type.lower() else 'weapons' if any(w in inv_item.type.lower() for w in ['sword', 'weapon', 'dagger']) else 'other'
+                item_type = (inv_item.definition.type or '').lower()
+                category = 'armor' if 'armor' in item_type else 'weapons' if any(w in item_type for w in ['sword', 'weapon', 'dagger', 'bow']) else 'other'
                 if category not in inventory.equipped_items:
                     inventory.equipped_items[category] = []
                 inventory.equipped_items[category].append(inv_item)
             else:
                 inventory.backpack.append(inv_item)
-            
-            # Update total weight
-            inventory.total_weight += (inv_item.weight or 0) * inv_item.quantity
+
+            # Update total weight using the definition weight if available
+            item_weight = definition.weight or 0
+            inventory.total_weight += item_weight * inv_item.quantity
         
         # Add currencies as valuables
         currencies = self.data.get('currencies', {})
