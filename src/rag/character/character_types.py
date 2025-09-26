@@ -196,6 +196,7 @@ class Senses:
     - "devils_sight": 120
     - "ethereal_sight": 60
     - "see_invisibility": 10
+    
     - "superior_darkvision": 120
 
     Values can be integers (ranges in feet) or strings (descriptive values).

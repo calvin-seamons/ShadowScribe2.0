@@ -1,0 +1,129 @@
+{
+  "ability_scores": {
+    "strength": 14,
+    "dexterity": 12,
+    "constitution": 16,
+    "intelligence": 14,
+    "wisdom": 20,
+    "charisma": 24
+  },
+  "character_base": {
+    "name": "Duskryn Nightwarden",
+    "race": "Hill Dwarf",
+    "character_class": "Warlock",
+    "total_level": 13,
+    "alignment": "Lawful Neutral",
+    "background": "Acolyte",
+    "subrace": "Hill",
+    "multiclass_levels": {
+      "Warlock": 5,
+      "Paladin": 8
+    },
+    "lifestyle": null
+  },
+  "characteristics": {
+    "alignment": "Lawful Neutral",
+    "gender": "Male",
+    "eyes": "Gold",
+    "size": "Large",
+    "height": "5'2\" ft",
+    "hair": "Long white hair, with beard",
+    "skin": "Light blue skin",
+    "age": 105,
+    "weight": "180 lb",
+    "faith": "Ethernea, The Mediator"
+  },
+  "combat_stats": {
+    "max_hp": 129,
+    "armor_class": 17,
+    "initiative_bonus": 1,
+    "speed": 25,
+    "hit_dice": {
+      "Warlock": "5d8",
+      "Paladin": "8d10"
+    }
+  },
+  "proficiencies": [
+    {
+      "type": "tool",
+      "name": "Poisoner's Kit"
+    },
+    {
+      "type": "weapon",
+      "name": "Warhammer"
+    },
+    {
+      "type": "tool",
+      "name": "Smith's Tools"
+    },
+    {
+      "type": "tool",
+      "name": "Herbalism Kit"
+    },
+    {
+      "type": "tool",
+      "name": "Tinker's Tools"
+    },
+    {
+      "type": "saving_throw",
+      "name": "Wisdom Saving Throws"
+    },
+    {
+      "type": "saving_throw",
+      "name": "Charisma Saving Throws"
+    },
+    {
+      "type": "skill",
+      "name": "Investigation"
+    },
+    {
+      "type": "skill",
+      "name": "History"
+    },
+    {
+      "type": "skill",
+      "name": "Deception"
+    },
+    {
+      "type": "skill",
+      "name": "Persuasion"
+    },
+    {
+      "type": "skill",
+      "name": "Insight"
+    },
+    {
+      "type": "skill",
+      "name": "Religion"
+    }
+  ],
+  "damage_modifiers": [
+    {
+      "damage_type": "poison",
+      "modifier_type": "resistance"
+    },
+    {
+      "damage_type": "disease",
+      "modifier_type": "immunity"
+    },
+    {
+      "damage_type": "acid",
+      "modifier_type": "resistance"
+    },
+    {
+      "damage_type": "cold",
+      "modifier_type": "immunity"
+    }
+  ],
+  "passive_scores": {
+    "perception": 15,
+    "investigation": 17,
+    "insight": 20,
+    "stealth": null
+  },
+  "senses": {
+    "senses": {
+      "darkvision": 60
+    }
+  }
+}
