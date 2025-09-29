@@ -915,7 +915,7 @@ Complete schema definitions for all 14 parallel extraction tasks using LLM tool 
 | Proficiencies | T7: extract_proficiencies_and_modifiers | Proficiency, DamageModifier |
 | Senses | T8: extract_passive_scores_and_senses | PassiveScores, Senses |
 | Features | T9: extract_features_and_traits | FeaturesAndTraits, Feature |
-| Actions | T10: extract_action_economy | ActionEconomy, SpecialAction |
+| Actions | T10: extract_action_economy | ActionEconomy, CharacterAction |
 | Equipment | T11: extract_inventory | Inventory, InventoryItem |
 | Spellcasting | T12: extract_spellcasting_info | SpellcastingInfo |
 | Spells | T13: extract_spell_list | SpellList, Spell |

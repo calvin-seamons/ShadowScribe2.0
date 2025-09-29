@@ -16,7 +16,8 @@ from src.rag.character.character_types import (
     CombatStats, Proficiency, DamageModifier, PassiveScores, Senses,
     BackgroundInfo, BackgroundFeature, PersonalityTraits, Backstory,
     BackstorySection, FamilyBackstory, Organization, Ally, Enemy,
-    ActionEconomy, SpecialAction, AttackAction, DamageInfo,
+    ActionEconomy, CharacterAction, ActionActivation, ActionUsage,
+    ActionRange, ActionDamage, ActionSave,
     FeaturesAndTraits, ClassFeatures, Feature,
     Inventory, InventoryItem, InventoryItemDefinition, Modifier, LimitedUse,
     SpellList, SpellcastingInfo, Spell, SpellComponents, SpellRite,
@@ -248,54 +249,92 @@ def convert_action_economy(data: Dict[str, Any]) -> ActionEconomy:
                 for sub_action in action_data["sub_actions"]:
                     # Handle damage field which can be string or dict
                     damage_data = sub_action.get("damage", {})
+                    damage = None
                     if isinstance(damage_data, str):
                         # Simple damage string
-                        damage = DamageInfo(
-                            base=damage_data,
-                            type=sub_action.get("damage_type", "slashing")
+                        damage = ActionDamage(
+                            diceNotation=damage_data,
+                            damageType=sub_action.get("damage_type", "slashing")
                         )
-                    else:
+                    elif damage_data:
                         # Damage dictionary
-                        damage = DamageInfo(
-                            one_handed=damage_data.get("one_handed"),
-                            two_handed=damage_data.get("two_handed"),
-                            type=sub_action.get("damage_type", "slashing")
+                        dice = damage_data.get("one_handed") or damage_data.get("two_handed")
+                        damage = ActionDamage(
+                            diceNotation=dice,
+                            damageType=sub_action.get("damage_type", "slashing")
                         )
 
-                    attack_action = AttackAction(
+                    # Create activation
+                    activation = ActionActivation(activationType="action")
+                    
+                    # Create range if present
+                    action_range = None
+                    if sub_action.get("range"):
+                        action_range = ActionRange(
+                            rangeDescription=sub_action["range"]
+                        )
+                    
+                    # Create usage from charges if present
+                    usage = None
+                    if sub_action.get("charges"):
+                        charges = sub_action["charges"]
+                        if isinstance(charges, dict):
+                            usage = ActionUsage(
+                                maxUses=charges.get("max"),
+                                resetType=charges.get("reset_type")
+                            )
+
+                    attack_action = CharacterAction(
                         name=sub_action["name"],
-                        type=sub_action.get("type", "weapon_attack"),
-                        damage=damage,
-                        properties=sub_action.get("properties", []),
-                        range=sub_action.get("range"),
-                        reach=sub_action.get("reach", False),
-                        attack_bonus=sub_action.get("attack_bonus", 0),
-                        damage_type=sub_action.get("damage_type"),
-                        charges=sub_action.get("charges"),
-                        weapon_properties=sub_action.get("weapon_properties", []),
-                        special_options=sub_action.get("special_options"),
-                        required_items=None  # Will be set by linking function
-                    )
-                    actions.append(SpecialAction(
-                        name=sub_action["name"],
-                        type="action",
                         description="Weapon attack",
-                        sub_actions=[attack_action],
-                        required_items=None  # Will be set by linking function
-                    ))
+                        activation=activation,
+                        damage=damage,
+                        actionRange=action_range,
+                        usage=usage,
+                        attackBonus=sub_action.get("attack_bonus", 0),
+                        isWeaponAttack=True,
+                        actionCategory="attack",
+                        source="item"
+                    )
+                    actions.append(attack_action)
             else:
                 # Handle other special actions
-                special_action = SpecialAction(
+                # Create activation
+                activation = ActionActivation(
+                    activationType=action_data.get("type", "action")
+                )
+                
+                # Create range if present
+                action_range = None
+                if action_data.get("range"):
+                    action_range = ActionRange(
+                        rangeDescription=action_data["range"]
+                    )
+                
+                # Create usage from uses if present
+                usage = None
+                if action_data.get("uses"):
+                    uses = action_data["uses"]
+                    if isinstance(uses, dict):
+                        usage = ActionUsage(
+                            maxUses=uses.get("max"),
+                            resetType=uses.get("reset_type")
+                        )
+                
+                # Create save if present
+                save = None
+                if action_data.get("save_dc"):
+                    save = ActionSave(saveDC=action_data["save_dc"])
+                
+                special_action = CharacterAction(
                     name=action_data["name"],
-                    type=action_data.get("type", "action"),
                     description=action_data.get("description"),
-                    uses=action_data.get("uses"),
-                    save_dc=action_data.get("save_dc"),
-                    range=action_data.get("range"),
-                    effect=action_data.get("effect"),
-                    options=action_data.get("options"),
-                    trigger=action_data.get("trigger"),
-                    required_items=None  # Will be set by linking function
+                    activation=activation,
+                    usage=usage,
+                    actionRange=action_range,
+                    save=save,
+                    actionCategory="feature",
+                    source="class"
                 )
                 actions.append(special_action)
 

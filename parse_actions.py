@@ -14,87 +14,21 @@ import sys
 import re
 import asyncio
 from typing import Dict, List, Optional, Union, Any
-from dataclasses import dataclass, field
+from dataclasses import asdict
 from pathlib import Path
 
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent / "src"))
 from rag.llm_client import LLMClientFactory
 from rag.json_repair import JSONRepair
-
-
-@dataclass
-class ActionActivation:
-    """How an action is activated."""
-    activationType: Optional[str] = None  # "action", "bonus_action", "reaction", etc.
-    activationTime: Optional[int] = None  # Number of time units
-    activationCondition: Optional[str] = None  # Special conditions for activation
-
-
-@dataclass
-class ActionUsage:
-    """Usage limitations for an action."""
-    maxUses: Optional[int] = None
-    resetType: Optional[str] = None  # "short_rest", "long_rest", "dawn", etc.
-    usesPerActivation: Optional[int] = None
-
-
-@dataclass
-class ActionRange:
-    """Range information for an action."""
-    range: Optional[int] = None  # Range in feet
-    longRange: Optional[int] = None  # Long range in feet
-    aoeType: Optional[str] = None  # Area of effect type
-    aoeSize: Optional[int] = None  # AOE size in feet
-    rangeDescription: Optional[str] = None  # Human-readable range
-
-
-@dataclass
-class ActionDamage:
-    """Damage information for an action."""
-    diceNotation: Optional[str] = None  # e.g., "1d8+3"
-    damageType: Optional[str] = None  # "slashing", "fire", etc.
-    fixedDamage: Optional[int] = None
-    bonusDamage: Optional[str] = None
-    criticalHitDice: Optional[str] = None
-
-
-@dataclass
-class ActionSave:
-    """Saving throw information."""
-    saveDC: Optional[int] = None
-    saveAbility: Optional[str] = None  # "Dexterity", "Wisdom", etc.
-    onSuccess: Optional[str] = None
-    onFailure: Optional[str] = None
-
-
-@dataclass
-class CharacterAction:
-    """A complete character action with all relevant information."""
-    name: str
-    description: Optional[str] = None
-    shortDescription: Optional[str] = None  # Snippet or summary
-    
-    # Action mechanics
-    activation: Optional[ActionActivation] = None
-    usage: Optional[ActionUsage] = None
-    actionRange: Optional[ActionRange] = None
-    damage: Optional[ActionDamage] = None
-    save: Optional[ActionSave] = None
-    
-    # Classification
-    actionCategory: Optional[str] = None  # "attack", "feature", "item"
-    source: Optional[str] = None  # "class", "race", "feat", "item", "spell"
-    sourceFeature: Optional[str] = None  # Name of the feature/item granting this action
-    
-    # Combat details
-    attackBonus: Optional[int] = None
-    isWeaponAttack: bool = False
-    requiresAmmo: bool = False
-    
-    # Special properties
-    duration: Optional[str] = None
-    materials: Optional[str] = None  # Required items or materials
+from rag.character.character_types import (
+    ActionActivation,
+    ActionUsage,
+    ActionRange,
+    ActionDamage,
+    ActionSave,
+    CharacterAction
+)
 
 
 class DNDBeyondActionsParser:
@@ -810,7 +744,6 @@ def main():
         output_file = json_file_path.replace('.json', '_actions_parsed.json')
         with open(output_file, 'w', encoding='utf-8') as f:
             # Convert to dict and clean
-            from dataclasses import asdict
             actions_dict = [asdict(action) for action in actions]
             cleaned_dict = clean_dict_for_json(actions_dict)
             json.dump(cleaned_dict, f, indent=2, ensure_ascii=False)

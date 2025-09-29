@@ -1,18 +1,22 @@
 {
+  "character_name": "Duskryn Nightwarden",
   "background_info": {
     "name": "Acolyte",
     "feature": {
       "name": "Shelter of the Faithful",
       "description": "As an acolyte, you command the respect of those who share your faith, and you can perform the religious ceremonies of your deity. You and your adventuring companions can expect to receive free healing and care at a temple, shrine, or other established presence of your faith, though you must provide any material components needed for spells. Those who share your religion will support you (but only you) at a modest lifestyle. You might also have ties to a specific temple dedicated to your chosen deity or pantheon, and you have a residence there. This could be the temple where you used to serve, if you remain on good terms with it, or a temple where you have found a new home. While near your temple, you can call upon the priests for assistance, provided the assistance you ask for is not hazardous and you remain in good standing with your temple."
     },
+    "skill_proficiencies": [
+      "Insight",
+      "Religion"
+    ],
     "equipment": [
-      "holy symbol",
-      "prayer book",
-      "incense",
+      "a holy symbol (a gift to you when you entered the priesthood)",
+      "a prayer book or prayer wheel",
+      "5 sticks of incense",
       "vestments",
-      "common clothes",
-      "pouch",
-      "gold pieces"
+      "a set of common clothes",
+      "a pouch containing 15 gp"
     ],
     "feature_description": "As an acolyte, you command the respect of those who share your faith, and you can perform the religious ceremonies of your deity. You and your adventuring companions can expect to receive free healing and care at a temple, shrine, or other established presence of your faith, though you must provide any material components needed for spells. Those who share your religion will support you (but only you) at a modest lifestyle. You might also have ties to a specific temple dedicated to your chosen deity or pantheon, and you have a residence there. This could be the temple where you used to serve, if you remain on good terms with it, or a temple where you have found a new home. While near your temple, you can call upon the priests for assistance, provided the assistance you ask for is not hazardous and you remain in good standing with your temple."
   },
@@ -21,7 +25,7 @@
       "I quote (or misquote) sacred texts and proverbs in almost every situation.",
       "I see omens in every event and action. The gods try to speak to us, we just need to listen.",
       "I am tolerant of other faiths and respect the worship of other gods.",
-      "I’ve enjoyed fine food, drink, and high society among my temple’s elite. Rough living grates on me."
+      "I've enjoyed fine food, drink, and high society among my temple's elite. Rough living grates on me."
     ],
     "ideals": [
       "Tradition. The ancient traditions of worship and sacrifice must be preserved and upheld. (Lawful)",
@@ -37,8 +41,7 @@
   "backstory": {
     "title": "The Battle of Shadow's Edge",
     "family_backstory": {
-      "parents": null,
-      "sections": []
+      "parents": "Unknown"
     },
     "sections": [
       {
@@ -51,7 +54,7 @@
       },
       {
         "heading": "The Battle",
-        "content": "As they approached Shadow's Edge, the skies darkened, and an eerie silence enveloped the land. The air crackled with dark energy, a palpable sign of Xurmurrin's presence. Duskryn, standing at the forefront, raised his hammer high, invoking Ethernea's blessing. His presence radiated a calming light, instilling courage in his soldiers. The clash was fierce, with Xurmurrin's shadowy minions assailing the Holy Knights from all sides. In the midst of the chaos, Duskryn found himself facing Xurmurrin directly. The Voiceless One's power was immense, a swirling vortex of darkness that threatened to consume everything. Drawing upon Ethernea's teachings, Duskryn channeled both light and dark magic, creating a barrier that shielded his troops and weakened Xurmurrin's attacks. The battle raged on, with neither side gaining a clear advantage."
+        "content": "As they approached Shadow's Edge, the skies darkened, and an eerie silence enveloped the land. The air crackled with dark energy, a palpable sign of Xurmurrin's presence. Duskryn, standing at the forefront, raised his hammer high, invoking Ethernea's blessing. His presence radiated a calming light, instilling courage in his soldiers. The clash was fierce, with Xurmurrin's shadowy minions assailing the Holy Knights from all sides.\n\nIn the midst of the chaos, Duskryn found himself facing Xurmurrin directly. The Voiceless One's power was immense, a swirling vortex of darkness that threatened to consume everything. Drawing upon Ethernea's teachings, Duskryn channeled both light and dark magic, creating a barrier that shielded his troops and weakened Xurmurrin's attacks. The battle raged on, with neither side gaining a clear advantage."
       },
       {
         "heading": "The Turning Point",
@@ -59,29 +62,25 @@
       },
       {
         "heading": "The Retreat",
-        "content": "Xurmurrin, weakened and vulnerable, saw his army fall before the might of Duskryn and the Holy Knights. Recognizing the futility of continued conflict, Xurmurrin retreated into the shadows, vowing to return and exact his revenge. The retreat of the Voiceless One sent ripples through the realm, disrupting the balance of light and darkness. The excessive power of light began to overwhelm the land, creating a new imbalance. Duskryn, realizing the consequences of their partial victory, vowed to restore the equilibrium that Ethernea so dearly cherished. Returning to Kluntul as a hero, Duskryn was lauded for his bravery and leadership. However, he knew that his true task had just begun. With the blessing and guidance of High Acolyte Aldric, Duskryn embarked on a new quest to restore the delicate balance between light and darkness, ensuring that Ethernea's legacy of harmony would endure."
-      },
-      {
-        "heading": "Additional Notes",
-        "content": "Role in the Battle of Shadow's Edge: His significant role in this battle, where he led the Holy Knights against Xurmurrin, The Voiceless One, showcases his leadership and combat prowess. This event also granted him an impressive amount of power from Ethernea, reinforcing his commitment to maintaining balance. Ongoing Vigilance: Duskryn remains ever-vigilant for signs of Xurmurrin's return, constantly preparing and strategizing to protect Kluntul from future threats. This vigilance can sometimes border on paranoia, affecting his interactions and decisions. Connection to the Veil: His experience with the Veil and the balance of light and darkness has given him unique insights and abilities. This connection might manifest in his magic or decision-making, influencing how he perceives and interacts with the world. Moral Dilemmas: His dedication to balance can lead to moral dilemmas, especially when situations arise that seem to favor one side over the other. This internal conflict can create tension and character development opportunities. Reputation: Duskryn's reputation as a hero and leader in Kluntul means he is respected and possibly revered by many, but it also places a burden of expectation on him to always act in the realm's best interest."
+        "content": "Xurmurrin, weakened and vulnerable, saw his army fall before the might of Duskryn and the Holy Knights. Recognizing the futility of continued conflict, Xurmurrin retreated into the shadows, vowing to return and exact his revenge. The retreat of the Voiceless One sent ripples through the realm, disrupting the balance of light and darkness. The excessive power of light began to overwhelm the land, creating a new imbalance. Duskryn, realizing the consequences of their partial victory, vowed to restore the equilibrium that Ethernea so dearly cherished.\n\nReturning to Kluntul as a hero, Duskryn was lauded for his bravery and leadership. However, he knew that his true task had just begun. With the blessing and guidance of High Acolyte Aldric, Duskryn embarked on a new quest to restore the delicate balance between light and darkness, ensuring that Ethernea's legacy of harmony would endure."
       }
     ]
   },
   "organizations": [
     {
       "name": "The Holy Knights of Kluntul",
-      "role": "High-ranking officer",
-      "description": "A military order dedicated to defending Kluntul and upholding the principles of justice and balance. Duskryn plays a significant role in this organization."
+      "role": "high-ranking officer",
+      "description": "As a high-ranking officer, Duskryn plays a significant role in this military order dedicated to defending Kluntul and upholding the principles of justice and balance."
     },
     {
       "name": "The Clergy of Ethernea",
-      "role": "Devoted follower",
-      "description": "A religious community that worships and upholds the teachings of Ethernea, ensuring the balance between light and darkness. Duskryn is actively involved in this community."
+      "role": "devoted follower",
+      "description": "As a devoted follower of Ethernea, Duskryn is actively involved in the religious community that worships and upholds the teachings of Ethernea, ensuring the balance between light and darkness."
     },
     {
       "name": "The Sacred Holds of Kluntul",
-      "role": "Contributing member",
-      "description": "The broader theocratic structure of Kluntul, responsible for governance and protection of the realm. Duskryn contributes to this organization through his military and religious roles."
+      "role": "member",
+      "description": "By extension of his military and religious roles, Duskryn is part of the broader theocratic structure of Kluntul, contributing to the governance and protection of the realm."
     }
   ],
   "allies": [
@@ -92,38 +91,32 @@
     },
     {
       "name": "Fellow Holy Knights",
-      "description": "Comrades-in-arms who have fought alongside Duskryn in battles and share his devotion to protecting Kluntul and maintaining balance.",
-      "title": null
+      "description": "Comrades-in-arms who have fought alongside Duskryn in battles and share his devotion to protecting Kluntul and maintaining balance."
     },
     {
       "name": "Priests and Priestesses of Ethernea",
-      "description": "Religious leaders and followers who support Duskryn's mission and share his faith in Ethernea, The Mediator.",
-      "title": null
+      "description": "Religious leaders and followers who support Duskryn's mission and share his faith in Ethernea, The Mediator."
     },
     {
-      "name": "Elara",
-      "description": "One of the other High Acolytes who sees the value in Duskryn's balanced approach, and who oversees religious ceremonies and rituals.",
-      "title": "High Acolyte"
+      "name": "Other High Acolytes",
+      "description": "Especially those who see the value in Duskryn's balanced approach, such as High Acolyte Elara, who oversees religious ceremonies and rituals.",
+      "title": "High Acolytes"
     },
     {
       "name": "Scholars of the Order of the Scribes",
-      "description": "Those who study the history and knowledge related to the Cal' Thum pantheon, aiding Duskryn in understanding the deeper aspects of balance.",
-      "title": null
+      "description": "Those who study the history and knowledge related to the Cal' Thum pantheon, aiding Duskryn in understanding the deeper aspects of balance."
     },
     {
       "name": "The Party",
-      "description": "His adventuring companions, who respect his experience and leadership, even if they occasionally clash with his stubbornness or obsession with balance.",
-      "title": null
+      "description": "His adventuring companions, who respect his experience and leadership, even if they occasionally clash with his stubbornness or obsession with balance."
     }
   ],
   "enemies": [
     {
-      "name": "Xurmurrin",
-      "description": "Known as 'The Voiceless One', likely a mysterious or threatening entity"
+      "name": "Xurmurrin, The Voiceless One"
     },
     {
-      "name": "Etherena's Enemies",
-      "description": "Unspecified antagonists who are opposed to Etherena's interests or goals"
+      "name": "Anyone who is an enemy of Etherena"
     }
   ]
 }

@@ -400,128 +400,142 @@ class Enemy:
 
 
 # ===== COMBAT AND ACTION TYPES =====
+# Action models from parse_actions.py - single source of truth
 
 @dataclass
-class DamageInfo:
-    """Damage information for attacks.
+class ActionActivation:
+    """How an action is activated.
     
     EXTRACTION PATHS:
-    - one_handed: NOT DIRECTLY AVAILABLE - Must be calculated from weapon properties
-    - two_handed: NOT DIRECTLY AVAILABLE - Must be calculated from weapon properties  
-    - base: inventory[].definition.damage (damage dice) or actions[].dice structure
-    - type: inventory[].definition.damageType or actions[].damageTypeId (requires lookup)
-    
-    MISSING INFORMATION:
-    - D&D Beyond doesn't separate one/two-handed damage explicitly
-    - Need to analyze weapon properties to determine handedness capabilities
-    
-    LLM ASSISTANCE NEEDED:
-    - Parse weapon properties arrays to determine if weapon can be used one/two-handed
-    - Interpret damage dice notation (e.g., "1d8", "1d10") 
-    - Map damageTypeId integers to damage type names
+    - activationType: Map from actions[].actionType using ACTION_TYPE_MAP
+    - activationTime: actions[].activation.activationTime
+    - activationCondition: Parse from action description or activation data
     """
-    one_handed: Optional[str] = None
-    two_handed: Optional[str] = None
-    base: Optional[str] = None
-    type: str = "slashing"
+    activationType: Optional[str] = None  # "action", "bonus_action", "reaction", etc.
+    activationTime: Optional[int] = None  # Number of time units
+    activationCondition: Optional[str] = None  # Special conditions for activation
 
 
 @dataclass
-class AttackAction:
-    """An attack action or weapon attack.
+class ActionUsage:
+    """Usage limitations for an action.
     
     EXTRACTION PATHS:
-    - name: actions.class[].name or inventory[].definition.name (for weapons)
-    - type: REQUIRES MAPPING - actions.class[].actionType (integer 1-8) needs conversion to literals
-    - damage: Create DamageInfo from actions[].dice or inventory[].definition.damage
-    - properties: inventory[].definition.properties array (for weapons)
-    - range: actions.class[].range.range or inventory[].definition.range
-    - reach: NOT EXPLICIT - must derive from weapon properties ("reach" property)
-    - attack_bonus: CALCULATED - ability modifier + proficiency + magic bonuses
-    - damage_type: inventory[].definition.damageType or actions[].damageTypeId
-    - charges: actions.class[].limitedUse structure (convert to simpler format)
-    - weapon_properties: Same as properties but filtered for weapon-specific ones
-    - special_options: NOT AVAILABLE - no structured field in JSON
-    - required_items: Can derive from actions that reference inventory items
+    - maxUses: actions[].limitedUse.maxUses
+    - resetType: Map from actions[].limitedUse.resetType using RESET_TYPE_MAP
+    - usesPerActivation: actions[].limitedUse.minNumberConsumed (default 1)
+    """
+    maxUses: Optional[int] = None
+    resetType: Optional[str] = None  # "short_rest", "long_rest", "dawn", etc.
+    usesPerActivation: Optional[int] = None
+
+
+@dataclass
+class ActionRange:
+    """Range information for an action.
     
-    MISSING INFORMATION:
-    - No explicit reach boolean (must parse from properties)
-    - No structured special_options field
-    - Attack bonuses need calculation from multiple sources
+    EXTRACTION PATHS:
+    - range: actions[].range.range or inventory[].definition.range
+    - longRange: actions[].range.longRange or inventory[].definition.longRange
+    - aoeType: Map from actions[].range.aoeType (1=sphere, 2=cube, 3=cone, 4=line)
+    - aoeSize: actions[].range.aoeSize
+    - rangeDescription: Generated from range/longRange/aoe data
+    """
+    range: Optional[int] = None  # Range in feet
+    longRange: Optional[int] = None  # Long range in feet
+    aoeType: Optional[str] = None  # Area of effect type
+    aoeSize: Optional[int] = None  # AOE size in feet
+    rangeDescription: Optional[str] = None  # Human-readable range
+
+
+@dataclass
+class ActionDamage:
+    """Damage information for an action.
     
-    LLM ASSISTANCE NEEDED:
-    - Map actionType integers (1=action, 3=bonus_action, etc.) to your literals
-    - Parse HTML descriptions to extract special options
-    - Determine reach from weapon properties array
-    - Calculate attack bonuses from ability scores + modifiers + magic items
-    - Categorize general properties vs weapon-specific properties
+    EXTRACTION PATHS:
+    - diceNotation: actions[].dice.diceString or inventory[].definition.damage.diceString
+    - damageType: Map from actions[].damageTypeId or inventory[].definition.damageType
+    - fixedDamage: actions[].value (if no dice)
+    - bonusDamage: Additional damage from modifiers
+    - criticalHitDice: Special crit dice if applicable
+    """
+    diceNotation: Optional[str] = None  # e.g., "1d8+3"
+    damageType: Optional[str] = None  # "slashing", "fire", etc.
+    fixedDamage: Optional[int] = None
+    bonusDamage: Optional[str] = None
+    criticalHitDice: Optional[str] = None
+
+
+@dataclass
+class ActionSave:
+    """Saving throw information.
+    
+    EXTRACTION PATHS:
+    - saveDC: actions[].fixedSaveDc
+    - saveAbility: Map from actions[].saveStatId using ABILITY_MAP
+    - onSuccess: actions[].saveSuccessDescription (clean HTML)
+    - onFailure: actions[].saveFailDescription (clean HTML)
+    """
+    saveDC: Optional[int] = None
+    saveAbility: Optional[str] = None  # "Dexterity", "Wisdom", etc.
+    onSuccess: Optional[str] = None
+    onFailure: Optional[str] = None
+
+
+@dataclass
+class CharacterAction:
+    """A complete character action with all relevant information.
+    
+    This unified model represents all types of actions: attacks, features, spells, etc.
+    
+    EXTRACTION PATHS:
+    - name: actions[category][].name or inventory[].definition.name (for weapons)
+    - description: Clean HTML from actions[].description or inventory[].definition.description
+    - shortDescription: actions[].snippet or generated summary
+    - activation: Parse using ActionActivation from actions[].activation and actionType
+    - usage: Parse using ActionUsage from actions[].limitedUse
+    - actionRange: Parse using ActionRange from actions[].range
+    - damage: Parse using ActionDamage from actions[].dice or inventory damage
+    - save: Parse using ActionSave from actions[] save data
+    - actionCategory: "attack", "feature", "spell", "unequipped_weapon", "item"
+    - source: "class", "race", "feat", "item", "background"
+    - sourceFeature: Name of feature/item granting this action
+    - attackBonus: actions[].fixedToHit
+    - isWeaponAttack: True if actions[].attackType in [1, 2] (melee/ranged)
+    - requiresAmmo: True if weapon has "ammunition" or "thrown" property
+    - duration: Parse from spell/ability duration data
+    - materials: Parse from spell components or item requirements
+    
+    ACTION TYPE MAPPINGS:
+    - actionType: 1="action", 2="no_action", 3="bonus_action", 4="reaction", etc.
+    - resetType: 1="short_rest", 2="long_rest", 3="dawn", 4="dusk", etc.
+    - damageTypeId: 1="bludgeoning", 2="piercing", 3="slashing", 4="necrotic", etc.
+    - saveStatId: 1="Strength", 2="Dexterity", 3="Constitution", 4="Intelligence", 5="Wisdom", 6="Charisma"
     """
     name: str
-    type: Literal["weapon_attack", "melee_attack", "ranged_attack", "spell_attack"]
-    damage: Optional[DamageInfo] = None
-    properties: List[str] = field(default_factory=list)
-    range: Optional[str] = None
-    reach: bool = False
-    attack_bonus: int = 0
-    damage_type: Optional[str] = None
-    charges: Optional[Dict[str, Union[int, str]]] = None
-    weapon_properties: List[str] = field(default_factory=list)
-    special_options: Optional[List[Dict[str, str]]] = None
-    required_items: Optional[List['InventoryItem']] = None
-
-
-@dataclass
-class SpecialAction:
-    """A special action like Channel Divinity.
-    
-    EXTRACTION PATHS:
-    - name: actions.class[].name
-    - type: REQUIRES MAPPING - actions.class[].actionType integer to literals:
-      * 1 = "action", 3 = "bonus_action", 4 = "reaction", 8 = "no_action", etc.
-    - description: actions.class[].description (HTML content, needs cleaning)
-    - uses: actions.class[].limitedUse structure:
-      * maxUses, numberUsed, resetType (1=short rest, 2=long rest, etc.)
-    - save_dc: actions.class[].fixedSaveDc
-    - range: actions.class[].range.range (may be null)
-    - effect: NOT SEPARATE FIELD - must extract from description
-    - options: NOT AVAILABLE - no structured options in JSON
-    - trigger: actions.class[].activation data (partial info)
-    - sub_actions: NOT AVAILABLE - no nested action structure
-    - required_items: Can derive from inventory items that grant actions
-    
-    ACTION TYPE MAPPING (from JSON actionType integers):
-    - 1: "action"
-    - 2: "no_action" (passive)
-    - 3: "bonus_action" 
-    - 4: "reaction"
-    - 6: "reaction" (opportunity attack)
-    - 8: "no_action" (other)
-    
-    MISSING INFORMATION:
-    - No separate effect field (embedded in description)
-    - No structured options array
-    - No sub_actions nesting
-    - Limited trigger information
-    
-    LLM ASSISTANCE NEEDED:
-    - Convert actionType integers to your literal types
-    - Clean HTML from descriptions (remove tags, format text)
-    - Extract structured effect information from descriptions
-    - Parse trigger conditions from activation data and descriptions
-    - Convert limitedUse structure to simpler uses format
-    - Identify any options embedded in descriptions
-    """
-    name: str
-    type: Literal["action", "bonus_action", "reaction", "no_action", "feature"]
     description: Optional[str] = None
-    uses: Optional[Dict[str, Union[int, str]]] = None
-    save_dc: Optional[int] = None
-    range: Optional[str] = None
-    effect: Optional[str] = None
-    options: Optional[List[Dict[str, Any]]] = None
-    trigger: Optional[str] = None
-    sub_actions: Optional[List[AttackAction]] = None
-    required_items: Optional[List['InventoryItem']] = None
+    shortDescription: Optional[str] = None  # Snippet or summary
+    
+    # Action mechanics
+    activation: Optional[ActionActivation] = None
+    usage: Optional[ActionUsage] = None
+    actionRange: Optional[ActionRange] = None
+    damage: Optional[ActionDamage] = None
+    save: Optional[ActionSave] = None
+    
+    # Classification
+    actionCategory: Optional[str] = None  # "attack", "feature", "item", "spell"
+    source: Optional[str] = None  # "class", "race", "feat", "item", "background"
+    sourceFeature: Optional[str] = None  # Name of the feature/item granting this action
+    
+    # Combat details
+    attackBonus: Optional[int] = None
+    isWeaponAttack: bool = False
+    requiresAmmo: bool = False
+    
+    # Special properties
+    duration: Optional[str] = None
+    materials: Optional[str] = None  # Required items or materials
 
 
 @dataclass
@@ -537,7 +551,9 @@ class ActionEconomy:
       * actions.class[] (class features that are actions)
       * actions.race[] (racial abilities)
       * actions.feat[] (feat-granted actions)
-      * Convert each to SpecialAction objects
+      * actions.item[] (item-granted actions)
+      * inventory[] (weapon attacks)
+      * Convert each to CharacterAction objects
     
     MISSING INFORMATION:
     - No explicit "attacks per action" field in JSON
@@ -546,11 +562,11 @@ class ActionEconomy:
     LLM ASSISTANCE NEEDED:
     - Parse class features to identify "Extra Attack" or similar abilities
     - Calculate attacks per action based on class levels and features
-    - Convert various action sources into unified SpecialAction format
+    - Convert various action sources into unified CharacterAction format
     - Identify passive vs active abilities
     """
     attacks_per_action: int = 1
-    actions: List[SpecialAction] = field(default_factory=list)
+    actions: List[CharacterAction] = field(default_factory=list)
 
 
 # ===== FEATURES AND TRAITS TYPES =====
