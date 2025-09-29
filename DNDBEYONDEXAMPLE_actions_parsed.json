@@ -13,6 +13,20 @@
     "requiresAmmo": false
   },
   {
+    "name": "Call Lightning",
+    "description": "A storm cloud appears in the shape of a cylinder that is 10 feet tall with a 60-foot radius, centered on a point you can see within range directly above you. The spell fails if you can’t see a point in the air where the storm cloud could appear (for example, if you are in a room that can’t accommodate the cloud). When you cast the spell, choose a point you can see under the cloud. A bolt of lightning flashes down from the cloud to that point. Each creature within 5 feet of that point must make a Dexterity saving throw. A creature takes 3d10 lightning damage on a failed save, or half as much damage on a successful one. On each of your turns until the spell ends, you can use your action to call down lightning in this way again, targeting the same point or a different one. If you are outdoors in stormy conditions when you cast this spell, the spell gives you control over the existing storm instead of creating a new one. Under such conditions, the spell’s damage increases by 1d10. At Higher Levels. When you cast this spell using a spell slot of 4th or higher level, the damage increases by 1d10 for each slot level above 3rd.",
+    "shortDescription": "level 3 Conjuration spell",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Eldaryth of Regret (I)",
+    "isWeaponAttack": false,
+    "requiresAmmo": false,
+    "duration": "Concentration, 10 Minute"
+  },
+  {
     "name": "Channel Divinity",
     "description": "",
     "shortDescription": "Your oath allows you to channel divine energy to fuel magical effects. When you use your Channel Divinity, you choose which option to use. You must then finish a short or long rest to use your Channel Divinity again. Some Channel Divinity effects require saving throws (DC {{savedc:cha}}).",
@@ -90,6 +104,30 @@
     "requiresAmmo": true
   },
   {
+    "name": "Detect Thoughts",
+    "description": "For the duration, you can read the thoughts of certain creatures. When you cast the spell and as your action on each turn until the spell ends, you can focus your mind on any one creature that you can see within 30 feet of you. If the creature you choose has an Intelligence of 3 or lower or doesn’t speak any language, the creature is unaffected. You initially learn the surface thoughts of the creature&mdash;what is most on its mind in that moment. As an action, you can either shift your attention to another creature’s thoughts or attempt to probe deeper into the same creature’s mind. If you probe deeper, the target must make a Wisdom saving throw. If it fails, you gain insight into its reasoning (if any), its emotional state, and something that looms large in its mind (such as something it worries over, loves, or hates). If it succeeds, the spell ends. Either way, the target knows that you are probing into its mind, and unless you shift your attention to another creature’s thoughts, the creature can use its action on its turn to make an Intelligence check contested by your Intelligence check; if it succeeds, the spell ends. Questions verbally directed at the target creature naturally shape the course of its thoughts, so this spell is particularly effective as part of an interrogation. You can also use this spell to detect the presence of thinking creatures you can’t see. When you cast the spell or as your action during the duration, you can search for thoughts within 30 feet of you. The spell can penetrate barriers, but 2 feet of rock, 2 inches of any metal other than lead, or a thin sheet of lead blocks you. You can’t detect a creature with an Intelligence of 3 or lower or one that doesn’t speak any language. Once you detect the presence of a creature in this way, you can read its thoughts for the rest of the duration as described above, even if you can’t see it, but it must still be within range.",
+    "shortDescription": "level 2 Divination spell",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Helm of Telepathy",
+    "isWeaponAttack": false,
+    "requiresAmmo": false,
+    "duration": "Concentration, 1 Minute",
+    "materials": "a copper piece"
+  },
+  {
+    "name": "Divination Magic Resistance",
+    "description": "Cast from Amulet of Proof against Detection and Location",
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Amulet of Proof against Detection and Location",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
     "name": "Divine Sense",
     "description": "The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in your ears. As an action, you can open your awareness to detect such forces. Until the end of your next turn, you know the location of any celestial, fiend, or undead within 60 feet of you that is not behind total cover. You know the type (celestial, fiend, or undead) of any being whose presence you sense, but not its identity (the vampire Count Strahd von Zarovich, for instance). Within the same radius, you also detect the presence of any place or object that has been consecrated or desecrated, as with the [spell]hallow[/spell] spell. You can use this feature a number of times equal to 1 + your Charisma modifier. When you finish a long rest, you regain all expended uses.",
     "shortDescription": "As an action, you can detect good and evil. Until the end of your next turn, you can sense anything affected by the hallow spell or know the location of any celestial, fiend, undead within 60 ft. that is not behind total cover. You can use this feature {{(modifier:cha)+1#unsigned}} times per long rest.",
@@ -116,6 +154,19 @@
     },
     "actionCategory": "feature",
     "source": "class",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Divine Word",
+    "description": "You utter a divine word, imbued with the power that shaped the world at the dawn of creation. Choose any number of creatures you can see within range. Each creature that can hear you must make a Charisma saving throw. On a failed save, a creature suffers an effect based on its current hit points: 50 hit points or fewer: deafened for 1 minute 40 hit points or fewer: deafened and blinded for 10 minutes 30 hit points or fewer: blinded, deafened, and stunned for 1 hour 20 hit points or fewer: killed instantly Regardless of its current hit points, a celestial, an elemental, a fey, or a fiend that fails its save is forced back to its plane of origin (if it isn't there already) and can't return to your current plane for 24 hours by any means short of a wish spell.",
+    "shortDescription": "level 7 Evocation spell",
+    "activation": {
+      "activationType": "bonus_action"
+    },
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Eldaryth of Regret (I)",
     "isWeaponAttack": false,
     "requiresAmmo": false
   },
@@ -151,6 +202,33 @@
     "source": "class",
     "isWeaponAttack": false,
     "requiresAmmo": false
+  },
+  {
+    "name": "Finger of Death",
+    "description": "You send negative energy coursing through a creature that you can see within range, causing it searing pain. The target must make a Constitution saving throw. It takes 7d8 + 30 necrotic damage on a failed save, or half as much damage on a successful one. A humanoid killed by this spell rises at the start of your next turn as a zombie that is permanently under your command, following your verbal orders to the best of its ability.",
+    "shortDescription": "level 7 Necromancy spell",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Eldaryth of Regret (I)",
+    "isWeaponAttack": false,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Greater Invisibility",
+    "description": "A creature you touch has the Invisible condition until the spell ends.",
+    "shortDescription": "level 4 Illusion spell",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Mantle of Shadow",
+    "isWeaponAttack": false,
+    "requiresAmmo": false,
+    "duration": "Concentration, 1 Minute"
   },
   {
     "name": "Harness Divine Power",
@@ -254,6 +332,51 @@
     "source": "item",
     "sourceFeature": "Nightwarden's Hammer",
     "isWeaponAttack": true,
+    "requiresAmmo": false
+  },
+  {
+    "name": "Plane Shift",
+    "description": "You and up to eight willing creatures who link hands in a circle are transported to a different plane of existence. You can specify a target destination in general terms, such as the City of Brass on the Elemental Plane of Fire or the palace of Dispater on the second level of the Nine Hells, and you appear in or near that destination. If you are trying to reach the City of Brass, for example, you might arrive in its Street of Steel, before its Gate of Ashes, or looking at the city from across the Sea of Fire, at the GM's discretion. Alternatively, if you know the sigil sequence of a teleportation circle on another plane of existence, this spell can take you to that circle. If the teleportation circle is too small to hold all the creatures you transported, they appear in the closest unoccupied spaces next to the circle. You can use this spell to banish an unwilling creature to another plane. Choose a creature within your reach and make a melee spell attack against it. On a hit, the creature must make a Charisma saving throw. If the creature fails this save, it is transported to a random location on the plane of existence you specify. A creature so transported must find its own way back to your current plane of existence.",
+    "shortDescription": "level 7 Conjuration spell",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Amulet of Ethernea",
+    "isWeaponAttack": false,
+    "requiresAmmo": false,
+    "materials": "a forked, metal rod worth at least 250 gp, attuned to a particular plane of existence"
+  },
+  {
+    "name": "Suggestion",
+    "description": "You suggest a course of activity (limited to a sentence or two) and magically influence a creature you can see within range that can hear and understand you. Creatures that can't be charmed are immune to this effect. The suggestion must be worded in such a manner as to make the course of action sound reasonable. Asking the creature to stab itself, throw itself onto a spear, immolate itself, or do some other obviously harmful act ends the spell. The target must make a Wisdom saving throw. On a failed save, it pursues the course of action you described to the best of its ability. The suggested course of action can continue for the entire duration. If the suggested activity can be completed in a shorter time, the spell ends when the subject finishes what it was asked to do. You can also specify conditions that will trigger a special activity during the duration. For example, you might suggest that a knight give her warhorse to the first beggar she meets. If the condition isn't met before the spell expires, the activity isn't performed. If you or any of your companions damage the target, the spell ends.",
+    "shortDescription": "level 2 Enchantment spell",
+    "activation": {
+      "activationType": "action"
+    },
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Helm of Telepathy",
+    "isWeaponAttack": false,
+    "requiresAmmo": false,
+    "duration": "Concentration, 8 Hour",
+    "materials": "a snake's tongue and either a bit of honeycomb or a drop of sweet oil"
+  },
+  {
+    "name": "warlock spell slot recovery",
+    "description": "Cast from Rod of the Pact Keeper, +2",
+    "activation": {
+      "activationType": "action"
+    },
+    "usage": {
+      "maxUses": 1,
+      "resetType": "long_rest"
+    },
+    "actionCategory": "spell",
+    "source": "item",
+    "sourceFeature": "Rod of the Pact Keeper, +2",
+    "isWeaponAttack": false,
     "requiresAmmo": false
   }
 ]

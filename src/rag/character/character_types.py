@@ -229,15 +229,20 @@ class BackgroundInfo:
     EXTRACTION PATHS:
     - name: data.background.definition.name
     - feature: Create BackgroundFeature from data.background.definition.featureName and featureDescription
+    - skill_proficiencies: Parse from data.background.definition.skillProficienciesDescription (comma-separated list)
+    - tool_proficiencies: Parse from data.background.definition.toolProficienciesDescription (comma-separated list, may be empty)
+    - language_proficiencies: Parse from data.background.definition.languagesDescription (descriptive text, may need interpretation)
     - equipment: Parse from data.background.definition.equipmentDescription (descriptive text listing items)
     - feature_description: Same as data.background.definition.featureDescription (duplicate of feature.description)
     
-    NOTE: Proficiencies (skills, tools, languages) are NOT stored here - they are already parsed
-    from data.modifiers[] by parse_core_character.py as Proficiency objects.
-    Background equipment is stored here since it's narrative flavor, not mechanical proficiencies.
+    NOTE: Proficiency descriptions are text that need parsing, not structured arrays.
+    Language descriptions may be vague (e.g., "Two of your choice").
     """
     name: str
     feature: BackgroundFeature
+    skill_proficiencies: List[str] = field(default_factory=list)
+    tool_proficiencies: List[str] = field(default_factory=list)
+    language_proficiencies: List[str] = field(default_factory=list)
     equipment: List[str] = field(default_factory=list)
     feature_description: Optional[str] = None
 
@@ -299,9 +304,8 @@ class FamilyBackstory:
     NOTE: This entire dataclass represents data that must be extracted using an LLM
     to parse unstructured backstory text and identify family-related information.
     The backstory is stored as free-form markdown text, not structured data.
-    Both parents and sections are Optional since not all backstories contain family information.
     """
-    parents: Optional[str] = None
+    parents: str
     sections: List[BackstorySection] = field(default_factory=list)
 
 

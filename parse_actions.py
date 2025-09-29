@@ -12,9 +12,15 @@ Usage:
 import json
 import sys
 import re
+import asyncio
 from typing import Dict, List, Optional, Union, Any
 from dataclasses import dataclass, field
 from pathlib import Path
+
+# Add src to path for imports
+sys.path.append(str(Path(__file__).parent / "src"))
+from rag.llm_client import LLMClientFactory
+from rag.json_repair import JSONRepair
 
 
 @dataclass
@@ -374,6 +380,114 @@ class DNDBeyondActionsParser:
         
         return actions
     
+    async def _extract_spell_actions_from_text(self, text: str, item_name: str, spell_names: List[str] = None) -> List[CharacterAction]:
+        """
+        Use LLM to extract spell actions from item description text.
+        
+        Args:
+            text: The item description containing spell information
+            item_name: The name of the item granting the spells
+            spell_names: Optional list of known spell names to look for
+        
+        Returns:
+            List of CharacterAction objects for each spell found
+        """
+        llm_client = LLMClientFactory.create_router_client()
+        
+        # Build prompt for LLM
+        spell_hint = ""
+        if spell_names:
+            spell_hint = f"\nKnown spell names to look for: {', '.join(spell_names)}"
+        
+        prompt = f"""Extract spell casting information from this D&D item description.
+
+Item: {item_name}
+Description: {text}{spell_hint}
+
+Return a JSON array of spell actions. For each spell found, include:
+- spell_name: The name of the spell
+- save_dc: The DC for saving throws (if mentioned)
+- activation_type: "action", "bonus_action", or "reaction"
+- uses_per_rest: How many times it can be cast (e.g., "once per dawn", "3 charges", "unlimited")
+- reset_type: "dawn", "dusk", "short_rest", "long_rest", or null
+
+Return ONLY a JSON object with a "spells" array. If no spells are found, return {{"spells": []}}.
+
+Example output:
+{{
+  "spells": [
+    {{
+      "spell_name": "call lightning",
+      "save_dc": 18,
+      "activation_type": "action",
+      "uses_per_rest": "once",
+      "reset_type": "dawn"
+    }}
+  ]
+}}"""
+        
+        try:
+            response = await llm_client.generate_json_response(prompt, max_tokens=800)
+            
+            # Repair and validate response
+            repair_result = JSONRepair.repair_json_string(json.dumps(response))
+            data = repair_result.data
+            
+            if "spells" not in data or not isinstance(data["spells"], list):
+                return []
+            
+            actions = []
+            for spell_info in data["spells"]:
+                if not isinstance(spell_info, dict) or "spell_name" not in spell_info:
+                    continue
+                
+                action = CharacterAction(
+                    name=spell_info["spell_name"],
+                    description=f"Cast from {item_name}",
+                    source="item",
+                    sourceFeature=item_name,
+                    actionCategory="spell"
+                )
+                
+                # Parse activation
+                activation_type = spell_info.get("activation_type", "action")
+                action.activation = ActionActivation(activationType=activation_type)
+                
+                # Parse usage limitations
+                uses_per_rest = spell_info.get("uses_per_rest")
+                reset_type = spell_info.get("reset_type")
+                
+                if uses_per_rest or reset_type:
+                    usage = ActionUsage()
+                    
+                    # Extract max uses from text like "once" or "3 charges"
+                    if uses_per_rest:
+                        if "once" in str(uses_per_rest).lower():
+                            usage.maxUses = 1
+                        else:
+                            # Try to extract number
+                            match = re.search(r'(\d+)', str(uses_per_rest))
+                            if match:
+                                usage.maxUses = int(match.group(1))
+                    
+                    if reset_type:
+                        usage.resetType = reset_type
+                    
+                    action.usage = usage
+                
+                # Parse save DC
+                save_dc = spell_info.get("save_dc")
+                if save_dc:
+                    action.save = ActionSave(saveDC=save_dc)
+                
+                actions.append(action)
+            
+            return actions
+            
+        except Exception as e:
+            print(f"Warning: Failed to extract spell actions from {item_name}: {e}")
+            return []
+    
     def parse_unequipped_weapon_actions(self) -> List[CharacterAction]:
         """Parse unequipped weapon attacks from inventory (requires drawing first)."""
         actions = []
@@ -435,6 +549,137 @@ class DNDBeyondActionsParser:
         
         return actions
     
+    def parse_item_spell_actions(self) -> List[CharacterAction]:
+        """
+        Parse spell actions granted by magic items.
+        Uses LLM to extract spell information from item descriptions.
+        """
+        actions = []
+        inventory = self.data.get("inventory", [])
+        
+        # Run async extraction in event loop
+        async def extract_all_item_spells():
+            all_actions = []
+            for item_data in inventory:
+                definition = item_data.get("definition", {})
+                description = definition.get("description", "")
+                item_name = definition.get("name", "Unknown Item")
+                
+                # Skip if no description or item not equipped
+                if not description or not item_data.get("equipped"):
+                    continue
+                
+                # Look for spell-related keywords in description
+                lower_desc = description.lower()
+                if any(keyword in lower_desc for keyword in ["spell", "cast", "spells."]):
+                    # Extract spell actions using LLM
+                    item_actions = await self._extract_spell_actions_from_text(
+                        self.clean_html_description(description),
+                        item_name
+                    )
+                    all_actions.extend(item_actions)
+            
+            return all_actions
+        
+        try:
+            actions = asyncio.run(extract_all_item_spells())
+        except Exception as e:
+            print(f"Warning: Failed to parse item spell actions: {e}")
+        
+        return actions
+    
+    def parse_spell_section_actions(self) -> List[CharacterAction]:
+        """
+        Parse spell actions from the spells.item section.
+        These are spells granted by items and already have structured data.
+        """
+        actions = []
+        spells_data = self.data.get("spells", {})
+        item_spells = spells_data.get("item", [])
+        
+        if not item_spells:
+            return actions
+        
+        # Build a mapping of item definition IDs to item names
+        item_id_to_name = {}
+        inventory = self.data.get("inventory", [])
+        for item in inventory:
+            item_def_id = item.get("definition", {}).get("id")
+            item_name = item.get("definition", {}).get("name")
+            if item_def_id and item_name:
+                item_id_to_name[item_def_id] = item_name
+        
+        for spell_data in item_spells:
+            try:
+                definition = spell_data.get("definition", {})
+                spell_name = definition.get("name", "Unknown Spell")
+                
+                # Get the source item name from the componentId
+                component_id = spell_data.get("componentId")
+                source_item_name = item_id_to_name.get(component_id, "Unknown Item")
+                
+                action = CharacterAction(
+                    name=spell_name,
+                    description=self.clean_html_description(definition.get("description", "")),
+                    source="item",
+                    actionCategory="spell",
+                    sourceFeature=source_item_name
+                )
+                
+                # Parse activation from spell data
+                activation_data = definition.get("activation", {})
+                activation_type = activation_data.get("activationType", 1)
+                if activation_type in self.ACTION_TYPE_MAP:
+                    action.activation = ActionActivation(
+                        activationType=self.ACTION_TYPE_MAP[activation_type]
+                    )
+                
+                # Parse spell level and school
+                level = definition.get("level", 0)
+                school = definition.get("school", "")
+                if level or school:
+                    level_text = "cantrip" if level == 0 else f"level {level}"
+                    action.shortDescription = f"{level_text} {school} spell".strip()
+                
+                # Parse range
+                action.actionRange = self.parse_range(definition.get("range", {}))
+                
+                # Parse duration
+                duration_data = definition.get("duration", {})
+                if duration_data:
+                    duration_unit = duration_data.get("durationUnit", "")
+                    duration_interval = duration_data.get("durationInterval", 1)
+                    if duration_unit:
+                        action.duration = f"{duration_interval} {duration_unit}"
+                    
+                    # Check for concentration
+                    if definition.get("concentration"):
+                        action.duration = f"Concentration, {action.duration}" if action.duration else "Concentration"
+                
+                # Parse components/materials
+                components = definition.get("components", [])
+                components_desc = definition.get("componentsDescription", "")
+                if 3 in components and components_desc:  # 3 = material components
+                    action.materials = self.clean_html_description(components_desc)
+                
+                # Parse charges (usage limitations)
+                charges = spell_data.get("charges")
+                if charges:
+                    action.usage = ActionUsage(maxUses=charges)
+                
+                actions.append(action)
+                
+            except Exception as e:
+                spell_name = "Unknown"
+                try:
+                    spell_name = spell_data.get("definition", {}).get("name", "Unknown")
+                except:
+                    pass
+                print(f"Warning: Failed to parse item spell '{spell_name}': {e}")
+                continue
+        
+        return actions
+    
     def parse_all_actions(self) -> List[CharacterAction]:
         """Parse all non-spell character actions."""
         all_actions = []
@@ -444,31 +689,30 @@ class DNDBeyondActionsParser:
         all_actions.extend(self.parse_weapon_actions())
         all_actions.extend(self.parse_unequipped_weapon_actions())
         
-        # TODO: Parse item-granted spells as actions
-        # This requires LLM parsing of spell descriptions to extract:
-        # - Spell names from item descriptions
-        # - Save DCs and spell effects
-        # - Usage limitations (once per dawn, etc.)
-        # Example: Eldaryth of Regret grants "call lightning", "divine word", "finger of death"
-        # all_actions.extend(self.parse_item_spell_actions())
+        # Parse item-granted spells (uses LLM to extract from descriptions)
+        all_actions.extend(self.parse_item_spell_actions())
         
-        # TODO: Parse spell actions from weapon descriptions using LLM
-        # This requires natural language processing to extract spell-like abilities
-        # from complex item descriptions like the Eldaryth of Regret's spell section
-        # all_actions.extend(self.parse_weapon_spell_actions())
+        # Parse item spells from structured spell data
+        all_actions.extend(self.parse_spell_section_actions())
         
-        # TODO: Parse item-granted spell actions from the spells.item section
-        # This requires parsing the spells data structure and converting spells to actions
-        # all_actions.extend(self.parse_spell_section_actions())
-        
-        # Remove duplicates and sort by name
+        # Remove duplicates (case-insensitive name matching) and sort by name
         unique_actions = {}
         for action in all_actions:
-            key = (action.name, action.source)
+            # Use lowercase name for deduplication to catch case variations
+            key = (action.name.lower(), action.source, action.actionCategory)
             if key not in unique_actions:
                 unique_actions[key] = action
+            else:
+                # Keep the one with more complete information (prefer structured over LLM-extracted)
+                existing = unique_actions[key]
+                # If the new one has usage info and the existing doesn't, replace it
+                if action.usage and not existing.usage:
+                    unique_actions[key] = action
+                # If the new one has longer description, prefer it
+                elif action.description and len(action.description or "") > len(existing.description or ""):
+                    unique_actions[key] = action
         
-        return sorted(unique_actions.values(), key=lambda x: x.name)
+        return sorted(unique_actions.values(), key=lambda x: x.name.lower())
     
     def print_actions_summary(self, actions: List[CharacterAction]):
         """Print a summary of all character actions."""
@@ -485,7 +729,7 @@ class DNDBeyondActionsParser:
             by_category[category].append(action)
         
         # Ensure consistent ordering
-        category_order = ["attack", "feature", "unequipped_weapon", "other"]
+        category_order = ["attack", "feature", "spell", "unequipped_weapon", "other"]
         ordered_categories = []
         for cat in category_order:
             if cat in by_category:
