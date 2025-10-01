@@ -527,8 +527,54 @@ If no description is provided, leave the description field empty."""
             return_exceptions=True
         )
         
-        # Unpack results
-        (languages, equipment), personality_traits, backstory, organizations, allies, enemies = results
+        # Handle results with proper exception checking
+        # Result 0: (languages, equipment) tuple
+        if isinstance(results[0], Exception):
+            print(f"Warning: LLM parsing of background info failed: {results[0]}")
+            languages, equipment = [], []
+        else:
+            languages, equipment = results[0]
+        
+        # Result 1: personality_traits
+        if isinstance(results[1], Exception):
+            print(f"Warning: LLM parsing of personality traits failed: {results[1]}")
+            personality_traits = PersonalityTraits(
+                personality_traits=[], ideals=[], bonds=[], flaws=[]
+            )
+        else:
+            personality_traits = results[1]
+        
+        # Result 2: backstory
+        if isinstance(results[2], Exception):
+            print(f"Warning: LLM parsing of backstory failed: {results[2]}")
+            backstory = Backstory(
+                title="No Backstory",
+                family_backstory=FamilyBackstory(parents="Unknown"),
+                sections=[]
+            )
+        else:
+            backstory = results[2]
+        
+        # Result 3: organizations
+        if isinstance(results[3], Exception):
+            print(f"Warning: LLM parsing of organizations failed: {results[3]}")
+            organizations = []
+        else:
+            organizations = results[3]
+        
+        # Result 4: allies
+        if isinstance(results[4], Exception):
+            print(f"Warning: LLM parsing of allies failed: {results[4]}")
+            allies = []
+        else:
+            allies = results[4]
+        
+        # Result 5: enemies
+        if isinstance(results[5], Exception):
+            print(f"Warning: LLM parsing of enemies failed: {results[5]}")
+            enemies = []
+        else:
+            enemies = results[5]
         
         # Update background info with LLM-parsed data
         background_info.language_proficiencies = languages

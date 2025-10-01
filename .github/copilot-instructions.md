@@ -105,7 +105,7 @@ inventory_items = (
 ### Data Persistence & Conversion
 Characters are persisted as pickle files in `saved_characters/`. The conversion workflow:
 
-1. **JSON → Character**: `convert_duskryn.py` converts JSON data to Character objects
+1. **JSON → Character**: `CharacterBuilder` (in `src/character_creation/character_builder.py`) converts D&D Beyond JSON to Character objects using specialized parsers
 2. **Character → Pickle**: `CharacterManager.save_character()` handles persistence
 3. **Character ← Pickle**: `CharacterManager.load_character()` handles loading
 
@@ -155,11 +155,12 @@ if __name__ == "__main__":
 
 ## Key Files & Their Roles
 
-- **`src/rag/character/character_types.py`**: Single source of truth for all character data structures (575+ lines)
+- **`src/rag/character/character_types.py`**: Single source of truth for all character data structures (1000+ lines)
+- **`src/character_creation/character_builder.py`**: Modern character builder that orchestrates all parsers to create Character objects from D&D Beyond JSON
+- **`src/character_creation/parsing/`**: Specialized parsers for different character data sections (core, actions, features, inventory, spells, background)
 - **`src/utils/character_manager.py`**: Character CRUD operations and pickle persistence
 - **`src/utils/character_inspector.py`**: Debugging/analysis tool with multiple output formats
-- **`src/utils/convert_duskryn.py`**: Example converter from JSON → Character (1400+ lines of conversion logic)
-- **`Duskryn_Nightwarden/`**: Example character data as JSON files
+- **`knowledge_base/legacy_json/Duskryn_Nightwarden/`**: Example character data as legacy JSON files
 - **`saved_characters/`**: Pickle storage for Character objects
 
 ## Testing & Debugging Commands
@@ -175,8 +176,8 @@ python -m scripts.run_inspector --list
 # Debug character data structure
 python -m scripts.run_inspector "Character Name" --format text --filter field_name
 
-# Recreate character from JSON (if exists)
-python -c "import sys; sys.path.insert(0, '.'); from src.utils.character_manager import save_duskryn_character; save_duskryn_character()"
+# Create character from D&D Beyond JSON (modern approach)
+python -m src.character_creation.character_builder <path_to_dndbeyond_json>
 
 # Run character manager demo
 python -m scripts.run_manager
