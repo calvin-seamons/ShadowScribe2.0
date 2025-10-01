@@ -31,6 +31,7 @@ from .session_notes.session_types import QueryEngineResult
 class CharacterLLMRouterOutput:
     """Output from Character Router LLM call."""
     is_needed: bool
+    confidence: float = 0.5
     user_intentions: List[str] = field(default_factory=list)
     entities: List[Dict[str, Any]] = field(default_factory=list)
     
@@ -43,6 +44,7 @@ class CharacterLLMRouterOutput:
 class RulebookLLMRouterOutput:
     """Output from Rulebook Router LLM call."""
     is_needed: bool
+    confidence: float = 0.5
     user_intention: Optional[str] = None
     entities: List[Dict[str, str]] = field(default_factory=list)
     context_hints: List[str] = field(default_factory=list)
@@ -53,6 +55,7 @@ class RulebookLLMRouterOutput:
 class SessionNotesLLMRouterOutput:
     """Output from Session Notes Router LLM call."""
     is_needed: bool
+    confidence: float = 0.5
     character_name: str = ""
     user_intention: Optional[str] = None
     entities: List[Dict[str, str]] = field(default_factory=list)
