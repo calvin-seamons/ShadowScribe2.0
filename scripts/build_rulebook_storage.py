@@ -44,11 +44,11 @@ def main():
     
     # Parse the rulebook
     print("\n📖 Parsing D&D 5e Rulebook...")
-    rulebook_path = project_root / "knowledge_base" / "dnd5rulebook.md"
+    rulebook_path = project_root / "knowledge_base" / "source" / "dnd5rulebook.md"
     
     if not rulebook_path.exists():
         print(f"❌ Error: Rulebook file not found at {rulebook_path}")
-        print("Please ensure the dnd5rulebook.md file exists in the knowledge_base directory.")
+        print("Please ensure the dnd5rulebook.md file exists in the knowledge_base/source directory.")
         return
     
     start_time = time.time()

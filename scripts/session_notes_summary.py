@@ -34,7 +34,7 @@ def main():
         return
     
     # Show parsed session count
-    notes_directory = "knowledge_base/session_notes"
+    notes_directory = "knowledge_base/source/session_notes"
     session_notes = parse_session_notes_directory(notes_directory)
     print(f"✓ Sessions Parsed: {len(session_notes)}")
     

@@ -12,7 +12,7 @@ Usage:
     python -m scripts.update_character_from_json <path_to_dndbeyond_json> --name "Custom Name"
     
 Example:
-    python -m scripts.update_character_from_json knowledge_base/legacy_json/Duskryn_Nightwarden/character.json
+    python -m scripts.update_character_from_json path/to/dndbeyond_export.json
 """
 
 import sys
@@ -115,8 +115,8 @@ Examples:
   # Update with custom name
   python -m scripts.update_character_from_json data/character.json --name "Duskryn Nightwarden"
   
-  # Update from legacy JSON
-  python -m scripts.update_character_from_json knowledge_base/legacy_json/Duskryn_Nightwarden/character.json
+  # Update from D&D Beyond JSON export
+  python -m scripts.update_character_from_json DNDBEYONDEXAMPLE.json
         """
     )
     

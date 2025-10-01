@@ -24,7 +24,7 @@ def main():
     print("=" * 40)
     
     # Parse session notes
-    notes_directory = "knowledge_base/session_notes"
+    notes_directory = "knowledge_base/source/session_notes"
     print(f"Parsing session notes from {notes_directory}...")
     
     try:
