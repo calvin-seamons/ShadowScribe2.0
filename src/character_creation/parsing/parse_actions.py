@@ -10,18 +10,14 @@ Usage:
 """
 
 import json
-import sys
 import re
 import asyncio
 from typing import Dict, List, Optional, Union, Any
-from dataclasses import asdict
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent / "src"))
-from rag.llm_client import LLMClientFactory
-from rag.json_repair import JSONRepair
-from rag.character.character_types import (
+from src.rag.llm_client import LLMClientFactory
+from src.rag.json_repair import JSONRepair
+from src.rag.character.character_types import (
     ActionActivation,
     ActionUsage,
     ActionRange,
@@ -701,70 +697,3 @@ Example output:
                 
                 print("  " + " ".join(parts))
 
-
-def clean_dict_for_json(obj):
-    """Remove None values and empty collections."""
-    if isinstance(obj, dict):
-        cleaned = {}
-        for key, value in obj.items():
-            cleaned_value = clean_dict_for_json(value)
-            if cleaned_value is not None and cleaned_value != [] and cleaned_value != {}:
-                cleaned[key] = cleaned_value
-        return cleaned if cleaned else None
-    elif isinstance(obj, list):
-        cleaned = [clean_dict_for_json(item) for item in obj]
-        cleaned = [item for item in cleaned if item is not None]
-        return cleaned if cleaned else None
-    else:
-        return obj
-
-
-def main():
-    """Main function to parse D&D Beyond JSON and extract all non-spell actions."""
-    if len(sys.argv) != 2:
-        print("Usage: python parse_actions.py <path_to_json_file>")
-        sys.exit(1)
-    
-    json_file_path = sys.argv[1]
-    
-    try:
-        # Load JSON data
-        print(f"Loading D&D Beyond character data from: {json_file_path}")
-        with open(json_file_path, 'r', encoding='utf-8') as f:
-            json_data = json.load(f)
-        
-        # Parse actions
-        parser = DNDBeyondActionsParser(json_data)
-        actions = parser.parse_all_actions()
-        
-        # Print summary
-        parser.print_actions_summary(actions)
-        
-        # Save to output file
-        output_file = json_file_path.replace('.json', '_actions_parsed.json')
-        with open(output_file, 'w', encoding='utf-8') as f:
-            # Convert to dict and clean
-            actions_dict = [asdict(action) for action in actions]
-            cleaned_dict = clean_dict_for_json(actions_dict)
-            json.dump(cleaned_dict, f, indent=2, ensure_ascii=False)
-        
-        print(f"\\n" + "="*60)
-        print(f"Found {len(actions)} total actions")
-        print(f"Actions data saved to: {output_file}")
-        print("="*60)
-        
-        return actions
-        
-    except FileNotFoundError:
-        print(f"Error: File '{json_file_path}' not found.")
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        print(f"Error: Invalid JSON in file '{json_file_path}': {e}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error: An unexpected error occurred: {e}")
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

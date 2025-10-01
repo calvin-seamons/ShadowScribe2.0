@@ -572,151 +572,210 @@ class ActionEconomy:
 # ===== FEATURES AND TRAITS TYPES =====
 
 @dataclass
-class Feature:
-    """A class feature, racial trait, or feat.
+class FeatureActivation:
+    """Activation information for features and actions.
     
     EXTRACTION PATHS:
-    - name: Multiple sources depending on feature type:
-      * race.racialTraits[].definition.name (racial traits)
-      * classes[].classFeatures[].definition.name (class features)
-      * feats[].definition.name (feats)
-    - description: Corresponding .definition.description (HTML, needs cleaning)
-    - action_type: REQUIRES MAPPING from actions data if feature grants actions
-      * Check if feature appears in actions.class[], actions.race[], etc.
-      * Map actionType integer to literal
-    - passive: DERIVED - true if no corresponding action entry exists
-    - uses: From corresponding limitedUse structure if feature grants actions
-    - effect: NOT SEPARATE FIELD - extract from description
-    - cost: NOT AVAILABLE - no cost field in D&D Beyond
-    - damage: From actions data if feature grants damage
-    - trigger: From activation data if available
-    - subclass: DERIVED - true if from subclass features vs base class
-    - channel_divinity: SPECIAL CASE - identify if feature name contains "Channel Divinity"
-    - duration: From actions data or parse from description
-    - range: From actions.range data if applicable
-    - save_dc: From actions.fixedSaveDc if applicable
-    - focus: NOT AVAILABLE - no focus field
-    - preparation: NOT AVAILABLE - no preparation field
-    
-    FEATURE SOURCES IN JSON:
-    1. Racial Traits: race.racialTraits[].definition
-    2. Class Features: classes[].classFeatures[].definition
-    3. Subclass Features: classes[].subclassDefinition.classFeatures[].definition
-    4. Feats: feats[].definition
-    
-    MISSING INFORMATION:
-    - No explicit passive flag (must derive from presence/absence in actions)
-    - No separate effect field (embedded in descriptions)
-    - No cost, focus, or preparation fields
-    - Limited trigger information
-    
-    LLM ASSISTANCE NEEDED:
-    - Clean HTML from descriptions
-    - Extract structured effect information from descriptions
-    - Determine if feature is passive vs active
-    - Identify Channel Divinity features from names
-    - Parse duration and trigger information from descriptions
-    - Map feature types (racial vs class vs subclass vs feat)
+    - activationTime: actions[].activation.activationTime or feature activation time
+    - activationType: Map from actions[].actionType using ACTION_TYPE_MAP
+      * 1="action", 2="no_action", 3="bonus_action", 4="reaction", etc.
     """
-    name: str
-    description: Optional[str] = None
-    action_type: Optional[Literal["action", "bonus_action", "reaction", "no_action"]] = None
-    passive: bool = False
-    uses: Optional[Dict[str, Union[int, str]]] = None
-    effect: Optional[str] = None
-    cost: Optional[str] = None
-    damage: Optional[Dict[str, Any]] = None
-    trigger: Optional[str] = None
-    subclass: bool = False
-    channel_divinity: Optional[Dict[str, Any]] = None
-    duration: Optional[str] = None
-    range: Optional[str] = None
-    save_dc: Optional[int] = None
-    focus: Optional[str] = None
-    preparation: Optional[str] = None
+    activationTime: Optional[int] = None
+    activationType: Optional[str] = None  # Converted to human-readable string
 
 
 @dataclass
-class ClassFeatures:
-    """Features for a specific class.
+class FeatureRange:
+    """Range information for feature actions.
     
     EXTRACTION PATHS:
-    - level: classes[].level (the level at which features are gained)
-    - features: Extract from classes[].classFeatures[] where:
-      * Filter classFeatures by requiredLevel <= character's class level
-      * Convert each classFeature.definition to Feature object
-      * Include both base class and subclass features
-    
-    CLASS FEATURE STRUCTURE IN JSON:
-    - classes[].classFeatures[] - base class features
-    - classes[].subclassDefinition.classFeatures[] - subclass-specific features
-    - Each feature has: name, description, requiredLevel, etc.
-    
-    MISSING INFORMATION:
-    - Features aren't pre-organized by level in JSON
-    - Must filter and group features by their requiredLevel
-    
-    LLM ASSISTANCE NEEDED:
-    - Group features by the level they're gained
-    - Distinguish between base class vs subclass features
-    - Parse feature descriptions and convert to Feature objects
-    - Handle multiclass scenarios (features from multiple classes)
+    - range: actions[].range.range
+    - longRange: actions[].range.longRange
+    - aoeType: actions[].range.aoeType (1=sphere, 2=cube, 3=cone, 4=line)
+    - aoeSize: actions[].range.aoeSize
+    - hasAoeSpecialDescription: actions[].range.hasAoeSpecialDescription
+    - minimumRange: actions[].range.minimumRange
     """
-    level: int
-    features: List[Feature] = field(default_factory=list)
+    range: Optional[int] = None
+    longRange: Optional[int] = None
+    aoeType: Optional[int] = None
+    aoeSize: Optional[int] = None
+    hasAoeSpecialDescription: Optional[bool] = None
+    minimumRange: Optional[int] = None
+
+
+@dataclass
+class RacialTrait:
+    """A racial trait from race or subrace.
+    
+    EXTRACTION PATHS:
+    - name: race.racialTraits[].definition.name
+    - description: race.racialTraits[].definition.description (HTML, needs cleaning)
+    - creatureRules: race.racialTraits[].definition.creatureRules
+    - featureType: Map from race.racialTraits[].definition.featureType
+      * 1="trait", 2="action", 3="bonus_action", 4="reaction", etc.
+    """
+    name: str
+    description: Optional[str] = None
+    creatureRules: Optional[List[Dict[str, Any]]] = None
+    featureType: Optional[str] = None  # Converted to human-readable string
+
+
+@dataclass
+class ClassFeature:
+    """A class or subclass feature.
+    
+    EXTRACTION PATHS:
+    - name: classes[].classFeatures[].definition.name or
+            classes[].subclassDefinition.classFeatures[].definition.name
+    - description: Corresponding .definition.description (HTML, needs cleaning)
+    """
+    name: str
+    description: Optional[str] = None
+
+
+@dataclass
+class Feat:
+    """A character feat.
+    
+    EXTRACTION PATHS:
+    - name: feats[].definition.name
+    - description: feats[].definition.description (HTML, needs cleaning)
+    - activation: Parse from feats[].definition.activation
+    - creatureRules: feats[].definition.creatureRules
+    - isRepeatable: feats[].definition.isRepeatable
+    """
+    name: str
+    description: Optional[str] = None
+    activation: Optional[FeatureActivation] = None
+    creatureRules: Optional[List[Dict[str, Any]]] = None
+    isRepeatable: Optional[bool] = None
+
+
+@dataclass
+class FeatureAction:
+    """An action granted by a feature (from actions data).
+    
+    EXTRACTION PATHS:
+    - limitedUse: Parse from actions[category][].limitedUse
+    - name: actions[category][].name
+    - description: actions[category][].description (HTML, needs cleaning)
+    - abilityModifierStatName: Map from actions[category][].abilityModifierStatId
+      * 1="Strength", 2="Dexterity", 3="Constitution", 4="Intelligence", 5="Wisdom", 6="Charisma"
+    - onMissDescription: actions[category][].onMissDescription
+    - saveFailDescription: actions[category][].saveFailDescription
+    - saveSuccessDescription: actions[category][].saveSuccessDescription
+    - saveStatId: actions[category][].saveStatId
+    - fixedSaveDc: actions[category][].fixedSaveDc
+    - attackTypeRange: actions[category][].attackTypeRange
+    - actionType: Map from actions[category][].actionType
+    - attackSubtype: actions[category][].attackSubtype
+    - dice: actions[category][].dice
+    - value: actions[category][].value
+    - damageTypeId: actions[category][].damageTypeId
+    - isMartialArts: actions[category][].isMartialArts
+    - isProficient: actions[category][].isProficient
+    - spellRangeType: actions[category][].spellRangeType
+    - range: Parse from actions[category][].range as FeatureRange
+    - activation: Parse from actions[category][].activation as FeatureActivation
+    """
+    limitedUse: Optional['LimitedUse'] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    abilityModifierStatName: Optional[str] = None  # Human readable name
+    onMissDescription: Optional[str] = None
+    saveFailDescription: Optional[str] = None
+    saveSuccessDescription: Optional[str] = None
+    saveStatId: Optional[int] = None
+    fixedSaveDc: Optional[int] = None
+    attackTypeRange: Optional[int] = None
+    actionType: Optional[str] = None  # Converted to human-readable string
+    attackSubtype: Optional[int] = None
+    dice: Optional[Dict[str, Any]] = None
+    value: Optional[int] = None
+    damageTypeId: Optional[int] = None
+    isMartialArts: Optional[bool] = None
+    isProficient: Optional[bool] = None
+    spellRangeType: Optional[int] = None
+    range: Optional[FeatureRange] = None
+    activation: Optional[FeatureActivation] = None
+
+
+@dataclass
+class FeatureModifier:
+    """A modifier granted by a feature.
+    
+    EXTRACTION PATHS:
+    - type: modifiers[category][].type
+    - subType: modifiers[category][].subType
+    - dice: modifiers[category][].dice
+    - restriction: modifiers[category][].restriction
+    - statId: modifiers[category][].statId
+    - requiresAttunement: modifiers[category][].requiresAttunement
+    - duration: modifiers[category][].duration
+    - friendlyTypeName: modifiers[category][].friendlyTypeName
+    - friendlySubtypeName: modifiers[category][].friendlySubtypeName
+    - bonusTypes: modifiers[category][].bonusTypes
+    - value: modifiers[category][].value
+    """
+    type: Optional[str] = None
+    subType: Optional[str] = None
+    dice: Optional[Dict[str, Any]] = None
+    restriction: Optional[str] = None
+    statId: Optional[int] = None
+    requiresAttunement: Optional[bool] = None
+    duration: Optional[Dict[str, Any]] = None
+    friendlyTypeName: Optional[str] = None
+    friendlySubtypeName: Optional[str] = None
+    bonusTypes: Optional[List[str]] = None
+    value: Optional[int] = None
 
 
 @dataclass
 class FeaturesAndTraits:
-    """All character features and traits organized by class.
+    """Container for all character features and traits.
     
     EXTRACTION PATHS:
-    - class_features: Organize from classes[] data:
-      * Key: classes[].definition.name (e.g., "Warlock", "Cleric")
-      * Value: ClassFeatures object with features grouped by level
-      * Include both base class and subclass features
-    - racial_traits: Extract from race.racialTraits[]:
-      * Convert each racialTrait.definition to Feature object
-      * Include both base race and subrace traits
-    - feats: Extract from feats[]:
-      * Convert each feat.definition to Feature object
-      * Include all character-selected feats
+    - racial_traits: Parse from race.racialTraits[] as RacialTrait objects
+    - class_features: Parse from classes[].classFeatures[] organized by class name and level
+      * Key format: class name (e.g., "Warlock", "Cleric")
+      * Value format: Dict[int, List[ClassFeature]] - features grouped by required level
+    - feats: Parse from feats[] as Feat objects
+    - modifiers: Parse from modifiers[category][] organized by category
+      * Categories: "race", "class", "background", "item", "feat", "condition"
+      * Each category contains List[FeatureModifier]
     
-    FEATURE SOURCES IN JSON:
-    1. Class Features:
-       - classes[].classFeatures[].definition
-       - classes[].subclassDefinition.classFeatures[].definition
-    2. Racial Traits:
-       - race.racialTraits[].definition (base race + subrace)
-    3. Feats:
-       - feats[].definition
+    ORGANIZATION:
+    - racial_traits: Flat list of all racial traits (base race + subrace)
+    - class_features: Nested dict by class name, then by level
+    - feats: Flat list of all feats
+    - modifiers: Dict by source category
     
-    ORGANIZATION REQUIREMENTS:
-    - class_features must be organized by class name and level
-    - racial_traits are flat list (no level organization)
-    - feats are flat list (no level organization)
-    
-    MISSING INFORMATION:
-    - No pre-organized structure by class/level
-    - Must manually group and organize features
-    
-    LLM ASSISTANCE NEEDED:
-    - Group class features by class name and level gained
-    - Convert various feature definition formats to unified Feature objects
-    - Distinguish between different feature types (class vs racial vs feat)
-    - Handle subclass features separately or merged with base class
-    - Parse and clean HTML descriptions for all feature types
+    NOTE: Character actions are parsed separately by parse_actions.py into CharacterAction objects.
+          See ActionEconomy dataclass for the complete action system.
     """
-    class_features: Dict[str, ClassFeatures] = field(default_factory=dict)
-    racial_traits: List[Feature] = field(default_factory=list)
-    feats: List[Feature] = field(default_factory=list)
+    racial_traits: List[RacialTrait] = field(default_factory=list)
+    class_features: Dict[str, Dict[int, List[ClassFeature]]] = field(default_factory=dict)
+    feats: List[Feat] = field(default_factory=list)
+    modifiers: Dict[str, List[FeatureModifier]] = field(default_factory=dict)
 
 
 # ===== INVENTORY TYPES =====
 
 @dataclass
-class Modifier:
-    """Represents a modifier applied to an item or ability."""
+class ItemModifier:
+    """A modifier granted by an inventory item.
+    
+    EXTRACTION PATHS:
+    - type: inventory[].definition.grantedModifiers[].type
+    - subType: inventory[].definition.grantedModifiers[].subType
+    - restriction: inventory[].definition.grantedModifiers[].restriction
+    - friendlyTypeName: inventory[].definition.grantedModifiers[].friendlyTypeName
+    - friendlySubtypeName: inventory[].definition.grantedModifiers[].friendlySubtypeName
+    - duration: inventory[].definition.grantedModifiers[].duration
+    - fixedValue: inventory[].definition.grantedModifiers[].fixedValue
+    - diceString: inventory[].definition.grantedModifiers[].dice.diceString
+    """
     type: Optional[str] = None
     subType: Optional[str] = None
     restriction: Optional[str] = None
@@ -726,48 +785,88 @@ class Modifier:
     fixedValue: Optional[int] = None
     diceString: Optional[str] = None
 
+
 @dataclass
 class LimitedUse:
-    """Represents limited use information for an item."""
-    resetType: Optional[str] = None
-    numberUsed: Optional[int] = None
+    """Limited use information for items and features.
+    
+    EXTRACTION PATHS:
+    - maxUses: inventory[].limitedUse.maxUses or actions[].limitedUse.maxUses
+    - numberUsed: inventory[].limitedUse.numberUsed (for items)
+    - resetType: inventory[].limitedUse.resetType or actions[].limitedUse.resetType
+      * Map: 1="short_rest", 2="long_rest", 3="dawn", 4="dusk", 5="recharge", 6="turn"
+    - resetTypeDescription: inventory[].limitedUse.resetTypeDescription
+    """
     maxUses: Optional[int] = None
+    numberUsed: Optional[int] = None
+    resetType: Optional[str] = None  # Human-readable string
+    resetTypeDescription: Optional[str] = None
+
 
 @dataclass
 class InventoryItemDefinition:
-    """Represents the definition of an inventory item."""
-    name: str
+    """Definition of an inventory item with all properties.
+    
+    EXTRACTION PATHS:
+    - name: inventory[].definition.name
+    - type: inventory[].definition.type
+    - description: inventory[].definition.description (HTML, needs cleaning)
+    - canAttune: inventory[].definition.canAttune
+    - attunementDescription: inventory[].definition.attunementDescription
+    - rarity: inventory[].definition.rarity
+    - weight: inventory[].definition.weight
+    - capacity: inventory[].definition.capacity
+    - capacityWeight: inventory[].definition.capacityWeight
+    - canEquip: inventory[].definition.canEquip
+    - magic: inventory[].definition.magic
+    - tags: inventory[].definition.tags
+    - grantedModifiers: Parse inventory[].definition.grantedModifiers[] as ItemModifier objects
+    - damage: inventory[].definition.damage
+    - damageType: inventory[].definition.damageType
+    - attackType: inventory[].definition.attackType
+    - range: inventory[].definition.range
+    - longRange: inventory[].definition.longRange
+    - isContainer: inventory[].definition.isContainer
+    - isCustomItem: inventory[].definition.isCustomItem
+    """
+    name: Optional[str] = None
     type: Optional[str] = None
-    rarity: Optional[str] = None
-    isAttunable: Optional[bool] = None
-    attunementDescription: Optional[str] = None
     description: Optional[str] = None
-    grantedModifiers: List[Modifier] = field(default_factory=list)
-    limitedUse: Optional[LimitedUse] = None
-    weight: Optional[float] = None
-    cost: Optional[int] = None
-    armorClass: Optional[int] = None
+    canAttune: Optional[bool] = None
+    attunementDescription: Optional[str] = None
+    rarity: Optional[str] = None
+    weight: Optional[Union[int, float]] = None
+    capacity: Optional[str] = None
+    capacityWeight: Optional[int] = None
+    canEquip: Optional[bool] = None
+    magic: Optional[bool] = None
+    tags: Optional[List[str]] = None
+    grantedModifiers: Optional[List[ItemModifier]] = None
     damage: Optional[Dict[str, Any]] = None
     damageType: Optional[str] = None
-    properties: List[str] = field(default_factory=list)
     attackType: Optional[int] = None
-    range: Optional[Dict[str, Any]] = None
+    range: Optional[int] = None
+    longRange: Optional[int] = None
     isContainer: Optional[bool] = None
-    capacityWeight: Optional[float] = None
-    contentsWeightMultiplier: Optional[float] = None
-    tags: List[str] = field(default_factory=list)
+    isCustomItem: Optional[bool] = None
+
 
 @dataclass
 class InventoryItem:
-    """Represents an inventory item with its definition and quantity."""
+    """An inventory item with quantity and equipped status.
+    
+    EXTRACTION PATHS:
+    - definition: Parse inventory[].definition as InventoryItemDefinition
+    - quantity: inventory[].quantity
+    - isAttuned: inventory[].isAttuned
+    - equipped: inventory[].equipped
+    - limitedUse: Parse inventory[].limitedUse as LimitedUse (if present)
+    """
     definition: InventoryItemDefinition
-    id: int
-    entityTypeId: int
     quantity: int
+    isAttuned: bool
     equipped: bool
-    isAttuned: Optional[bool] = None
     limitedUse: Optional[LimitedUse] = None
-    containerEntityId: Optional[int] = None
 
 
 @dataclass

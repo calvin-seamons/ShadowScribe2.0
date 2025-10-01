@@ -27,11 +27,9 @@ from typing import Dict, List, Optional, Any
 from dataclasses import asdict
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent / "src"))
-from rag.llm_client import LLMClientFactory
-from rag.json_repair import JSONRepair
-from rag.character.character_types import (
+from src.rag.llm_client import LLMClientFactory
+from src.rag.json_repair import JSONRepair
+from src.rag.character.character_types import (
     BackgroundInfo,
     BackgroundFeature,
     PersonalityTraits,
@@ -44,7 +42,7 @@ from rag.character.character_types import (
 )
 
 
-class DNDBeyondBackgroundPersonalityParser:
+class DNDBeyondBackgroundParser:
     """Parser for extracting background and personality information from D&D Beyond JSON."""
     
     def __init__(self, json_data: Dict[str, Any]):
@@ -545,6 +543,15 @@ If no description is provided, leave the description field empty."""
             "enemies": enemies
         }
     
+    def parse_all_background_data(self) -> Dict[str, Any]:
+        """
+        Synchronous wrapper for parse_all_async.
+        
+        Returns:
+            Dictionary containing all parsed data
+        """
+        return asyncio.run(self.parse_all_async())
+    
     def print_summary(self, parsed_data: Dict[str, Any]):
         """Print a summary of parsed background and personality information."""
         print("\n" + "="*80)
@@ -606,81 +613,3 @@ If no description is provided, leave the description field empty."""
         
         print("\n" + "="*80)
 
-
-def clean_dict_for_json(obj):
-    """Remove None values and empty collections recursively."""
-    if isinstance(obj, dict):
-        return {
-            k: clean_dict_for_json(v)
-            for k, v in obj.items()
-            if v is not None and v != [] and v != {} and v != ""
-        }
-    elif isinstance(obj, list):
-        cleaned = [clean_dict_for_json(item) for item in obj]
-        return [item for item in cleaned if item is not None and item != {} and item != ""]
-    else:
-        return obj
-
-
-async def main_async(json_file_path: str):
-    """Async main function to parse D&D Beyond JSON."""
-    try:
-        with open(json_file_path, 'r', encoding='utf-8') as f:
-            json_data = json.load(f)
-        
-        print(f"Loaded character JSON from: {json_file_path}")
-        character_name = json_data.get("data", {}).get("name", "Unknown")
-        print(f"Character: {character_name}")
-        
-        # Parse all data
-        parser = DNDBeyondBackgroundPersonalityParser(json_data)
-        parsed_data = await parser.parse_all_async()
-        
-        # Print summary
-        parser.print_summary(parsed_data)
-        
-        # Convert to JSON-serializable format
-        output = {
-            "character_name": character_name,
-            "background_info": clean_dict_for_json(asdict(parsed_data["background_info"])),
-            "personality_traits": clean_dict_for_json(asdict(parsed_data["personality_traits"])),
-            "backstory": clean_dict_for_json(asdict(parsed_data["backstory"])),
-            "organizations": [clean_dict_for_json(asdict(org)) for org in parsed_data["organizations"]],
-            "allies": [clean_dict_for_json(asdict(ally)) for ally in parsed_data["allies"]],
-            "enemies": [clean_dict_for_json(asdict(enemy)) for enemy in parsed_data["enemies"]]
-        }
-        
-        # Save to output file
-        output_file = json_file_path.replace('.json', '_background_personality_parsed.json')
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(output, f, indent=2, ensure_ascii=False)
-        
-        print(f"\n✅ Parsed data saved to: {output_file}")
-        
-    except FileNotFoundError:
-        print(f"Error: File not found: {json_file_path}")
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        print(f"Error: Invalid JSON file: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
-
-
-def main():
-    """Main function to parse D&D Beyond JSON and extract background/personality."""
-    if len(sys.argv) != 2:
-        print("Usage: python parse_background_personality.py <path_to_json_file>")
-        sys.exit(1)
-    
-    json_file_path = sys.argv[1]
-    
-    # Run async main
-    asyncio.run(main_async(json_file_path))
-
-
-if __name__ == "__main__":
-    main()

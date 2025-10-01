@@ -20,14 +20,11 @@ Output:
 """
 
 import json
-import sys
 from typing import Dict, List, Optional, Any, Union, Literal
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent / "src"))
-from rag.character.character_types import (
+from src.rag.character.character_types import (
     AbilityScores, CharacterBase, PhysicalCharacteristics, CombatStats,
     Proficiency, DamageModifier, PassiveScores, Senses
 )
@@ -48,12 +45,13 @@ LIFESTYLE_MAP = {
     5: "Comfortable", 6: "Wealthy", 7: "Aristocratic"
 }
 
-class CoreCharacterParser:
+class DNDBeyondCoreParser:
     """Parser for D&D Beyond character JSON core data."""
     
     def __init__(self, json_data: Dict[str, Any]):
         """Initialize parser with JSON data."""
-        self.data = json_data
+        self.json_data = json_data
+        self.data = json_data.get('data', {})
         
     def parse_ability_scores(self) -> AbilityScores:
         """Parse the six core ability scores from D&D Beyond JSON.
@@ -680,159 +678,25 @@ class CoreCharacterParser:
                             ac_bonus += value
         
         return ac_bonus
+    
+    def parse_all_core_data(self):
+        """
+        Parse all core character data and return as a namespace object.
+        
+        Returns:
+            Object with all core data as attributes
+        """
+        from types import SimpleNamespace
+        
+        return SimpleNamespace(
+            character_base=self.parse_character_base(),
+            characteristics=self.parse_physical_characteristics(),
+            ability_scores=self.parse_ability_scores(),
+            combat_stats=self.parse_combat_stats(),
+            proficiencies=self.parse_proficiencies(),
+            damage_modifiers=self.parse_damage_modifiers(),
+            passive_scores=self.parse_passive_scores(),
+            senses=self.parse_senses()
+        )
 
 
-def main():
-    """Parse core character data from D&D Beyond JSON."""
-    if len(sys.argv) != 2:
-        print("Usage: python parse_core_character.py <path_to_json_file>")
-        sys.exit(1)
-    
-    json_file = Path(sys.argv[1])
-    if not json_file.exists():
-        print(f"Error: File {json_file} not found")
-        sys.exit(1)
-    
-    # Load JSON data
-    try:
-        with open(json_file, 'r', encoding='utf-8') as f:
-            json_data = json.load(f)
-    except Exception as e:
-        print(f"Error loading JSON: {e}")
-        sys.exit(1)
-    
-    # Extract character data (handle D&D Beyond API wrapper)
-    if 'data' in json_data and isinstance(json_data['data'], dict):
-        data = json_data['data']
-    else:
-        data = json_data
-    
-    # Parse core character data
-    parser = CoreCharacterParser(data)
-    
-    print("=== D&D BEYOND CORE CHARACTER PARSER ===\n")
-    
-    try:
-        # Parse each component
-        ability_scores = parser.parse_ability_scores()
-        character_base = parser.parse_character_base()
-        characteristics = parser.parse_physical_characteristics()
-        combat_stats = parser.parse_combat_stats()
-        proficiencies = parser.parse_proficiencies()
-        damage_modifiers = parser.parse_damage_modifiers()
-        passive_scores = parser.parse_passive_scores()
-        senses = parser.parse_senses()
-        
-        # Display results
-        print("--- ABILITY SCORES ---")
-        print(f"STR: {ability_scores.strength}")
-        print(f"DEX: {ability_scores.dexterity}")
-        print(f"CON: {ability_scores.constitution}")
-        print(f"INT: {ability_scores.intelligence}")
-        print(f"WIS: {ability_scores.wisdom}")
-        print(f"CHA: {ability_scores.charisma}")
-        
-        print(f"\n--- CHARACTER BASE ---")
-        print(f"Name: {character_base.name}")
-        print(f"Race: {character_base.race}")
-        if character_base.subrace:
-            print(f"Subrace: {character_base.subrace}")
-        print(f"Class: {character_base.character_class}")
-        print(f"Level: {character_base.total_level}")
-        print(f"Alignment: {character_base.alignment}")
-        print(f"Background: {character_base.background}")
-        if character_base.multiclass_levels:
-            print(f"Multiclass: {character_base.multiclass_levels}")
-        if character_base.lifestyle:
-            print(f"Lifestyle: {character_base.lifestyle}")
-        
-        print(f"\n--- PHYSICAL CHARACTERISTICS ---")
-        print(f"Gender: {characteristics.gender}")
-        print(f"Age: {characteristics.age}")
-        print(f"Height: {characteristics.height}")
-        print(f"Weight: {characteristics.weight}")
-        print(f"Eyes: {characteristics.eyes}")
-        print(f"Hair: {characteristics.hair}")
-        print(f"Skin: {characteristics.skin}")
-        print(f"Size: {characteristics.size}")
-        if characteristics.faith:
-            print(f"Faith: {characteristics.faith}")
-        
-        print(f"\n--- COMBAT STATS ---")
-        print(f"Hit Points: {combat_stats.max_hp}")
-        print(f"Armor Class: {combat_stats.armor_class}")
-        print(f"Initiative: +{combat_stats.initiative_bonus}")
-        print(f"Speed: {combat_stats.speed} ft")
-        if combat_stats.hit_dice:
-            print(f"Hit Dice: {combat_stats.hit_dice}")
-        
-        print(f"\n--- PROFICIENCIES ---")
-        prof_by_type = {}
-        for prof in proficiencies:
-            if prof.type not in prof_by_type:
-                prof_by_type[prof.type] = []
-            prof_by_type[prof.type].append(prof.name)
-        
-        for prof_type, names in prof_by_type.items():
-            print(f"{prof_type.title()}: {', '.join(names)}")
-        
-        print(f"\n--- DAMAGE MODIFIERS ---")
-        if damage_modifiers:
-            for dm in damage_modifiers:
-                print(f"{dm.modifier_type.title()}: {dm.damage_type}")
-        else:
-            print("None")
-        
-        print(f"\n--- PASSIVE SCORES ---")
-        print(f"Passive Perception: {passive_scores.perception}")
-        if passive_scores.investigation is not None:
-            print(f"Passive Investigation: {passive_scores.investigation}")
-        if passive_scores.insight is not None:
-            print(f"Passive Insight: {passive_scores.insight}")
-        if passive_scores.stealth is not None:
-            print(f"Passive Stealth: {passive_scores.stealth}")
-        
-        print(f"\n--- SENSES ---")
-        if senses.senses:
-            for sense_name, sense_value in senses.senses.items():
-                print(f"{sense_name.replace('_', ' ').title()}: {sense_value}")
-        else:
-            print("Normal vision")
-        
-        # Create result dictionary
-        result = {
-            'ability_scores': asdict(ability_scores),
-            'character_base': asdict(character_base),
-            'characteristics': asdict(characteristics),
-            'combat_stats': asdict(combat_stats),
-            'proficiencies': [asdict(p) for p in proficiencies],
-            'damage_modifiers': [asdict(dm) for dm in damage_modifiers],
-            'passive_scores': asdict(passive_scores),
-            'senses': asdict(senses)
-        }
-        
-        # Save to JSON file
-        output_file = json_file.stem + "_core_character_parsed.json"
-        output_path = json_file.parent / output_file
-        
-        try:
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, indent=2, ensure_ascii=False)
-            print(f"\n--- SAVED TO FILE ---")
-            print(f"Parsed character data saved to: {output_path}")
-        except Exception as e:
-            print(f"\nError saving to file: {e}")
-        
-        # Also output as JSON for console viewing
-        print(f"\n--- JSON OUTPUT ---")
-        print(json.dumps(result, indent=2, ensure_ascii=False))
-        
-    except Exception as e:
-        print(f"Error parsing character: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
