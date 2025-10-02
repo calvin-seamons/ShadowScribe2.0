@@ -2,7 +2,7 @@
 Central Engine & Query Processing Pipeline
 
 Main orchestrator that makes LLM calls and coordinates the entire query processing pipeline.
-Implements the design from DESIGN_CENTRAL_PROMPT_SYSTEM.md with three parallel LLM calls.
+Uses 2 parallel LLM calls (tool selector + entity extractor) to determine query routing.
 """
 
 import asyncio
@@ -11,9 +11,9 @@ from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, field
 
 # Import LLM client abstraction
-from .LLM.llm_client import LLMClient, LLMClientFactory
+from .llm.llm_client import LLMClient, LLMClientFactory
 from .config import get_config
-from .LLM.json_repair import JSONRepair
+from .llm.json_repair import JSONRepair
 
 # Import query router types
 from .rag.character.character_query_router import CharacterQueryRouter, CharacterQueryResult
@@ -24,51 +24,24 @@ from .rag.session_notes.session_notes_query_router import SessionNotesQueryRoute
 from .rag.session_notes.campaign_session_notes_storage import CampaignSessionNotesStorage
 from .rag.session_notes.session_types import QueryEngineResult
 
+# Import EntitySearchEngine for new architecture
+from .utils.entity_search_engine import EntitySearchEngine
+
 
 # ===== ROUTER OUTPUT DATACLASSES =====
 
 @dataclass
-class CharacterLLMRouterOutput:
-    """Output from Character Router LLM call."""
-    is_needed: bool
-    confidence: float = 0.5
-    user_intentions: List[str] = field(default_factory=list)
+class ToolSelectorOutput:
+    """Output from Tool & Intention Selector LLM call."""
+    tools_needed: List[Dict[str, Any]] = field(default_factory=list)
+    # Each tool dict: {"tool": "character_data", "intention": "combat_info", "confidence": 0.95}
+
+
+@dataclass
+class EntityExtractorOutput:
+    """Output from Entity Extractor LLM call."""
     entities: List[Dict[str, Any]] = field(default_factory=list)
-    
-    def validate_intentions_count(self) -> bool:
-        """Validate that we don't have more than 2 intentions."""
-        return len(self.user_intentions) <= 2
-
-
-@dataclass
-class RulebookLLMRouterOutput:
-    """Output from Rulebook Router LLM call."""
-    is_needed: bool
-    confidence: float = 0.5
-    user_intention: Optional[str] = None
-    entities: List[Dict[str, str]] = field(default_factory=list)
-    context_hints: List[str] = field(default_factory=list)
-    k: int = 5
-
-
-@dataclass
-class SessionNotesLLMRouterOutput:
-    """Output from Session Notes Router LLM call."""
-    is_needed: bool
-    confidence: float = 0.5
-    character_name: str = ""
-    user_intention: Optional[str] = None
-    entities: List[Dict[str, str]] = field(default_factory=list)
-    context_hints: List[str] = field(default_factory=list)
-    top_k: int = 5
-
-
-@dataclass
-class RouterOutputs:
-    """Combined outputs from all three router LLM calls."""
-    character_output: Optional[CharacterLLMRouterOutput] = None
-    rulebook_output: Optional[RulebookLLMRouterOutput] = None
-    session_notes_output: Optional[SessionNotesLLMRouterOutput] = None
+    # Each entity dict: {"name": "Eldaryth of Regret", "confidence": 1.0}
 
 
 # ===== CENTRAL ENGINE =====
@@ -77,11 +50,20 @@ class CentralEngine:
     """Main orchestrator - makes all LLM calls and coordinates the pipeline."""
     
     def __init__(self, llm_clients: Dict[str, LLMClient], prompt_manager, 
-                 character=None, rulebook_storage=None, campaign_session_notes=None):
+                 character=None, rulebook_storage=None, campaign_session_notes=None,
+                 entity_search_engine=None):
         """Initialize with LLM clients and prompt manager."""
         self.llm_clients = llm_clients
         self.prompt_manager = prompt_manager
         self.config = get_config()
+        
+        # Store data sources for entity resolution
+        self.character = character
+        self.rulebook_storage = rulebook_storage
+        self.campaign_session_notes = campaign_session_notes
+        
+        # Initialize EntitySearchEngine
+        self.entity_search_engine = entity_search_engine or EntitySearchEngine()
         
         # Initialize query routers with required storage instances
         self.character_router = CharacterQueryRouter(character) if character else None
@@ -98,110 +80,65 @@ class CentralEngine:
     async def process_query(self, user_query: str, character_name: str) -> str:
         """
         Main processing pipeline:
-        1. Get router decision prompts from Prompt Manager
-        2. Make 3 parallel LLM calls for router decisions  
-        3. Execute needed query routers in parallel
-        4. Get final response prompt from Prompt Manager/Context Assembler
-        5. Make final LLM call and return response
+        1. Make 2 parallel LLM calls: tool selector + entity extractor
+        2. Resolve entities using EntitySearchEngine with selected tools
+        3. Distribute entities to appropriate RAG tools
+        4. Execute needed query routers in parallel
+        5. Generate final response
         """
-        # Step 1: Make parallel router decisions
-        router_outputs = await self.make_parallel_router_decisions(user_query, character_name)
+        print(f"🔧 DEBUG: Processing query: '{user_query}'")
         
-        # Step 2: Execute needed routers in parallel
-        raw_results = await self.execute_needed_routers(router_outputs, user_query)
+        # Step 1: Make 2 parallel LLM calls
+        print("🔧 DEBUG: Step 1 - Making parallel LLM calls (tool selector + entity extractor)")
+        tool_selector_output, entity_extractor_output = await asyncio.gather(
+            self._call_tool_selector(user_query, character_name),
+            self._call_entity_extractor(user_query)
+        )
         
-        # Step 3: Generate final response
+        print(f"🔧 DEBUG: Tool selector returned {len(tool_selector_output.tools_needed)} tools")
+        print(f"🔧 DEBUG: Entity extractor returned {len(entity_extractor_output.entities)} entities")
+        
+        # Step 2: Derive selected tools from tool selector output
+        selected_tools = [t["tool"] for t in tool_selector_output.tools_needed]
+        print(f"🔧 DEBUG: Step 2 - Selected tools: {selected_tools}")
+        
+        # Step 3: Resolve entities ONLY in selected tools
+        print(f"🔧 DEBUG: Step 3 - Resolving entities in selected tools...")
+        entity_results = {}
+        if entity_extractor_output.entities:
+            entity_results = self.entity_search_engine.resolve_entities(
+                entities=entity_extractor_output.entities,
+                selected_tools=selected_tools,
+                character=self.character,
+                session_notes_storage=self.campaign_session_notes,
+                rulebook_storage=self.rulebook_storage
+            )
+            print(f"🔧 DEBUG: Entity resolution found {len(entity_results)} entities")
+        else:
+            print("🔧 DEBUG: No entities to resolve")
+        
+        # Step 4: Distribute entities to RAG tools based on where they were found
+        print(f"🔧 DEBUG: Step 4 - Distributing entities to RAG tools...")
+        entity_distribution = self._distribute_entities_to_rag_queries(
+            entity_results, 
+            tool_selector_output.tools_needed
+        )
+        print(f"🔧 DEBUG: Entity distribution: {entity_distribution}")
+        
+        # Step 5: Execute RAG queries for selected tools
+        print(f"🔧 DEBUG: Step 5 - Executing RAG queries...")
+        raw_results = await self._execute_rag_queries(
+            tool_selector_output.tools_needed,
+            entity_distribution,
+            entity_results,
+            user_query
+        )
+        
+        # Step 6: Generate final response
+        print(f"🔧 DEBUG: Step 6 - Generating final response...")
         final_response = await self.generate_final_response(raw_results, user_query)
         
         return final_response
-    
-    async def make_parallel_router_decisions(self, user_query: str, character_name: str) -> RouterOutputs:
-        """
-        Make 3 parallel LLM calls to determine router needs and generate inputs.
-        Gets prompts from Prompt Manager, makes LLM calls, returns decisions.
-        """
-        # Get prompts from Prompt Manager
-        character_prompt = self.prompt_manager.get_character_router_prompt(user_query, character_name)
-        rulebook_prompt = self.prompt_manager.get_rulebook_router_prompt(user_query)
-        session_notes_prompt = self.prompt_manager.get_session_notes_router_prompt(user_query, character_name)
-        
-        # Make parallel LLM calls
-        tasks = [
-            self._make_character_router_llm_call(character_prompt, character_name),
-            self._make_rulebook_router_llm_call(rulebook_prompt),
-            self._make_session_notes_router_llm_call(session_notes_prompt, character_name)
-        ]
-        
-        character_output, rulebook_output, session_notes_output = await asyncio.gather(*tasks)
-        
-        return RouterOutputs(
-            character_output=character_output,
-            rulebook_output=rulebook_output,
-            session_notes_output=session_notes_output
-        )
-    
-    async def execute_needed_routers(self, router_outputs: RouterOutputs, user_query: str = "") -> Dict[str, Any]:
-        """
-        Execute only the needed query routers in parallel based on LLM decisions.
-        Returns raw router results for context assembly.
-        """
-        print("🔧 DEBUG: Starting router execution...")
-        tasks = []
-        result_keys = []
-        
-        # Character router execution
-        if router_outputs.character_output and router_outputs.character_output.is_needed:
-            print(f"🔧 DEBUG: Scheduling Character router execution")
-            print(f"   • Character router available: {self.character_router is not None}")
-            print(f"   • User intentions: {router_outputs.character_output.user_intentions}")
-            tasks.append(self._execute_character_router(router_outputs.character_output))
-            result_keys.append("character")
-        else:
-            print("🔧 DEBUG: Character router NOT scheduled")
-            print(f"   • Output exists: {router_outputs.character_output is not None}")
-            print(f"   • Is needed: {router_outputs.character_output.is_needed if router_outputs.character_output else 'N/A'}")
-        
-        # Rulebook router execution
-        if router_outputs.rulebook_output and router_outputs.rulebook_output.is_needed and self.rulebook_router:
-            print(f"🔧 DEBUG: Scheduling Rulebook router execution")
-            print(f"   • Rulebook router available: {self.rulebook_router is not None}")
-            print(f"   • User intention: {router_outputs.rulebook_output.user_intention}")
-            tasks.append(self._execute_rulebook_router(router_outputs.rulebook_output, user_query))
-            result_keys.append("rulebook")
-        else:
-            print("🔧 DEBUG: Rulebook router NOT scheduled")
-            print(f"   • Output exists: {router_outputs.rulebook_output is not None}")
-            print(f"   • Is needed: {router_outputs.rulebook_output.is_needed if router_outputs.rulebook_output else 'N/A'}")
-            print(f"   • Router available: {self.rulebook_router is not None}")
-        
-        # Session notes router execution
-        if router_outputs.session_notes_output and router_outputs.session_notes_output.is_needed and self.session_notes_router:
-            print(f"🔧 DEBUG: Scheduling Session Notes router execution")
-            print(f"   • Session Notes router available: {self.session_notes_router is not None}")
-            print(f"   • User intention: {router_outputs.session_notes_output.user_intention}")
-            tasks.append(self._execute_session_notes_router(router_outputs.session_notes_output, user_query))
-            result_keys.append("session_notes")
-        else:
-            print("🔧 DEBUG: Session Notes router NOT scheduled")
-            print(f"   • Output exists: {router_outputs.session_notes_output is not None}")
-            print(f"   • Is needed: {router_outputs.session_notes_output.is_needed if router_outputs.session_notes_output else 'N/A'}")
-            print(f"   • Router available: {self.session_notes_router is not None}")
-        
-        print(f"🔧 DEBUG: Total tasks scheduled: {len(tasks)} - {result_keys}")
-        
-        # Execute all needed routers in parallel
-        if tasks:
-            print("🔧 DEBUG: Executing scheduled router tasks...")
-            try:
-                results = await asyncio.gather(*tasks)
-                print(f"🔧 DEBUG: Router execution completed, got {len(results)} results")
-                return dict(zip(result_keys, results))
-            except Exception as e:
-                print(f"🔧 DEBUG: Router execution failed: {str(e)}")
-                raise e
-        else:
-            print("🔧 DEBUG: No tasks to execute, returning empty results")
-            return {}
     
     async def generate_final_response(self, raw_results: Dict[str, Any], user_query: str) -> str:
         """
@@ -248,268 +185,200 @@ class CentralEngine:
         except Exception as e:
             return f"Error generating final response: {str(e)}"
     
-    # ===== PRIVATE LLM CALL METHODS =====
     
-    async def _make_character_router_llm_call(self, prompt: str, character_name: str) -> CharacterLLMRouterOutput:
-        """Make LLM call for character router decision."""
+    # ===== HELPER METHODS =====
+    
+    async def _call_tool_selector(self, user_query: str, character_name: str) -> ToolSelectorOutput:
+        """
+        Make LLM call for Tool & Intention Selector.
+        Determines which RAG tools are needed and what intention to use for each.
+        """
         try:
-            # Use configured router provider
+            prompt = self.prompt_manager.get_tool_and_intention_selector_prompt(user_query, character_name)
+            
             provider = self.config.router_llm_provider
-            client = self.llm_clients.get(provider)
+            client = self.llm_clients.get(provider) or self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
             
             if not client:
-                # Fallback to router clients using new naming convention
-                client = (self.llm_clients.get("openai_router") or 
-                         self.llm_clients.get("anthropic_router") or
-                         self.llm_clients.get("openai") or 
-                         self.llm_clients.get("anthropic"))
-                if not client:
-                    raise RuntimeError("No suitable LLM client available for character router")
+                raise RuntimeError("No suitable LLM client available for tool selector")
             
-            # Select appropriate model based on provider
-            if provider == "openai":
-                model = self.config.openai_router_model
-            elif provider == "anthropic":
-                model = self.config.anthropic_router_model
-            else:
-                model = None  # Use client default
-            
-            # Get LLM parameters from config
+            model = self.config.openai_router_model if provider == "openai" else self.config.anthropic_router_model if provider == "anthropic" else None
             llm_params = self.config.get_router_llm_params(model)
             
-            response = await client.generate_json_response(
-                prompt,
-                model=model,
-                **llm_params
-            )
+            response = await client.generate_json_response(prompt, model=model, **llm_params)
             
-            # Use JSON repair to fix and validate the response
-            repair_result = JSONRepair.repair_character_router_response(response)
+            repair_result = JSONRepair.repair_tool_selector_response(response)
             
             if repair_result.was_repaired:
-                print(f"🔧 JSON REPAIR: Character router response was repaired")
+                print(f"🔧 JSON REPAIR: Tool selector response was repaired")
                 for detail in repair_result.repair_details:
                     print(f"   • {detail}")
             
-            response = repair_result.data
+            return ToolSelectorOutput(tools_needed=repair_result.data.get("tools_needed", []))
             
-            # Validate max 2 intentions
-            user_intentions = response.get("user_intentions", [])
-            if len(user_intentions) > 2:
-                print(f"🔧 WARNING: LLM returned {len(user_intentions)} intentions, truncating to 2")
-                user_intentions = user_intentions[:2]
-            
-            return CharacterLLMRouterOutput(
-                is_needed=response.get("is_needed", False),
-                user_intentions=user_intentions,
-                entities=response.get("entities", [])
-            )
         except Exception as e:
-            # Re-raise all exceptions instead of providing fallbacks
-            raise RuntimeError(f"Character router LLM call failed: {str(e)}") from e
+            raise RuntimeError(f"Tool selector LLM call failed: {str(e)}") from e
     
-    async def _make_rulebook_router_llm_call(self, prompt: str) -> RulebookLLMRouterOutput:
-        """Make LLM call for rulebook router decision."""
+    async def _call_entity_extractor(self, user_query: str) -> EntityExtractorOutput:
+        """
+        Make LLM call for Entity Extractor.
+        Extracts entity names from the user query without guessing search contexts.
+        """
         try:
-            # Use configured router provider
+            prompt = self.prompt_manager.get_entity_extraction_prompt(user_query)
+            
             provider = self.config.router_llm_provider
-            client = self.llm_clients.get(provider)
+            client = self.llm_clients.get(provider) or self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
             
             if not client:
-                # Fallback to router clients using new naming convention
-                client = (self.llm_clients.get("openai_router") or 
-                         self.llm_clients.get("anthropic_router") or
-                         self.llm_clients.get("openai") or 
-                         self.llm_clients.get("anthropic"))
-                if not client:
-                    raise RuntimeError("No suitable LLM client available for rulebook router")
+                raise RuntimeError("No suitable LLM client available for entity extractor")
             
-            # Select appropriate model based on provider
-            if provider == "openai":
-                model = self.config.openai_router_model
-            elif provider == "anthropic":
-                model = self.config.anthropic_router_model
-            else:
-                model = None  # Use client default
-            
-            # Get LLM parameters from config
+            model = self.config.openai_router_model if provider == "openai" else self.config.anthropic_router_model if provider == "anthropic" else None
             llm_params = self.config.get_router_llm_params(model)
             
-            response = await client.generate_json_response(
-                prompt,
-                model=model,
-                **llm_params
-            )
+            response = await client.generate_json_response(prompt, model=model, **llm_params)
             
-            # Use JSON repair to fix and validate the response
-            repair_result = JSONRepair.repair_rulebook_router_response(response)
+            repair_result = JSONRepair.repair_entity_extractor_response(response)
             
             if repair_result.was_repaired:
-                print(f"🔧 JSON REPAIR: Rulebook router response was repaired")
+                print(f"🔧 JSON REPAIR: Entity extractor response was repaired")
                 for detail in repair_result.repair_details:
                     print(f"   • {detail}")
             
-            response = repair_result.data
+            return EntityExtractorOutput(entities=repair_result.data.get("entities", []))
             
-            return RulebookLLMRouterOutput(
-                is_needed=response.get("is_needed", False),
-                user_intention=response.get("intention"),
-                entities=response.get("entities", []),
-                context_hints=response.get("context_hints", []),
-                k=5  # Fixed internally
-            )
         except Exception as e:
-            # Re-raise validation errors and LLM errors
-            raise RuntimeError(f"Rulebook router failed: {str(e)}") from e
+            raise RuntimeError(f"Entity extractor LLM call failed: {str(e)}") from e
     
-    async def _make_session_notes_router_llm_call(self, prompt: str, character_name: str) -> SessionNotesLLMRouterOutput:
-        """Make LLM call for session notes router decision."""
-        try:
-            # Use configured router provider
-            provider = self.config.router_llm_provider
-            client = self.llm_clients.get(provider)
+    def _section_to_tool(self, section_name: str) -> str:
+        """
+        Map a section name to its parent tool.
+        
+        Examples:
+            "inventory" -> "character_data"
+            "session_notes.npc" -> "session_notes"
+            "rulebook.combat.grappling" -> "rulebook"
+        """
+        if section_name.startswith("rulebook.") or section_name == "rulebook":
+            return "rulebook"
+        elif section_name.startswith("session_notes.") or section_name == "session_notes":
+            return "session_notes"
+        else:
+            return "character_data"
+    
+    def _distribute_entities_to_rag_queries(
+        self,
+        entity_results: Dict[str, List[Any]],
+        tools_needed: List[Dict[str, Any]]
+    ) -> Dict[str, List[str]]:
+        """
+        Map entities to tools based on where they were found.
+        Multi-location entities are passed to all relevant tools for richer context.
+        """
+        tool_entities = {}
+        selected_tools = {t["tool"] for t in tools_needed}
+        
+        for entity_name, results in entity_results.items():
+            for result in results:
+                tool = self._section_to_tool(result.section)
+                
+                if tool in selected_tools:
+                    if tool not in tool_entities:
+                        tool_entities[tool] = []
+                    
+                    if entity_name not in tool_entities[tool]:
+                        tool_entities[tool].append(entity_name)
+        
+        return tool_entities
+    
+    async def _execute_rag_queries(
+        self,
+        tools_needed: List[Dict[str, Any]],
+        entity_distribution: Dict[str, List[str]],
+        entity_results: Dict[str, List[Any]],
+        user_query: str
+    ) -> Dict[str, Any]:
+        """
+        Execute RAG queries for selected tools with distributed entities.
+        Includes auto-include sections derived from entity resolution results.
+        """
+        results = {}
+        
+        for tool_info in tools_needed:
+            tool = tool_info["tool"]
+            intention = tool_info["intention"]
+            entities = entity_distribution.get(tool, [])
             
-            if not client:
-                # Fallback to router clients using new naming convention
-                client = (self.llm_clients.get("openai_router") or 
-                         self.llm_clients.get("anthropic_router") or
-                         self.llm_clients.get("openai") or 
-                         self.llm_clients.get("anthropic"))
-                if not client:
-                    raise RuntimeError("No suitable LLM client available for session notes router")
-            
-            # Select appropriate model based on provider
-            if provider == "openai":
-                model = self.config.openai_router_model
-            elif provider == "anthropic":
-                model = self.config.anthropic_router_model
-            else:
-                model = None  # Use client default
-            
-            # Get LLM parameters from config
-            llm_params = self.config.get_router_llm_params(model)
-            
-            response = await client.generate_json_response(
-                prompt,
-                model=model,
-                **llm_params
+            # Extract auto-include sections from entity resolution
+            auto_include_sections = self._extract_auto_include_sections(
+                entities, entity_results, tool
             )
             
-            # Use JSON repair to fix and validate the response
-            repair_result = JSONRepair.repair_session_notes_router_response(response)
+            print(f"🔧 DEBUG: Executing {tool} with intention='{intention}', entities={entities}")
+            if auto_include_sections:
+                print(f"🔧 DEBUG: Auto-include sections: {auto_include_sections}")
             
-            if repair_result.was_repaired:
-                print(f"🔧 JSON REPAIR: Session notes router response was repaired")
-                for detail in repair_result.repair_details:
-                    print(f"   • {detail}")
+            if tool == "character_data" and self.character_router:
+                results["character"] = self.character_router.query_character(
+                    user_intentions=[intention],
+                    entities=[{"name": e, "confidence": 1.0} for e in entities],
+                    auto_include_sections=auto_include_sections
+                )
+                
+            elif tool == "session_notes" and self.session_notes_router:
+                results["session_notes"] = self.session_notes_router.query(
+                    character_name=self.character.character_base.name if self.character else "",
+                    original_query=user_query,
+                    intention=intention,
+                    entities=[{"name": e} for e in entities],
+                    context_hints=[],
+                    top_k=5
+                )
+                
+            elif tool == "rulebook" and self.rulebook_router:
+                try:
+                    intention_enum = RulebookQueryIntent(intention.lower())
+                    results["rulebook"], _ = self.rulebook_router.query(
+                        intention=intention_enum,
+                        user_query=user_query,
+                        entities=entities,
+                        context_hints=[],
+                        k=5
+                    )
+                except ValueError:
+                    print(f"🔧 WARNING: Invalid rulebook intention '{intention}', skipping")
+        
+        return results
+    
+    def _extract_auto_include_sections(
+        self,
+        entity_names: List[str],
+        entity_results: Dict[str, List[Any]],
+        tool: str
+    ) -> List[str]:
+        """
+        Extract section names from entity resolution results for auto-inclusion.
+        
+        Args:
+            entity_names: List of entity names for this tool
+            entity_results: Full entity resolution results
+            tool: Tool name to filter by
             
-            response = repair_result.data
+        Returns:
+            List of unique section names to auto-include in the query
             
-            return SessionNotesLLMRouterOutput(
-                is_needed=response.get("is_needed", False),
-                character_name=character_name,  # Set from engine class
-                user_intention=response.get("intention"),
-                entities=response.get("entities", []),
-                context_hints=response.get("context_hints", []),
-                top_k=5  # Fixed internally
-            )
-        except Exception as e:
-            # Re-raise validation errors and LLM errors
-            raise RuntimeError(f"Session notes router failed: {str(e)}") from e
-    
-    # ===== PRIVATE ROUTER EXECUTION METHODS =====
-    
-    async def _execute_character_router(self, output: CharacterLLMRouterOutput) -> CharacterQueryResult:
-        """Execute character query router with LLM-generated inputs."""
-        print(f"🔧 DEBUG: Executing Character router...")
-        print(f"   • User intentions: {output.user_intentions}")
-        print(f"   • Intention count: {len(output.user_intentions)}")
-        print(f"   • Entities count: {len(output.entities) if output.entities else 0}")
+        Example:
+            If "Eldaryth of Regret" found in ["inventory", "backstory"],
+            returns ["inventory", "backstory"] for character_data tool.
+        """
+        sections = set()
         
-        if not output.user_intentions or len(output.user_intentions) == 0:
-            print("🔧 DEBUG: No user intentions, returning empty result")
-            return CharacterQueryResult(character_data={})
+        for entity_name in entity_names:
+            if entity_name in entity_results:
+                for result in entity_results[entity_name]:
+                    # Only include sections that belong to this tool
+                    if self._section_to_tool(result.section) == tool:
+                        sections.add(result.section)
         
-        if not self.character_router:
-            print("🔧 DEBUG: Character router not available!")
-            return CharacterQueryResult(character_data={}, warnings=["Character router not available"])
-        
-        try:
-            print(f"🔧 DEBUG: Calling character_router.query_character() with intentions {output.user_intentions}")
-            # Pass parameters directly from LLM router output (character is pre-loaded)
-            result = self.character_router.query_character(
-                user_intentions=output.user_intentions,
-                entities=output.entities
-            )
-            print(f"🔧 DEBUG: Character router returned result with {len(result.character_data) if result.character_data else 0} data items")
-            return result
-        except Exception as e:
-            print(f"🔧 DEBUG: Character router execution failed: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return CharacterQueryResult(character_data={}, warnings=[f"Character router error: {str(e)}"])
-    
-    async def _execute_rulebook_router(self, output: RulebookLLMRouterOutput, user_query: str) -> tuple[List[SearchResult], Optional[QueryPerformanceMetrics]]:
-        """Execute rulebook query router with LLM-generated inputs."""
-        print(f"🔧 DEBUG: Executing Rulebook router...")
-        print(f"   • User intention: {output.user_intention}")
-        print(f"   • Entities count: {len(output.entities) if output.entities else 0}")
-        print(f"   • Context hints: {len(output.context_hints) if output.context_hints else 0}")
-        
-        if not output.user_intention or not self.rulebook_router:
-            print("🔧 DEBUG: No intention or router unavailable, returning empty results")
-            return [], None
-        
-        try:
-            print(f"🔧 DEBUG: Converting intention '{output.user_intention}' to enum")
-            # Convert string intention to enum
-            intention_enum = RulebookQueryIntent(output.user_intention.lower())
-            print(f"🔧 DEBUG: Converted to enum: {intention_enum}")
-            
-            # Pass all parameters directly from LLM router output
-            print(f"🔧 DEBUG: Calling rulebook_router.query() with {output.k} results")
-            results, performance = self.rulebook_router.query(
-                intention=intention_enum,
-                user_query=user_query,  # Get from engine class
-                entities=[entity["name"] for entity in output.entities],
-                context_hints=output.context_hints,
-                k=output.k
-            )
-            print(f"🔧 DEBUG: Rulebook router returned {len(results) if results else 0} results")
-            return results, performance
-        except Exception as e:
-            print(f"🔧 DEBUG: Rulebook router execution failed: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return [], None
-    
-    async def _execute_session_notes_router(self, output: SessionNotesLLMRouterOutput, user_query: str) -> QueryEngineResult:
-        """Execute session notes query router with LLM-generated inputs."""
-        print(f"🔧 DEBUG: Executing Session Notes router...")
-        print(f"   • User intention: {output.user_intention}")
-        print(f"   • Character name: {output.character_name}")
-        print(f"   • Entities count: {len(output.entities) if output.entities else 0}")
-        print(f"   • Context hints: {len(output.context_hints) if output.context_hints else 0}")
-        
-        if not output.user_intention or not self.session_notes_router:
-            print("🔧 DEBUG: No intention or router unavailable, returning empty result")
-            return QueryEngineResult(contexts=[], total_sessions_searched=0, entities_resolved=[])
-        
-        try:
-            print(f"🔧 DEBUG: Calling session_notes_router.query() with top_k={output.top_k}")
-            # Pass all parameters directly from LLM router output
-            result = self.session_notes_router.query(
-                character_name=output.character_name,
-                original_query=user_query,  # Get from engine class
-                intention=output.user_intention,
-                entities=output.entities,
-                context_hints=output.context_hints,
-                top_k=output.top_k
-            )
-            print(f"🔧 DEBUG: Session Notes router returned {len(result.contexts) if result.contexts else 0} contexts")
-            return result
-        except Exception as e:
-            print(f"🔧 DEBUG: Session Notes router execution failed: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return QueryEngineResult(contexts=[], total_sessions_searched=0, entities_resolved=[])
+        return list(sections)
+

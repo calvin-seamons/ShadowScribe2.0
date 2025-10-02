@@ -239,6 +239,37 @@ def new_implementation():
     pass
 ```
 
+### Code as Fundamental, Not "New"
+**Critical Naming Philosophy**: When implementing a new architecture or system, write the code as if it's the **original and fundamental workflow**, not as "new" or "v2".
+
+**BAD naming patterns:**
+- `process_query_new()` or `process_query_v2()`
+- Comments like `# NEW ARCHITECTURE` or `# TODO: replace old method`
+- Suffixes like `_new`, `_updated`, `_refactored`
+- Keeping old methods alongside new ones
+
+**GOOD naming patterns:**
+- `process_query()` - this IS the query processor
+- Clean docstrings without architecture version references
+- Delete old methods completely when replaced
+- Write code as if the old system never existed
+
+**Rationale**: Once the new architecture is implemented and working, it's no longer "new" - it's THE system. Naming it as "new" creates technical debt and confusion. If you're confident in the implementation, commit to it fully by making it the default and only implementation.
+
+**Example of proper transition:**
+```python
+# During development: implement and test new system
+async def _execute_rag_queries_new(...):
+    """New implementation using 2-call architecture."""
+    pass
+
+# After completion: rename and delete old system
+async def _execute_rag_queries(...):
+    """Execute RAG queries for selected tools."""
+    pass
+# Old method completely deleted, not commented out
+```
+
 ## Common Pitfalls to Avoid
 1. **ALWAYS activate virtual environment FIRST** - use `.\.venv\Scripts\Activate.ps1` before running any Python code
 2. **Don't run scripts directly** - always use `python -m scripts.script_name`
@@ -246,7 +277,8 @@ def new_implementation():
 4. **Check for None on optional Character fields** before accessing nested attributes
 5. **Use `character.character_base.total_level`** not `.level` for character level access
 6. **Access inventory as `character.inventory.backpack`** and `character.inventory.equipped_items`**
-6. **Clean up test files** - remove temporary test scripts after use to avoid clutter
-7. **Delete legacy code** - never leave commented-out code or obsolete implementations
-8. **Avoid backward compatibility** - break and fix cleanly rather than maintaining cruft
-9. **Let things fail!** - Don't put so many safeguards in place that you prevent failures from happening.
+7. **Clean up test files** - remove temporary test scripts after use to avoid clutter
+8. **Delete legacy code** - never leave commented-out code or obsolete implementations
+9. **Avoid backward compatibility** - break and fix cleanly rather than maintaining cruft
+10. **Let things fail!** - Don't put so many safeguards in place that you prevent failures from happening
+11. **No "_new" suffixes** - write code as if it's the fundamental system, not a "new" version

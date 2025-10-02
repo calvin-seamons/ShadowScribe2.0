@@ -117,105 +117,43 @@ class JSONRepair:
             raise JSONRepairError(f"Unable to repair JSON: {e}") from e
     
     @staticmethod
-    def repair_character_router_response(response: Any) -> RepairResult:
+    def repair_tool_selector_response(response: Any) -> RepairResult:
         """
-        Repair and validate character router response.
+        Repair and validate Tool Selector response.
         
         Expected schema:
         {
-          "is_needed": boolean,
-          "confidence": float,
-          "user_intentions": array of strings,
-          "entities": array
+            "tools_needed": [
+                {"tool": "character_data", "intention": "combat_info", "confidence": 0.95}
+            ]
         }
         """
         repair_details = []
         
-        # Handle string input (needs JSON parsing)
-        if isinstance(response, str):
-            repair_result = JSONRepair.repair_json_string(response)
-            if repair_result.was_repaired:
-                repair_details.extend(repair_result.repair_details)
-            data = repair_result.data
-        else:
-            data = dict(response) if response else {}
+        # Get base data
+        base_result = JSONRepair._get_base_repair_result(response)
+        data = base_result.data
+        repair_details.extend(base_result.repair_details)
         
-        # Handle wrapped responses like {'json': {...}}
-        if 'json' in data and isinstance(data['json'], dict):
-            data = data['json']
-            repair_details.append("Unwrapped response from 'json' key")
+        # Ensure tools_needed exists and is a list
+        if "tools_needed" not in data:
+            data["tools_needed"] = []
+            repair_details.append("Added missing 'tools_needed' field")
+        elif not isinstance(data["tools_needed"], list):
+            data["tools_needed"] = []
+            repair_details.append("Fixed 'tools_needed' field to be an array")
         
-        # Ensure required fields exist
-        if "is_needed" not in data:
-            data["is_needed"] = False
-            repair_details.append("Added missing 'is_needed' field (defaulted to false)")
+        # Validate each tool entry
+        validated_tools = []
+        for tool_entry in data["tools_needed"]:
+            if isinstance(tool_entry, dict):
+                # Ensure required fields
+                if "tool" not in tool_entry or "intention" not in tool_entry:
+                    repair_details.append(f"Skipped invalid tool entry: {tool_entry}")
+                    continue
+                validated_tools.append(tool_entry)
         
-        if "confidence" not in data:
-            data["confidence"] = 0.5
-            repair_details.append("Added missing 'confidence' field (defaulted to 0.5)")
-        
-        if "entities" not in data:
-            data["entities"] = []
-            repair_details.append("Added missing 'entities' field (defaulted to empty array)")
-        
-        # Handle user_intentions field
-        if data.get("is_needed", False):
-            # Handle both old and new field names for backwards compatibility
-            user_intentions = None
-            
-            if "user_intentions" in data:
-                user_intentions = data["user_intentions"]
-            elif "user_intention" in data and data["user_intention"] is not None:
-                # Convert single intention to array
-                user_intentions = [data["user_intention"]]
-                repair_details.append("Converted single 'user_intention' to 'user_intentions' array")
-            elif "intention" in data and data["intention"] is not None:
-                # Convert alternative field name
-                user_intentions = [data["intention"]]
-                repair_details.append("Mapped 'intention' to 'user_intentions' array")
-            
-            if user_intentions is None or len(user_intentions) == 0:
-                user_intentions = ["character_basics"]  # Safe default
-                repair_details.append("Added missing 'user_intentions' field (defaulted to ['character_basics'])")
-            elif len(user_intentions) > 2:
-                user_intentions = user_intentions[:2]
-                repair_details.append("Truncated 'user_intentions' to maximum of 2 items")
-            
-            data["user_intentions"] = user_intentions
-        else:
-            data["user_intentions"] = []
-        
-        # Clean up old fields
-        if "user_intention" in data:
-            del data["user_intention"]
-        if "intention" in data:
-            del data["intention"]
-        
-        # Validate and fix entities format
-        if not isinstance(data["entities"], list):
-            data["entities"] = []
-            repair_details.append("Fixed 'entities' field to be an array")
-        
-        # Ensure each entity has required fields
-        fixed_entities = []
-        for entity in data["entities"]:
-            if not isinstance(entity, dict):
-                continue
-            
-            fixed_entity = dict(entity)
-            if "name" not in fixed_entity:
-                fixed_entity["name"] = ""
-            if "type" not in fixed_entity:
-                fixed_entity["type"] = "unknown"
-            if "confidence" not in fixed_entity:
-                fixed_entity["confidence"] = 0.5
-                
-            fixed_entities.append(fixed_entity)
-        
-        if len(fixed_entities) != len(data["entities"]):
-            repair_details.append("Fixed entity formats")
-        
-        data["entities"] = fixed_entities
+        data["tools_needed"] = validated_tools
         
         return RepairResult(
             data=data,
@@ -224,93 +162,42 @@ class JSONRepair:
         )
     
     @staticmethod
-    def repair_rulebook_router_response(response: Any) -> RepairResult:
+    def repair_entity_extractor_response(response: Any) -> RepairResult:
         """
-        Repair and validate rulebook router response.
+        Repair and validate Entity Extractor response.
         
         Expected schema:
         {
-          "is_needed": boolean,
-          "confidence": float,
-          "intention": string or null,
-          "entities": array,
-          "context_hints": array
+            "entities": [
+                {"name": "Eldaryth of Regret", "confidence": 1.0}
+            ]
         }
         """
         repair_details = []
         
-        # Handle string input (needs JSON parsing)
-        if isinstance(response, str):
-            repair_result = JSONRepair.repair_json_string(response)
-            if repair_result.was_repaired:
-                repair_details.extend(repair_result.repair_details)
-            data = repair_result.data
-        else:
-            data = dict(response) if response else {}
+        # Get base data
+        base_result = JSONRepair._get_base_repair_result(response)
+        data = base_result.data
+        repair_details.extend(base_result.repair_details)
         
-        # Handle wrapped responses like {'json': {...}}
-        if 'json' in data and isinstance(data['json'], dict):
-            data = data['json']
-            repair_details.append("Unwrapped response from 'json' key")
-        
-        # Ensure required fields exist
-        if "is_needed" not in data:
-            data["is_needed"] = False
-            repair_details.append("Added missing 'is_needed' field (defaulted to false)")
-        
-        if "confidence" not in data:
-            data["confidence"] = 0.5
-            repair_details.append("Added missing 'confidence' field (defaulted to 0.5)")
-        
+        # Ensure entities exists and is a list
         if "entities" not in data:
             data["entities"] = []
-            repair_details.append("Added missing 'entities' field (defaulted to empty array)")
-        
-        if "context_hints" not in data:
-            data["context_hints"] = []
-            repair_details.append("Added missing 'context_hints' field (defaulted to empty array)")
-        
-        # Handle intention field (note: different from character router!)
-        if data.get("is_needed", False):
-            if "intention" not in data or data["intention"] is None:
-                # Check for alternative field names
-                if "user_intention" in data:
-                    data["intention"] = data["user_intention"]
-                    repair_details.append("Mapped 'user_intention' to 'intention'")
-                else:
-                    data["intention"] = "general"  # Safe default
-                    repair_details.append("Added missing 'intention' field (defaulted to 'general')")
-        else:
-            data["intention"] = None
-        
-        # Validate and fix entities format
-        if not isinstance(data["entities"], list):
+            repair_details.append("Added missing 'entities' field")
+        elif not isinstance(data["entities"], list):
             data["entities"] = []
             repair_details.append("Fixed 'entities' field to be an array")
         
-        # Validate and fix context_hints format
-        if not isinstance(data["context_hints"], list):
-            data["context_hints"] = []
-            repair_details.append("Fixed 'context_hints' field to be an array")
+        # Validate each entity entry
+        validated_entities = []
+        for entity_entry in data["entities"]:
+            if isinstance(entity_entry, dict) and "name" in entity_entry:
+                # Ensure confidence exists
+                if "confidence" not in entity_entry:
+                    entity_entry["confidence"] = 0.95
+                validated_entities.append(entity_entry)
         
-        # Ensure each entity has required fields
-        fixed_entities = []
-        for entity in data["entities"]:
-            if not isinstance(entity, dict):
-                continue
-            
-            fixed_entity = dict(entity)
-            if "name" not in fixed_entity:
-                fixed_entity["name"] = ""
-            if "type" not in fixed_entity:
-                fixed_entity["type"] = "unknown"
-                
-            fixed_entities.append(fixed_entity)
-        
-        if len(fixed_entities) != len(data["entities"]):
-            repair_details.append("Fixed entity formats")
-        
-        data["entities"] = fixed_entities
+        data["entities"] = validated_entities
         
         return RepairResult(
             data=data,
@@ -319,77 +206,29 @@ class JSONRepair:
         )
     
     @staticmethod
-    def repair_session_notes_router_response(response: Any) -> RepairResult:
+    def _get_base_repair_result(response: Any) -> RepairResult:
         """
-        Repair and validate session notes router response.
-        
-        Expected schema:
-        {
-          "is_needed": boolean,
-          "confidence": float,
-          "intention": string or null,  
-          "entities": array,
-          "context_hints": array
-        }
+        Helper to get base repair result from any response type.
+        Handles string, dict, or LLMResponse objects.
         """
         repair_details = []
         
-        # Handle string input (needs JSON parsing)
-        if isinstance(response, str):
-            repair_result = JSONRepair.repair_json_string(response)
-            if repair_result.was_repaired:
-                repair_details.extend(repair_result.repair_details)
-            data = repair_result.data
+        # Handle different response types
+        if hasattr(response, 'content'):
+            json_str = response.content
+        elif isinstance(response, dict):
+            return RepairResult(data=response, was_repaired=False, repair_details=[])
+        elif isinstance(response, str):
+            json_str = response
         else:
-            data = dict(response) if response else {}
+            raise JSONRepairError(f"Unexpected response type: {type(response)}")
         
-        # Handle wrapped responses like {'json': {...}}
-        if 'json' in data and isinstance(data['json'], dict):
-            data = data['json']
-            repair_details.append("Unwrapped response from 'json' key")
+        # Try to parse JSON
+        try:
+            data = json.loads(json_str)
+            return RepairResult(data=data, was_repaired=False, repair_details=[])
+        except json.JSONDecodeError as e:
+            repair_details.append(f"JSON parsing failed: {str(e)}")
         
-        # Ensure required fields exist
-        if "is_needed" not in data:
-            data["is_needed"] = False
-            repair_details.append("Added missing 'is_needed' field (defaulted to false)")
-        
-        if "confidence" not in data:
-            data["confidence"] = 0.5
-            repair_details.append("Added missing 'confidence' field (defaulted to 0.5)")
-        
-        if "entities" not in data:
-            data["entities"] = []
-            repair_details.append("Added missing 'entities' field (defaulted to empty array)")
-        
-        if "context_hints" not in data:
-            data["context_hints"] = []
-            repair_details.append("Added missing 'context_hints' field (defaulted to empty array)")
-        
-        # Handle intention field
-        if data.get("is_needed", False):
-            if "intention" not in data or data["intention"] is None:
-                # Check for alternative field names
-                if "user_intention" in data:
-                    data["intention"] = data["user_intention"]
-                    repair_details.append("Mapped 'user_intention' to 'intention'")
-                else:
-                    data["intention"] = "general"  # Safe default
-                    repair_details.append("Added missing 'intention' field (defaulted to 'general')")
-        else:
-            data["intention"] = None
-        
-        # Validate and fix entities format
-        if not isinstance(data["entities"], list):
-            data["entities"] = []
-            repair_details.append("Fixed 'entities' field to be an array")
-        
-        # Validate and fix context_hints format
-        if not isinstance(data["context_hints"], list):
-            data["context_hints"] = []
-            repair_details.append("Fixed 'context_hints' field to be an array")
-        
-        return RepairResult(
-            data=data,
-            was_repaired=len(repair_details) > 0,
-            repair_details=repair_details
-        )
+        # Use main repair method
+        return JSONRepair.repair_json_string(json_str)

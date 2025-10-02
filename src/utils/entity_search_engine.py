@@ -281,68 +281,58 @@ class EntitySearchEngine:
         if not character.backstory:
             return None
         
-        # Collect all backstory entities
-        entities_with_sections = []
-        
-        # Add allies
-        if character.backstory.allies:
-            for ally in character.backstory.allies:
-                entities_with_sections.append((ally, 'backstory.allies'))
-        
-        # Add enemies
-        if character.backstory.enemies:
-            for enemy in character.backstory.enemies:
-                entities_with_sections.append((enemy, 'backstory.enemies'))
-        
-        # Add organizations
-        if character.backstory.organizations:
-            for org in character.backstory.organizations:
-                entities_with_sections.append((org, 'backstory.organizations'))
-        
-        # Add objectives
-        if hasattr(character.backstory, 'objectives') and character.backstory.objectives:
-            for obj in character.backstory.objectives:
-                entities_with_sections.append((obj, 'backstory.objectives'))
-        
-        # Add contracts
-        if hasattr(character.backstory, 'contracts') and character.backstory.contracts:
-            for contract in character.backstory.contracts:
-                entities_with_sections.append((contract, 'backstory.contracts'))
-        
-        # Find best match
+        # Search within backstory sections
+        # Actual Backstory fields: title (str), family_backstory (FamilyBackstory), sections (List[BackstorySection])
         best_match = None
         best_confidence = 0.0
         best_section = None
+        best_strategy = None
         
-        for entity, section in entities_with_sections:
-            # Get name from entity
-            name = self._get_item_name(entity)
-            if not name:
-                # For objectives/contracts, try 'title' instead of 'name'
-                if hasattr(entity, 'title'):
-                    name = entity.title
-                elif isinstance(entity, dict) and 'title' in entity:
-                    name = entity['title']
-            
-            if not name:
-                continue
-            
-            match_result = self.match_entity_name(entity_name, name)
-            if match_result:
-                confidence, strategy, matched_text = match_result
-                if confidence > best_confidence:
-                    best_match = (confidence, strategy, matched_text)
-                    best_confidence = confidence
-                    best_section = section
+        # Search in backstory title
+        match_result = self.match_entity_name(entity_name, character.backstory.title)
+        if match_result:
+            confidence, strategy, matched_text = match_result
+            if confidence > best_confidence:
+                best_match = matched_text
+                best_confidence = confidence
+                best_section = 'backstory.title'
+                best_strategy = strategy
         
-        if best_match:
-            confidence, strategy, matched_text = best_match
+        # Search in backstory sections
+        if character.backstory.sections:
+            for idx, section in enumerate(character.backstory.sections):
+                # Search in section title
+                if section.title:
+                    match_result = self.match_entity_name(entity_name, section.title)
+                    if match_result:
+                        confidence, strategy, matched_text = match_result
+                        if confidence > best_confidence:
+                            best_match = matched_text
+                            best_confidence = confidence
+                            best_section = f'backstory.sections[{idx}].title'
+                            best_strategy = strategy
+                
+                # Search in section content
+                if section.content:
+                    # Check if entity_name appears in content
+                    normalized_entity = self.normalize_text(entity_name)
+                    normalized_content = self.normalize_text(section.content)
+                    if normalized_entity in normalized_content:
+                        confidence = 0.85  # High confidence for content matches
+                        if confidence > best_confidence:
+                            best_match = section.title or f"Section {idx}"
+                            best_confidence = confidence
+                            best_section = f'backstory.sections[{idx}].content'
+                            best_strategy = "content_match"
+        
+        # Return result if confidence above threshold
+        if best_match and best_confidence >= self.fuzzy_threshold:
             return EntitySearchResult(
                 entity_name=entity_name,
                 found_in_sections=[best_section],
-                match_confidence=confidence,
-                matched_text=matched_text,
-                match_strategy=strategy
+                match_confidence=best_confidence,
+                matched_text=best_match,
+                match_strategy=best_strategy
             )
         
         return None
