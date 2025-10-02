@@ -18,21 +18,132 @@ class CentralPromptManager:
         """Initialize with context assembler."""
         self.context_assembler = context_assembler
     
+    def get_tool_and_intention_selector_prompt(self, user_query: str, character_name: str) -> str:
+        """
+        Build prompt for Tool & Intention Selector LLM call (NEW ARCHITECTURE).
+        
+        This is the first of 2 parallel LLM calls that replace the old 3 sequential router calls.
+        Returns which RAG tools are needed and what intention to use for each.
+        
+        Args:
+            user_query: The user's question about their character
+            character_name: Name of the character being queried
+            
+        Returns:
+            Prompt string for the tool selector LLM
+        """
+        # Get intention definitions from each helper
+        character_intents = CharacterPromptHelper.get_intent_definitions()
+        session_intents = SessionNotesPromptHelper.get_intent_definitions()
+        rulebook_intents = RulebookPromptHelper.get_intent_definitions()
+        
+        # Format intentions for prompt
+        character_intentions_text = "\n".join([f"- {intent}: {definition}" for intent, definition in character_intents.items()])
+        session_intentions_text = "\n".join([f"- {intent}: {definition}" for intent, definition in session_intents.items()])
+        rulebook_intentions_text = "\n".join([f"- {intent}: {definition}" for intent, definition in rulebook_intents.items()])
+        
+        return f'''You are an expert D&D assistant analyzing what information sources are needed to answer a query.
+
+Query: "{user_query}"
+Character: "{character_name}"
+
+TASK: Determine which RAG tools are needed and what intention to use for each tool.
+
+AVAILABLE TOOLS:
+1. character_data - Character stats, inventory, spells, abilities, features
+2. session_notes - Campaign history, past events, NPCs, decisions
+3. rulebook - D&D rules, mechanics, spell descriptions, combat rules
+
+TOOL SELECTION GUIDELINES:
+- Select ONLY the tools actually needed to answer the query
+- Most queries need 1-2 tools, rarely 3
+- Examples:
+  * "What's my AC?" → character_data only
+  * "Tell me about Elara" → session_notes only (if NPC)
+  * "How does grappling work?" → rulebook only
+  * "What persuasion abilities do I have?" → character_data only
+  * "Remind me about Elara and my persuasion abilities" → session_notes + character_data
+
+CHARACTER_DATA INTENTIONS (choose ONE per tool):
+{character_intentions_text}
+
+SESSION_NOTES INTENTIONS (choose ONE per tool):
+{session_intentions_text}
+
+RULEBOOK INTENTIONS (choose ONE per tool):
+{rulebook_intentions_text}
+
+EXAMPLES:
+
+Query: "What combat abilities do I have tied to Eldaryth of Regret?"
+Response: {{
+  "tools_needed": [
+    {{"tool": "character_data", "intention": "combat_info", "confidence": 0.95}}
+  ]
+}}
+
+Query: "Remind me who Elara is and what persuasion abilities I have"
+Response: {{
+  "tools_needed": [
+    {{"tool": "session_notes", "intention": "npc_history", "confidence": 0.95}},
+    {{"tool": "character_data", "intention": "abilities_info", "confidence": 0.95}}
+  ]
+}}
+
+Query: "How does grappling work and what's my athletics bonus?"
+Response: {{
+  "tools_needed": [
+    {{"tool": "rulebook", "intention": "rule_mechanics", "confidence": 0.95}},
+    {{"tool": "character_data", "intention": "abilities_info", "confidence": 0.90}}
+  ]
+}}
+
+Query: "What spells can I cast?"
+Response: {{
+  "tools_needed": [
+    {{"tool": "character_data", "intention": "magic_info", "confidence": 1.0}}
+  ]
+}}
+
+Query: "Tell me about my weapon"
+Response: {{
+  "tools_needed": [
+    {{"tool": "character_data", "intention": "inventory_info", "confidence": 0.95}}
+  ]
+}}
+
+Return ONLY valid JSON:
+{{
+  "tools_needed": [
+    {{
+      "tool": "tool_name",
+      "intention": "intention_name",
+      "confidence": 0.0-1.0
+    }}
+  ]
+}}
+
+IMPORTANT: Return valid JSON only. No explanations.'''
+    
     def get_character_router_prompt(self, user_query: str, character_name: str) -> str:
         """
         Build specialized prompt for Character Router LLM call.
-        Uses CharacterPromptHelper to get current intent definitions and entity types.
+        Uses CharacterPromptHelper to get current intent definitions and search contexts.
         """
         intent_definitions = CharacterPromptHelper.get_intent_definitions()
-        entity_type_definitions = CharacterPromptHelper.get_entity_type_definitions()
+        search_contexts = CharacterPromptHelper.get_all_search_contexts()
         
         # Format intentions for prompt
         intention_lines = [f"- {intent}: {definition}" for intent, definition in intent_definitions.items()]
         intentions_text = "\n".join(intention_lines)
         
-        # Format entity types for prompt
-        entity_lines = [f"- {entity_type}: {definition}" for entity_type, definition in entity_type_definitions.items()]
-        entities_text = "\n".join(entity_lines)
+        # Format search contexts for prompt
+        search_contexts_text = "\n".join([
+            "- character_data: Search all character sections (inventory, spells, features, abilities, etc.)",
+            "- session_notes: Search campaign history and past events",
+            "- rulebook: Search D&D rules and mechanics",
+            "- all: Search everywhere (use when uncertain)"
+        ])
         
         return f'''You are an expert D&D character assistant. Analyze this query for CHARACTER DATA needs.
 
@@ -56,16 +167,38 @@ IMPORTANT RULES:
 CHARACTER INTENTIONS (choose the most relevant):
 {intentions_text}
 
-ENTITY TYPES:
-{entities_text}
+ENTITY EXTRACTION:
+When you identify specific items, spells, features, or other named entities in the query:
+- Extract the entity name exactly as mentioned
+- Specify WHERE to search using search_contexts (usually ["character_data"] for character queries)
+- Include confidence score (0.0-1.0) based on how clearly the entity is referenced
+
+SEARCH CONTEXTS (where to look for entities):
+{search_contexts_text}
 
 Return JSON:
 {{
   "is_needed": boolean,
   "confidence": float,
   "user_intentions": ["intention_name"] or ["intention_1", "intention_2"] or [],
-  "entities": [{{"name": "string", "type": "type", "confidence": float}}]
-}}'''
+  "entities": [
+    {{
+      "name": "entity name from query",
+      "search_contexts": ["character_data"],
+      "confidence": 0.95
+    }}
+  ]
+}}
+
+ENTITY EXAMPLES:
+- Query: "What actions are tied to Eldaryth of Regret?"
+  Entity: {{"name": "Eldaryth of Regret", "search_contexts": ["character_data"], "confidence": 1.0}}
+
+- Query: "Tell me about my Hexblade's Curse ability"
+  Entity: {{"name": "Hexblade's Curse", "search_contexts": ["character_data"], "confidence": 1.0}}
+
+- Query: "How many spell slots do I have?"
+  Entities: [] (no specific entity, just general magic info)'''
     
     def get_rulebook_router_prompt(self, user_query: str) -> str:
         """

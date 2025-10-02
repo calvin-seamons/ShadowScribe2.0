@@ -10,8 +10,9 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 
 from .character_types import Character
-from .character_query_types import UserIntention, EntityType, IntentionDataMapper, CharacterQueryPerformanceMetrics
-from .entity_matcher import EntityMatcher
+from .character_query_types import (
+    UserIntention, IntentionDataMapper, CharacterQueryPerformanceMetrics
+)
 
 
 @dataclass
@@ -36,10 +37,13 @@ class CharacterQueryRouter:
     """
     
     def __init__(self, character: Optional[Character] = None):
-        """Initialize the query router with a character object."""
+        """Initialize the query router with a character object.
+        
+        Args:
+            character: Character object to query
+        """
         self.character = character
         self.intention_mapper = IntentionDataMapper()
-        self.entity_matcher = EntityMatcher()
     
     def query_character(
         self, 
@@ -138,14 +142,8 @@ class CharacterQueryRouter:
         performance.data_extraction_ms = (extract_end - extract_start) * 1000
         performance.fields_extracted = len(character_data)
         
-        # 5. Expand with additional sections based on entity matches if provided
-        entity_matches = []
-        if entities:
-            filter_start = time.perf_counter()
-            character_data, entity_matches = self._expand_by_entity_matches(character_data, entities, character)
-            filter_end = time.perf_counter()
-            performance.entity_filtering_ms = (filter_end - filter_start) * 1000
-            performance.entity_matches_found = len(entity_matches)
+        # NOTE: Entity resolution and auto-include logic removed.
+        # Phase 3 CentralEngine will handle entity resolution and pass auto_include sections.
         
         # 6. Finalize performance metrics
         serialization_start = time.perf_counter()
@@ -166,7 +164,6 @@ class CharacterQueryRouter:
                 "required_fields": list(combined_mapping.required_fields)
             },
             warnings=warnings,
-            entity_matches=entity_matches,
             performance_metrics=performance
         )
     
@@ -209,61 +206,3 @@ class CharacterQueryRouter:
         else:
             # Primitive type
             return obj
-    
-    def _expand_by_entity_matches(self, character_data: Dict[str, Any], entities: List[Dict[str, Any]], character: Character) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
-        """
-        Expand character data sections based on entity matches.
-        If entities match items outside the current sections, pull in those additional sections.
-        """
-        if not entities:
-            return character_data, []
-        
-        expanded_data = character_data.copy()
-        entity_matches = []
-        
-        # Map entity types to character sections they might be found in
-        entity_section_map = {
-            EntityType.ITEM: ['inventory'],
-            EntityType.WEAPON: ['inventory'],
-            EntityType.ARMOR: ['inventory'],
-            EntityType.SPELL: ['spell_list'],
-            EntityType.FEATURE: ['features_and_traits'],
-            EntityType.TRAIT: ['features_and_traits'],
-            EntityType.SKILL: ['proficiencies'],
-            EntityType.ABILITY: ['ability_scores', 'proficiencies'],
-            EntityType.ALLY: ['allies'],
-            EntityType.ENEMY: ['enemies'],
-            EntityType.ORGANIZATION: ['organizations'],
-            EntityType.QUEST: ['objectives_and_contracts'],
-            EntityType.CONTRACT: ['objectives_and_contracts']
-        }
-        
-        # Check which sections we need to add based on entity matches
-        sections_to_add = set()
-        
-        for entity in entities:
-            entity_type = entity.get('type')
-            if entity_type:
-                try:
-                    entity_enum = EntityType(entity_type.lower())
-                    if entity_enum in entity_section_map:
-                        for section in entity_section_map[entity_enum]:
-                            if section not in expanded_data:
-                                sections_to_add.add(section)
-                                entity_matches.append({
-                                    'entity': entity,
-                                    'matched_section': section,
-                                    'reason': f"Entity type {entity_type} maps to section {section}"
-                                })
-                except ValueError:
-                    # Unknown entity type, skip
-                    continue
-        
-        # Extract additional sections
-        for section in sections_to_add:
-            if hasattr(character, section):
-                field_value = getattr(character, section)
-                if field_value is not None:
-                    expanded_data[section] = self._serialize_object(field_value)
-        
-        return expanded_data, entity_matches

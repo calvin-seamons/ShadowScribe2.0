@@ -12,39 +12,31 @@ from datetime import datetime
 from enum import Enum
 
 
-# ===== ENTITY TYPES =====
+# ===== SEARCH CONTEXT TYPES =====
 
-class EntityType(Enum):
-    """Types of entities that can be referenced in queries."""
-    SPELL = "spell"
-    ITEM = "item"
-    WEAPON = "weapon"
-    ARMOR = "armor"
-    FEATURE = "feature"
-    TRAIT = "trait"
-    QUEST = "quest"
-    CONTRACT = "contract"
-    ALLY = "ally"
-    ENEMY = "enemy"
-    ORGANIZATION = "organization"
-    ABILITY = "ability"
-    SKILL = "skill"
-    ACTION = "action"
-    CLASS = "class"
-    RACE = "race"
-    BACKGROUND = "background"
-    CONDITION = "condition"
-    RESOURCE = "resource"
+class SearchContext(Enum):
+    """Contexts where entities should be searched for.
+    
+    Instead of pre-classifying entity types, we specify WHERE to search
+    and let fuzzy matching find the entity in character data.
+    """
+    CHARACTER_DATA = "character_data"  # Search all character sections (inventory, spells, features, etc.)
+    SESSION_NOTES = "session_notes"    # Search campaign history and session notes
+    RULEBOOK = "rulebook"              # Search D&D rules and mechanics
+    ALL = "all"                        # Search everywhere (default when uncertain)
 
 
 @dataclass
 class QueryEntity:
-    """An entity referenced in a user query."""
+    """An entity referenced in a user query.
+    
+    Entities are resolved by searching across selected RAG tools.
+    The search scope is determined by the tool selector, not the entity itself.
+    
+    Note: search_contexts removed - now derived from tool selection in orchestrator.
+    """
     name: str
-    type: EntityType
-    raw_text: str  # Original text from user
     confidence: float = 1.0  # Confidence in entity recognition
-    attributes: Dict[str, Any] = field(default_factory=dict)
 
 
 # ===== INTENTION CATEGORIES =====
@@ -120,6 +112,30 @@ class CharacterInformationResult:
     data_retrieved: Dict[str, Any]  # Actual character data
 
 
+# ===== ENTITY SEARCH RESULT =====
+
+@dataclass
+class EntitySearchResult:
+    """Result of searching for an entity in character data.
+    
+    Provides detailed information about where an entity was found and how well
+    it matched the search query.
+    """
+    entity_name: str  # Name of the entity that was searched for
+    found_in_sections: List[str]  # Character data sections where entity was found
+    match_confidence: float  # Confidence score (0.0-1.0) of the match
+    matched_text: Optional[str] = None  # Actual text that matched in the data
+    match_strategy: Optional[str] = None  # How the match was found (exact, substring, fuzzy)
+    
+    def was_found(self) -> bool:
+        """Check if the entity was found in any section."""
+        return len(self.found_in_sections) > 0
+    
+    def get_primary_section(self) -> Optional[str]:
+        """Get the first (primary) section where entity was found."""
+        return self.found_in_sections[0] if self.found_in_sections else None
+
+
 # ===== INTENTION MAPPING =====
 
 @dataclass
@@ -130,7 +146,6 @@ class IntentionMapping:
     required_fields: Set[str]
     optional_fields: Set[str] = field(default_factory=set)
     nested_requirements: Dict[str, List[str]] = field(default_factory=dict)
-    entity_types: Set[EntityType] = field(default_factory=set)
     calculation_required: bool = False
     aggregation_required: bool = False
 
@@ -149,7 +164,6 @@ class IntentionDataMapper:
                 intention=UserIntention.CHARACTER_BASICS,
                 category=IntentionCategory.CHARACTER_SHEET,
                 required_fields={'character_base', 'characteristics', 'ability_scores'},
-                entity_types={EntityType.RACE, EntityType.CLASS, EntityType.BACKGROUND},
                 calculation_required=True
             ),
             
@@ -159,7 +173,6 @@ class IntentionDataMapper:
                 category=IntentionCategory.COMBAT,
                 required_fields={'combat_stats', 'damage_modifiers', 'passive_scores', 'action_economy'},
                 optional_fields={'ability_scores', 'inventory', 'features_and_traits', 'proficiencies'},
-                entity_types={EntityType.WEAPON, EntityType.ACTION, EntityType.ARMOR},
                 calculation_required=True,
                 aggregation_required=True
             ),
@@ -170,7 +183,6 @@ class IntentionDataMapper:
                 category=IntentionCategory.ABILITIES,
                 required_fields={'proficiencies', 'passive_scores', 'senses', 'features_and_traits'},
                 optional_fields={'ability_scores', 'character_base', 'background_info'},
-                entity_types={EntityType.SKILL, EntityType.FEATURE, EntityType.TRAIT, EntityType.ABILITY},
                 aggregation_required=True
             ),
             
@@ -183,7 +195,6 @@ class IntentionDataMapper:
                 nested_requirements={
                     'inventory': ['equipped_items', 'backpack', 'carrying_capacity', 'currency']
                 },
-                entity_types={EntityType.ITEM, EntityType.WEAPON, EntityType.ARMOR},
                 calculation_required=True,
                 aggregation_required=True
             ),
@@ -197,7 +208,6 @@ class IntentionDataMapper:
                 nested_requirements={
                     'spell_list': ['spells', 'spellcasting', 'spell_slots', 'cantrips']
                 },
-                entity_types={EntityType.SPELL},
                 calculation_required=True,
                 aggregation_required=True
             ),
@@ -207,7 +217,6 @@ class IntentionDataMapper:
                 intention=UserIntention.STORY_INFO,
                 category=IntentionCategory.BACKSTORY,
                 required_fields={'background_info', 'personality', 'backstory'},
-                entity_types={EntityType.BACKGROUND},
                 aggregation_required=True
             ),
             
@@ -217,7 +226,6 @@ class IntentionDataMapper:
                 category=IntentionCategory.SOCIAL,
                 required_fields={'organizations', 'allies', 'enemies'},
                 optional_fields={'personality', 'background_info'},
-                entity_types={EntityType.ALLY, EntityType.ENEMY, EntityType.ORGANIZATION},
                 aggregation_required=True
             ),
             
@@ -230,7 +238,6 @@ class IntentionDataMapper:
                 nested_requirements={
                     'objectives_and_contracts': ['current_objectives', 'active_contracts', 'completed_objectives']
                 },
-                entity_types={EntityType.QUEST, EntityType.CONTRACT},
                 calculation_required=True,
                 aggregation_required=True
             ),
@@ -246,7 +253,6 @@ class IntentionDataMapper:
                     'action_economy', 'features_and_traits', 'inventory', 'spell_list',
                     'objectives_and_contracts', 'notes'
                 },
-                entity_types=set(EntityType),  # All entity types
                 calculation_required=True,
                 aggregation_required=True
             ),
@@ -269,7 +275,6 @@ class IntentionDataMapper:
         
         primary_fields = set()
         nested_objects = {}
-        entity_types = set()
         
         for intention in intentions:
             if intention in all_mappings:
@@ -281,8 +286,6 @@ class IntentionDataMapper:
                     if field not in nested_objects:
                         nested_objects[field] = []
                     nested_objects[field].extend(nested)
-                
-                entity_types.update(mapping.entity_types)
         
         return DataRequirement(
             primary_fields=primary_fields,
@@ -303,7 +306,6 @@ class IntentionDataMapper:
         combined_required_fields = set()
         combined_optional_fields = set()
         combined_nested_requirements = {}
-        combined_entity_types = set()
         combined_calculation_required = False
         combined_aggregation_required = False
         
@@ -313,7 +315,6 @@ class IntentionDataMapper:
         for mapping in mappings:
             combined_required_fields.update(mapping.required_fields)
             combined_optional_fields.update(mapping.optional_fields)
-            combined_entity_types.update(mapping.entity_types)
             
             # Merge nested requirements
             for field, nested_list in mapping.nested_requirements.items():
@@ -334,7 +335,6 @@ class IntentionDataMapper:
             required_fields=combined_required_fields,
             optional_fields=combined_optional_fields,
             nested_requirements=combined_nested_requirements,
-            entity_types=combined_entity_types,
             calculation_required=combined_calculation_required,
             aggregation_required=combined_aggregation_required
         )
@@ -413,36 +413,11 @@ class CharacterPromptHelper:
         }
     
     @staticmethod
-    def get_entity_type_definitions() -> Dict[str, str]:
-        """Returns all character entity types with examples for prompts."""
-        return {
-            "spell": "Magic spells (e.g., 'fireball', 'cure wounds')",
-            "item": "General items (e.g., 'rope', 'torch', 'healing potion')",
-            "weapon": "Weapons (e.g., 'longsword', 'shortbow', 'dagger')",
-            "armor": "Armor and shields (e.g., 'chainmail', 'leather armor', 'shield')",
-            "feature": "Class features (e.g., 'rage', 'sneak attack', 'action surge')",
-            "trait": "Racial traits (e.g., 'darkvision', 'lucky', 'stone cunning')",
-            "quest": "Quests and missions (e.g., 'rescue the princess', 'find the artifact')",
-            "contract": "Formal contracts (e.g., 'assassination contract', 'escort mission')",
-            "ally": "Allies and friends (e.g., 'tavern keeper', 'guild contact')",
-            "enemy": "Enemies and foes (e.g., 'red dragon', 'orc chieftain')",
-            "organization": "Groups and organizations (e.g., 'thieves guild', 'royal guard')",
-            "ability": "Abilities and skills (e.g., 'athletics', 'perception', 'insight')",
-            "skill": "Skill proficiencies (e.g., 'stealth', 'investigation', 'persuasion')",
-            "action": "Combat actions (e.g., 'attack', 'dash', 'dodge', 'help')",
-            "class": "Character classes (e.g., 'fighter', 'wizard', 'rogue')",
-            "race": "Character races (e.g., 'elf', 'dwarf', 'human')",
-            "background": "Character backgrounds (e.g., 'criminal', 'soldier', 'noble')",
-            "condition": "Status conditions (e.g., 'poisoned', 'stunned', 'charmed')",
-            "resource": "Resources and currencies (e.g., 'gold', 'spell slots', 'hit dice')"
-        }
-    
-    @staticmethod
     def get_all_intents() -> List[str]:
         """Returns list of all character intention names."""
         return [intent.value for intent in UserIntention]
     
     @staticmethod
-    def get_all_entity_types() -> List[str]:
-        """Returns list of all character entity type names."""
-        return [entity.value for entity in EntityType]
+    def get_all_search_contexts() -> List[str]:
+        """Returns list of all search context names."""
+        return [context.value for context in SearchContext]
