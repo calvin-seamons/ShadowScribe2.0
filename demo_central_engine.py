@@ -17,10 +17,10 @@ from typing import Dict, Any
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-from src.rag.central_engine import CentralEngine
-from src.rag.central_prompt_manager import CentralPromptManager
+from src.central_engine import CentralEngine
+from src.llm.central_prompt_manager import CentralPromptManager
 from src.rag.context_assembler import ContextAssembler
-from src.rag.config import get_config
+from src.config import get_config
 from src.utils.character_manager import CharacterManager
 from src.rag.rulebook.rulebook_storage import RulebookStorage
 from src.rag.session_notes.session_notes_storage import SessionNotesStorage

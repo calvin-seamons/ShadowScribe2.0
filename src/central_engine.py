@@ -11,18 +11,18 @@ from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, field
 
 # Import LLM client abstraction
-from .llm_client import LLMClient, LLMClientFactory
+from .LLM.llm_client import LLMClient, LLMClientFactory
 from .config import get_config
-from .json_repair import JSONRepair
+from .LLM.json_repair import JSONRepair
 
 # Import query router types
-from .character.character_query_router import CharacterQueryRouter, CharacterQueryResult
-from .character.character_query_types import UserIntention as CharacterIntention
-from .rulebook.rulebook_query_router import RulebookQueryRouter
-from .rulebook.rulebook_types import RulebookQueryIntent, SearchResult, QueryPerformanceMetrics
-from .session_notes.session_notes_query_router import SessionNotesQueryRouter
-from .session_notes.campaign_session_notes_storage import CampaignSessionNotesStorage
-from .session_notes.session_types import QueryEngineResult
+from .rag.character.character_query_router import CharacterQueryRouter, CharacterQueryResult
+from .rag.character.character_query_types import UserIntention as CharacterIntention
+from .rag.rulebook.rulebook_query_router import RulebookQueryRouter
+from .rag.rulebook.rulebook_types import RulebookQueryIntent, SearchResult, QueryPerformanceMetrics
+from .rag.session_notes.session_notes_query_router import SessionNotesQueryRouter
+from .rag.session_notes.campaign_session_notes_storage import CampaignSessionNotesStorage
+from .rag.session_notes.session_types import QueryEngineResult
 
 
 # ===== ROUTER OUTPUT DATACLASSES =====

@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 from .character_types import Character
-from .spell_calculations import update_spellcasting_calculations
 
 
 class CharacterManager:
@@ -73,9 +72,6 @@ class CharacterManager:
         
         with open(filepath, 'rb') as f:
             character = pickle.load(f)
-            
-        # Auto-fix spell calculations if they're incorrect
-        character = update_spellcasting_calculations(character)
             
         return character
     

@@ -8,7 +8,7 @@ import asyncio
 from openai import AsyncOpenAI
 from anthropic import AsyncAnthropic
 
-from .config import get_config
+from ..config import get_config
 
 
 @dataclass

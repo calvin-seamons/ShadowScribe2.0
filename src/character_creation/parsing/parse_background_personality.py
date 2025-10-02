@@ -27,8 +27,8 @@ from typing import Dict, List, Optional, Any
 from dataclasses import asdict
 from pathlib import Path
 
-from src.rag.llm_client import LLMClientFactory
-from src.rag.json_repair import JSONRepair
+from src.llm.llm_client import LLMClientFactory
+from src.llm.json_repair import JSONRepair
 from src.rag.character.character_types import (
     BackgroundInfo,
     BackgroundFeature,

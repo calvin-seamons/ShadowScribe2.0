@@ -125,165 +125,124 @@ Return ONLY valid JSON:
 
 IMPORTANT: Return valid JSON only. No explanations.'''
     
-    def get_character_router_prompt(self, user_query: str, character_name: str) -> str:
+    def get_entity_extraction_prompt(self, user_query: str) -> str:
         """
-        Build specialized prompt for Character Router LLM call.
-        Uses CharacterPromptHelper to get current intent definitions and search contexts.
+        Build prompt for Entity Extraction LLM call (NEW ARCHITECTURE).
+        
+        This is the second of 2 parallel LLM calls that replace the old 3 sequential router calls.
+        Extracts entity names from the user query without worrying about search contexts
+        (those are derived from tool selection).
+        
+        Args:
+            user_query: The user's question
+            
+        Returns:
+            Prompt string for the entity extractor LLM
         """
-        intent_definitions = CharacterPromptHelper.get_intent_definitions()
-        search_contexts = CharacterPromptHelper.get_all_search_contexts()
-        
-        # Format intentions for prompt
-        intention_lines = [f"- {intent}: {definition}" for intent, definition in intent_definitions.items()]
-        intentions_text = "\n".join(intention_lines)
-        
-        # Format search contexts for prompt
-        search_contexts_text = "\n".join([
-            "- character_data: Search all character sections (inventory, spells, features, abilities, etc.)",
-            "- session_notes: Search campaign history and past events",
-            "- rulebook: Search D&D rules and mechanics",
-            "- all: Search everywhere (use when uncertain)"
-        ])
-        
-        return f'''You are an expert D&D character assistant. Analyze this query for CHARACTER DATA needs.
+        return f'''You are an expert D&D entity extractor. Extract ALL specific named entities from this query.
 
 Query: "{user_query}"
-Character: "{character_name}"
 
-TASK: Determine if this query needs CHARACTER DATA (stats, inventory, spells, abilities) and generate inputs.
+TASK: Extract entity names with confidence scores. DO NOT determine where to search - that's handled separately.
 
-CRITICAL MULTI-INTENTION RULES:
-- ONLY return multiple intentions for clear two-part questions that need different data types
-- Single concepts should use ONE intention only
-- Maximum 2 intentions allowed - NEVER return more than 2
-- Examples of valid multi-intention: "show my spells and inventory", "what are my combat stats and abilities"
-- Examples of single intention: "what spells do I have", "show my combat info", "tell me about my character"
+ENTITY TYPES TO EXTRACT:
+- Character names (PC or NPC names)
+- Item names (weapons, armor, magical items)
+- Spell names (specific spells like "Eldritch Blast")
+- Feature/ability names (class features, racial traits)
+- Location names (cities, dungeons, regions)
+- Rule terms (game mechanics like "grappling", "opportunity attack")
+- Organization names (guilds, factions)
 
-IMPORTANT RULES:
-- If "is_needed" is true, you MUST provide valid intention(s) from the list below
-- If "is_needed" is false, set "user_intentions" to empty array []
-- Never return "is_needed": true with empty "user_intentions"
+EXTRACTION GUIDELINES:
+1. Extract the EXACT name as mentioned in the query
+2. Include partial names if clearly referenced (e.g., "Eldaryth" when full name is "Eldaryth of Regret")
+3. Confidence scoring:
+   - 1.0: Explicit mention with exact name
+   - 0.95: Clear reference with minor variations
+   - 0.9: Implied reference or partial name
+   - 0.8: Ambiguous reference
+4. DO NOT extract:
+   - Generic terms ("my spell", "my weapon" without specific name)
+   - Question words ("what", "how", "tell me")
+   - Character stats without specific names ("AC", "HP" by themselves)
 
-CHARACTER INTENTIONS (choose the most relevant):
-{intentions_text}
+EXAMPLES:
 
-ENTITY EXTRACTION:
-When you identify specific items, spells, features, or other named entities in the query:
-- Extract the entity name exactly as mentioned
-- Specify WHERE to search using search_contexts (usually ["character_data"] for character queries)
-- Include confidence score (0.0-1.0) based on how clearly the entity is referenced
-
-SEARCH CONTEXTS (where to look for entities):
-{search_contexts_text}
-
-Return JSON:
-{{
-  "is_needed": boolean,
-  "confidence": float,
-  "user_intentions": ["intention_name"] or ["intention_1", "intention_2"] or [],
+Query: "What combat abilities do I have tied to Eldaryth of Regret?"
+Response: {{
   "entities": [
-    {{
-      "name": "entity name from query",
-      "search_contexts": ["character_data"],
-      "confidence": 0.95
-    }}
+    {{"name": "Eldaryth of Regret", "confidence": 1.0}}
   ]
 }}
 
-ENTITY EXAMPLES:
-- Query: "What actions are tied to Eldaryth of Regret?"
-  Entity: {{"name": "Eldaryth of Regret", "search_contexts": ["character_data"], "confidence": 1.0}}
+Query: "Tell me about my Hexblade's Curse ability"
+Response: {{
+  "entities": [
+    {{"name": "Hexblade's Curse", "confidence": 1.0}}
+  ]
+}}
 
-- Query: "Tell me about my Hexblade's Curse ability"
-  Entity: {{"name": "Hexblade's Curse", "search_contexts": ["character_data"], "confidence": 1.0}}
+Query: "How many spell slots do I have?"
+Response: {{
+  "entities": []
+}}
+Explanation: No specific entity mentioned, just general magic info request.
 
-- Query: "How many spell slots do I have?"
-  Entities: [] (no specific entity, just general magic info)'''
-    
-    def get_rulebook_router_prompt(self, user_query: str) -> str:
-        """
-        Build specialized prompt for Rulebook Router LLM call.
-        Uses RulebookPromptHelper to get current intent definitions and entity types.
-        """
-        intent_definitions = RulebookPromptHelper.get_intent_definitions()
-        entity_type_definitions = RulebookPromptHelper.get_entity_type_definitions()
-        
-        # Format intentions for prompt  
-        intention_lines = [f"- {intent}: {definition}" for intent, definition in intent_definitions.items()]
-        intentions_text = "\n".join(intention_lines)
-        
-        # Format entity types for prompt
-        entity_lines = [f"- {entity_type}: {definition}" for entity_type, definition in entity_type_definitions.items()]
-        entities_text = "\n".join(entity_lines)
-        
-        return f'''You are an expert D&D rules assistant. Analyze this query for RULEBOOK INFO needs.
+Query: "Remind me who Elara is and what persuasion abilities I have"
+Response: {{
+  "entities": [
+    {{"name": "Elara", "confidence": 1.0}}
+  ]
+}}
+Explanation: "Elara" is an NPC name. "persuasion abilities" is generic, not an entity.
 
-Query: "{user_query}"
+Query: "How does grappling work and what's my athletics bonus?"
+Response: {{
+  "entities": [
+    {{"name": "grappling", "confidence": 1.0}},
+    {{"name": "athletics", "confidence": 1.0}}
+  ]
+}}
+Explanation: Both are specific game mechanics/skills to look up.
 
-TASK: Determine if this query needs RULEBOOK INFO (rules, mechanics, spells) and generate inputs.
+Query: "What spells can I cast with my staff?"
+Response: {{
+  "entities": []
+}}
+Explanation: Generic "staff" without specific name. If they said "Staff of Power" → extract it.
 
-IMPORTANT RULES:
-- If "is_needed" is true, you MUST provide a valid "intention" from the list below
-- If "is_needed" is false, set "intention" to null
-- Never return "is_needed": true with "intention": null
+Query: "Tell me about Shadowfell and the Raven Queen"
+Response: {{
+  "entities": [
+    {{"name": "Shadowfell", "confidence": 1.0}},
+    {{"name": "Raven Queen", "confidence": 1.0}}
+  ]
+}}
+Explanation: Both are specific named entities (location and deity).
 
-RULEBOOK INTENTIONS (choose the most relevant):
-{intentions_text}
+Query: "What's my AC?"
+Response: {{
+  "entities": []
+}}
+Explanation: Pure stat check, no entities.
 
-ENTITY TYPES:
-{entities_text}
+Query: "Can I use my Eldritch Blast on the orc?"
+Response: {{
+  "entities": [
+    {{"name": "Eldritch Blast", "confidence": 1.0}}
+  ]
+}}
+Explanation: Specific spell name. "orc" is generic monster type, not a named NPC.
 
-Return JSON:
+Return ONLY valid JSON:
 {{
-  "is_needed": boolean,
-  "confidence": float,
-  "intention": "intention_name" or null,
-  "entities": [{{"name": "string", "type": "type"}}],
-  "context_hints": ["hint1", "hint2", "hint3"]
-}}'''
-    
-    def get_session_notes_router_prompt(self, user_query: str, character_name: str) -> str:
-        """
-        Build specialized prompt for Session Notes Router LLM call.
-        Uses SessionNotesPromptHelper to get current intent definitions and entity types.
-        """
-        intent_definitions = SessionNotesPromptHelper.get_intent_definitions()
-        entity_type_definitions = SessionNotesPromptHelper.get_entity_type_definitions()
-        
-        # Format intentions for prompt
-        intention_lines = [f"- {intent}: {definition}" for intent, definition in intent_definitions.items()]
-        intentions_text = "\n".join(intention_lines)
-        
-        # Format entity types for prompt
-        entity_lines = [f"- {entity_type}: {definition}" for entity_type, definition in entity_type_definitions.items()]
-        entities_text = "\n".join(entity_lines)
-        
-        return f'''You are an expert D&D session assistant. Analyze this query for SESSION HISTORY needs.
+  "entities": [
+    {{"name": "entity_name", "confidence": 0.0-1.0}}
+  ]
+}}
 
-Query: "{user_query}"
-Character: "{character_name}"
-
-TASK: Determine if this query needs SESSION HISTORY (past events, NPCs, decisions) and generate inputs.
-
-IMPORTANT RULES:
-- If "is_needed" is true, you MUST provide a valid "intention" from the list below
-- If "is_needed" is false, set "intention" to null
-- Never return "is_needed": true with "intention": null
-
-SESSION INTENTIONS (choose the most relevant):
-{intentions_text}
-
-ENTITY TYPES:
-{entities_text}
-
-Return JSON:
-{{
-  "is_needed": boolean,
-  "confidence": float,
-  "intention": "intention_name" or null,
-  "entities": [{{"name": "string", "type": "type"}}],
-  "context_hints": ["hint1", "hint2", "hint3"]
-}}'''
+IMPORTANT: Return valid JSON only. Empty array [] if no entities found. No explanations.'''
     
     def get_final_response_prompt(self, raw_results: Dict[str, Any], user_query: str) -> str:
         """

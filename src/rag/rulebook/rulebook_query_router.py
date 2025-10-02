@@ -14,7 +14,7 @@ from .rulebook_types import (
     RulebookQueryIntent, RulebookSection, SearchResult, 
     RulebookCategory, INTENTION_CATEGORY_MAP, QueryPerformanceMetrics
 )
-from ..config import get_config
+from ...config import get_config
 
 # Note: dotenv is loaded in config.py
 

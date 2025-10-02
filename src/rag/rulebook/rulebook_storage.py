@@ -16,7 +16,7 @@ import openai
 
 from .rulebook_types import RulebookSection, RulebookCategory, SearchResult, RULEBOOK_CATEGORY_ASSIGNMENTS, MULTI_CATEGORY_SECTIONS
 from .categorizer import RulebookCategorizer
-from ..config import get_config
+from ...config import get_config
 
 # Note: dotenv is loaded in config.py
 

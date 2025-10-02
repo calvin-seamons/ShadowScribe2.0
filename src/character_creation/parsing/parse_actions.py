@@ -15,8 +15,8 @@ import asyncio
 from typing import Dict, List, Optional, Union, Any
 from pathlib import Path
 
-from src.rag.llm_client import LLMClientFactory
-from src.rag.json_repair import JSONRepair
+from src.llm.llm_client import LLMClientFactory
+from src.llm.json_repair import JSONRepair
 from src.rag.character.character_types import (
     ActionActivation,
     ActionUsage,
