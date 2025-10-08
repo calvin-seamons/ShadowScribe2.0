@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, AsyncGenerator
 from dataclasses import dataclass
 import json
 import asyncio
@@ -24,6 +24,8 @@ class LLMClient(ABC):
     async def generate_response(self, prompt: str, **kwargs) -> LLMResponse: ...
     @abstractmethod
     async def generate_json_response(self, prompt: str, **kwargs) -> Dict[str, Any]: ...
+    @abstractmethod
+    async def generate_response_stream(self, prompt: str, **kwargs) -> AsyncGenerator[str, None]: ...
 
 
 class OpenAILLMClient(LLMClient):
@@ -85,6 +87,49 @@ class OpenAILLMClient(LLMClient):
             return LLMResponse(content=content, model_used=model)
         except Exception as e:
             return LLMResponse(content="", success=False, error=str(e), model_used=kwargs.get("model", self.default_model))
+
+    async def generate_response_stream(self, prompt: str, **kwargs) -> AsyncGenerator[str, None]:
+        """
+        Stream response chunks from OpenAI.
+        Yields text chunks as they arrive.
+        """
+        try:
+            model = kwargs.get("model", self.default_model)
+            cfg = get_config()
+            
+            # Base parameters
+            base_params = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": True
+            }
+            
+            # Add parameters based on model type
+            if cfg.is_reasoning_model(model):
+                # Reasoning models - no temperature/max_tokens
+                max_completion_tokens = kwargs.get("max_completion_tokens", 2000)
+                if max_completion_tokens:
+                    base_params["max_completion_tokens"] = max_completion_tokens
+                    
+                stop = kwargs.get("stop")
+                if stop:
+                    base_params["stop"] = stop
+            else:
+                # Standard models - support temperature and max_tokens
+                base_params["temperature"] = kwargs.get("temperature", 0.3)
+                base_params["max_tokens"] = kwargs.get("max_tokens", 2000)
+                
+                stop = kwargs.get("stop")
+                if stop:
+                    base_params["stop"] = stop
+
+            stream = await self.client.chat.completions.create(**base_params)
+            async for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+                    
+        except Exception as e:
+            yield f"\n[Error: {str(e)}]"
 
     async def generate_json_response(self, prompt: str, **kwargs) -> Dict[str, Any]:
         """
@@ -186,6 +231,30 @@ class AnthropicLLMClient(LLMClient):
             return LLMResponse(content=text, model_used=model)
         except Exception as e:
             return LLMResponse(content="", success=False, error=str(e), model_used=kwargs.get("model", self.default_model))
+
+    async def generate_response_stream(self, prompt: str, **kwargs) -> AsyncGenerator[str, None]:
+        """
+        Stream response chunks from Anthropic.
+        Yields text chunks as they arrive.
+        """
+        try:
+            model = kwargs.get("model", self.default_model)
+            max_tokens = kwargs.get("max_tokens", 2000)
+            temperature = kwargs.get("temperature", 0.3)
+            stop = kwargs.get("stop")
+
+            async with self.client.messages.stream(
+                model=model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                stop_sequences=stop if isinstance(stop, list) else ([stop] if stop else None),
+                messages=[{"role": "user", "content": prompt}]
+            ) as stream:
+                async for text in stream.text_stream:
+                    yield text
+                    
+        except Exception as e:
+            yield f"\n[Error: {str(e)}]"
 
     async def generate_json_response(self, prompt: str, **kwargs) -> Dict[str, Any]:
         """

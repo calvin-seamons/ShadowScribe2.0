@@ -140,11 +140,23 @@ class InteractiveCentralEngineDemo:
         import time
         start_time = time.time()
         
-        # Use the actual process_query method from CentralEngine
+        # Stream the response from CentralEngine
+        final_response = ""
         try:
-            final_response = await self.engine.process_query(user_query, character_name)
+            if show_details:
+                print(f"\n🎯 FINAL RESPONSE (streaming)")
+                print("=" * 80)
+            else:
+                print(f"\n💬 Response:")
+            
+            async for chunk in self.engine.process_query_stream(user_query, character_name):
+                print(chunk, end='', flush=True)
+                final_response += chunk
+            
+            print()  # New line after streaming completes
+            
         except Exception as e:
-            print(f"❌ Error processing query: {e}")
+            print(f"\n❌ Error processing query: {e}")
             import traceback
             traceback.print_exc()
             return f"Error: {str(e)}"
@@ -160,8 +172,7 @@ class InteractiveCentralEngineDemo:
         if show_details:
             print(f"\n🏃 Total execution time: {execution_time:.2f}s")
             print(f"📏 Response length: {len(final_response)} characters")
-        
-        if show_details:
+            
             # Show configuration used
             print(f"\n⚙️  CONFIGURATION USED")
             print("-" * 40)
@@ -171,16 +182,7 @@ class InteractiveCentralEngineDemo:
             print(f"Final Model: {self.config.anthropic_final_model if self.config.final_response_llm_provider == 'anthropic' else self.config.openai_final_model}")
             print(f"Final Temp: {self.config.final_temperature}")
             print(f"Final Max Tokens: {self.config.final_max_tokens}")
-            
-            # Show final response
-            print(f"\n🎯 FINAL RESPONSE")
             print("=" * 80)
-            print(final_response)
-            print("=" * 80)
-        else:
-            # Simple output for command-line mode
-            print(f"\n💬 Response:")
-            print(final_response)
         
         return final_response
     
@@ -212,7 +214,7 @@ class InteractiveCentralEngineDemo:
             print("-" * 30)
             
             # Make the raw call
-            response = await client.generate_json_response(character_prompt, model=model, **llm_params)
+            response = await client.generate_json_response(tool_selector_prompt, model=model, **llm_params)
             print("\nRAW RESPONSE:")
             print(json.dumps(response, indent=2))
             
@@ -245,11 +247,11 @@ class InteractiveCentralEngineDemo:
             print(f"LLM Params: {llm_params}")
             print("\nPrompt:")
             print("-" * 30)
-            print(session_prompt[:500] + "..." if len(session_prompt) > 500 else session_prompt)
+            print(entity_prompt[:500] + "..." if len(entity_prompt) > 500 else entity_prompt)
             print("-" * 30)
             
             # Make the raw call
-            response = await client.generate_json_response(session_prompt, model=model, **llm_params)
+            response = await client.generate_json_response(entity_prompt, model=model, **llm_params)
             print("\nRAW RESPONSE:")
             print(json.dumps(response, indent=2))
             

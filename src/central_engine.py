@@ -136,7 +136,7 @@ class CentralEngine:
                     for entity_name, results in fallback_results.items():
                         if results:
                             entity_results[entity_name] = results
-                            print(f"🔧 DEBUG: Found '{entity_name}' in fallback tools: {[r.section for r in results]}")
+                            print(f"🔧 DEBUG: Found '{entity_name}' in fallback tools: {[r.found_in_sections for r in results]}")
         else:
             print("🔧 DEBUG: No entities to resolve")
         
@@ -185,6 +185,112 @@ class CentralEngine:
         
         return final_response
     
+    async def process_query_stream(self, user_query: str, character_name: str):
+        """
+        Main processing pipeline with streaming final response.
+        Performs all routing and RAG queries, then streams the final response.
+        
+        Yields:
+            str: Chunks of the final response as they are generated
+        """
+        print(f"🔧 DEBUG: Processing query (streaming): '{user_query}'")
+        
+        # Step 1: Make 2 parallel LLM calls
+        print("🔧 DEBUG: Step 1 - Making parallel LLM calls (tool selector + entity extractor)")
+        tool_selector_output, entity_extractor_output = await asyncio.gather(
+            self._call_tool_selector(user_query, character_name),
+            self._call_entity_extractor(user_query)
+        )
+        
+        print(f"🔧 DEBUG: Tool selector returned {len(tool_selector_output.tools_needed)} tools")
+        print(f"🔧 DEBUG: Entity extractor returned {len(entity_extractor_output.entities)} entities")
+        
+        # Step 2: Derive selected tools from tool selector output
+        selected_tools = [t["tool"] for t in tool_selector_output.tools_needed]
+        print(f"🔧 DEBUG: Step 2 - Selected tools: {selected_tools}")
+        
+        # Step 3: Resolve entities ONLY in selected tools
+        print(f"🔧 DEBUG: Step 3 - Resolving entities in selected tools...")
+        entity_results = {}
+        if entity_extractor_output.entities:
+            entity_results = self.entity_search_engine.resolve_entities(
+                entities=entity_extractor_output.entities,
+                selected_tools=selected_tools,
+                character=self.character,
+                session_notes_storage=self.campaign_session_notes,
+                rulebook_storage=self.rulebook_storage
+            )
+            print(f"🔧 DEBUG: Entity resolution found {len(entity_results)} entities")
+            print(f"🔧 DEBUG: Entity results detail: {entity_results}")
+            
+            # Step 3.5: Fallback search for entities not found in selected tools
+            empty_entities = [name for name, results in entity_results.items() if not results]
+            if empty_entities:
+                print(f"🔧 DEBUG: Step 3.5 - Fallback search for entities not found: {empty_entities}")
+                all_tools = ['character_data', 'session_notes', 'rulebook']
+                unselected_tools = [t for t in all_tools if t not in selected_tools]
+                
+                if unselected_tools:
+                    fallback_results = self.entity_search_engine.resolve_entities(
+                        entities=[e for e in entity_extractor_output.entities if e.get('name') in empty_entities],
+                        selected_tools=unselected_tools,
+                        character=self.character,
+                        session_notes_storage=self.campaign_session_notes,
+                        rulebook_storage=self.rulebook_storage
+                    )
+                    
+                    # Merge fallback results
+                    for entity_name, results in fallback_results.items():
+                        if results:
+                            entity_results[entity_name] = results
+                            print(f"🔧 DEBUG: Found '{entity_name}' in fallback tools: {[r.found_in_sections for r in results]}")
+        else:
+            print("🔧 DEBUG: No entities to resolve")
+        
+        # Step 4: Distribute entities to RAG tools based on where they were found
+        print(f"🔧 DEBUG: Step 4 - Distributing entities to RAG tools...")
+        entity_distribution = self._distribute_entities_to_rag_queries(
+            entity_results, 
+            tool_selector_output.tools_needed
+        )
+        print(f"🔧 DEBUG: Entity distribution: {entity_distribution}")
+        print(f"🔧 DEBUG: Tools needed: {tool_selector_output.tools_needed}")
+        
+        # Step 4.5: Add fallback tools if entities were found there but tool wasn't selected
+        tools_with_entities = set(entity_distribution.keys())
+        selected_tool_names = {t["tool"] for t in tool_selector_output.tools_needed}
+        new_tools_needed = tools_with_entities - selected_tool_names
+        
+        if new_tools_needed:
+            print(f"🔧 DEBUG: Step 4.5 - Adding fallback tools with entities: {new_tools_needed}")
+            for tool in new_tools_needed:
+                # Add tool with a generic intention based on tool type
+                intention_map = {
+                    "character_data": "inventory_info",
+                    "session_notes": "general_history", 
+                    "rulebook": "general_info"
+                }
+                tool_selector_output.tools_needed.append({
+                    "tool": tool,
+                    "intention": intention_map.get(tool, "general_info"),
+                    "confidence": 0.75
+                })
+            print(f"🔧 DEBUG: Updated tools needed: {tool_selector_output.tools_needed}")
+        
+        # Step 5: Execute RAG queries for selected tools
+        print(f"🔧 DEBUG: Step 5 - Executing RAG queries...")
+        raw_results = await self._execute_rag_queries(
+            tool_selector_output.tools_needed,
+            entity_distribution,
+            entity_results,
+            user_query
+        )
+        
+        # Step 6: Stream final response
+        print(f"🔧 DEBUG: Step 6 - Streaming final response...")
+        async for chunk in self.generate_final_response_stream(raw_results, user_query):
+            yield chunk
+    
     async def generate_final_response(self, raw_results: Dict[str, Any], user_query: str) -> str:
         """
         Get final response prompt from Prompt Manager and make final LLM call.
@@ -229,6 +335,52 @@ class CentralEngine:
                 return f"Error generating final response: {response.error}"
         except Exception as e:
             return f"Error generating final response: {str(e)}"
+    
+    async def generate_final_response_stream(self, raw_results: Dict[str, Any], user_query: str):
+        """
+        Get final response prompt from Prompt Manager and stream the LLM response.
+        Yields response chunks as they arrive.
+        
+        Yields:
+            str: Chunks of the response as they are generated
+        """
+        # Get final response prompt from Prompt Manager/Context Assembler
+        final_prompt = self.prompt_manager.get_final_response_prompt(raw_results, user_query)
+        
+        try:
+            # Use configured final response provider
+            provider = self.config.final_response_llm_provider
+            final_client = self.llm_clients.get(provider)
+            
+            if not final_client:
+                # Fallback to available clients
+                final_client = (self.llm_clients.get("openai") or 
+                               self.llm_clients.get("anthropic"))
+                if not final_client:
+                    yield "Error: No suitable LLM client available for final response generation"
+                    return
+            
+            # Select appropriate model based on provider
+            if provider == "openai":
+                model = self.config.openai_final_model
+            elif provider == "anthropic":
+                model = self.config.anthropic_final_model
+            else:
+                model = None  # Use client default
+            
+            # Get LLM parameters from config
+            llm_params = self.config.get_final_llm_params(model)
+            
+            # Stream the response
+            async for chunk in final_client.generate_response_stream(
+                final_prompt,
+                model=model,
+                **llm_params
+            ):
+                yield chunk
+                
+        except Exception as e:
+            yield f"\n[Error generating final response: {str(e)}]"
     
     
     # ===== HELPER METHODS =====
