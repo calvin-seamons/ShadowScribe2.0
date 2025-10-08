@@ -175,9 +175,10 @@ class EntitySearchEngine:
         if not character.inventory:
             return None
         
+        items = self._get_all_inventory_items(character)
         best_match = self._find_best_match_in_items(
             entity_name,
-            self._get_all_inventory_items(character)
+            items
         )
         
         if best_match:
@@ -498,9 +499,21 @@ class EntitySearchEngine:
     # ===== HELPER METHODS =====
     
     def _get_item_name(self, item: any) -> Optional[str]:
-        """Extract name from an item (handles both dataclass and dict)."""
-        if hasattr(item, 'name'):
+        """Extract name from an item (handles both dataclass and dict).
+        
+        For inventory items, checks item.definition.name first (D&D Beyond structure),
+        then falls back to item.name for other item types.
+        """
+        # Check for nested definition structure (inventory items from D&D Beyond)
+        if hasattr(item, 'definition') and hasattr(item.definition, 'name'):
+            return item.definition.name
+        # Direct name attribute (spells, features, etc.)
+        elif hasattr(item, 'name'):
             return item.name
+        # Dict with definition
+        elif isinstance(item, dict) and 'definition' in item and isinstance(item['definition'], dict) and 'name' in item['definition']:
+            return item['definition']['name']
+        # Dict with direct name
         elif isinstance(item, dict) and 'name' in item:
             return item['name']
         return None

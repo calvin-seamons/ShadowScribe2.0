@@ -11,11 +11,10 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.rag.session_notes import (
-    SessionNotesParser, SessionNotesStorage, SessionNotesQueryRouter,
-    parse_session_notes_directory, SessionNotesQueryIntent,
-    QueryEntity, EntityType
-)
+from src.rag.session_notes.session_notes_parser import SessionNotesParser, parse_session_notes_directory
+from src.rag.session_notes.session_notes_storage import SessionNotesStorage
+from src.rag.session_notes.session_notes_query_router import SessionNotesQueryRouter
+from src.rag.session_notes.session_types import UserIntention, EntityType, Entity
 
 
 def main():
@@ -38,22 +37,39 @@ def main():
         print(f"✗ Error parsing session notes: {e}")
         return
     
-    # Initialize storage
+    # Initialize storage manager
     print("\nInitializing storage system...")
-    storage = SessionNotesStorage()
-    print("✓ Storage system initialized")
+    storage_manager = SessionNotesStorage()
     
-    # Store all sessions
+    # Create or get main campaign
+    campaign_name = "main_campaign"
+    campaign = storage_manager.get_campaign(campaign_name)
+    if not campaign:
+        print(f"Creating new campaign: {campaign_name}")
+        campaign = storage_manager.create_campaign(campaign_name)
+    else:
+        print(f"Using existing campaign: {campaign_name}")
+    
+    print("✓ Campaign storage ready")
+    
+    # Store all sessions in the campaign
     print("\nStoring sessions and generating embeddings...")
     for session_note in session_notes:
         print(f"  Processing Session {session_note.session_number}...")
-        storage.store_session(session_note)
+        campaign.add_session(session_note)
+    
+    # Save campaign to disk
+    print("\nSaving campaign to disk...")
+    if storage_manager.save_campaign(campaign_name):
+        print("✓ Campaign saved successfully")
+    else:
+        print("✗ Failed to save campaign")
     
     print("✓ All sessions stored successfully")
     
     # Initialize query engine
     print("\nInitializing query engine...")
-    query_engine = SessionNotesQueryRouter(storage)
+    query_engine = SessionNotesQueryRouter(campaign)
     print("✓ Query engine initialized")
     
     # Test basic functionality
@@ -65,8 +81,8 @@ def main():
     print("\nTest 1: NPC Interactions")
     results = query_engine.query(
         user_query="Tell me about Ghul'vor interactions",
-        intention=SessionNotesQueryIntent.FIND_NPC_INTERACTIONS,
-        entities=[QueryEntity(name="Ghul'vor", entity_type=EntityType.NPC)],
+        intention=UserIntention.NPC_INFO,
+        entities=[Entity(name="Ghul'vor", entity_type=EntityType.NPC)],
         k=3
     )
     
@@ -80,8 +96,8 @@ def main():
     print("\nTest 2: Character Development")
     results = query_engine.query(
         user_query="How has Duskryn changed over time?",
-        intention=SessionNotesQueryIntent.CHARACTER_ARC_TRACKING,
-        entities=[QueryEntity(name="Duskryn", entity_type=EntityType.CHARACTER)],
+        intention=UserIntention.CHARACTER_STATUS,
+        entities=[Entity(name="Duskryn", entity_type=EntityType.PC)],
         k=3
     )
     
@@ -95,7 +111,7 @@ def main():
     print("\nTest 3: Recent Events")
     results = query_engine.query(
         user_query="What happened recently?",
-        intention=SessionNotesQueryIntent.RECENT_EVENTS,
+        intention=UserIntention.EVENT_SEQUENCE,
         entities=[],
         k=2
     )

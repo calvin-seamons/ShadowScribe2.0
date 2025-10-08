@@ -11,7 +11,8 @@ import asyncio
 import sys
 from pathlib import Path
 import json
-from typing import Dict, Any
+import argparse
+from typing import Dict, Any, List
 
 # Add project root to path
 project_root = Path(__file__).parent
@@ -29,26 +30,38 @@ from src.rag.session_notes.session_notes_storage import SessionNotesStorage
 class InteractiveCentralEngineDemo:
     """Interactive demo that shows routing decisions and performance"""
     
-    def __init__(self):
-        """Initialize the demo with CentralEngine"""
-        print("🚀 Initializing ShadowScribe2.0 Central Engine...")
+    def __init__(self, verbose: bool = True):
+        """Initialize the demo with CentralEngine
+        
+        Args:
+            verbose: Whether to show detailed initialization output
+        """
+        self.verbose = verbose
+        self.conversation_history: List[Dict[str, str]] = []
+        
+        if verbose:
+            print("🚀 Initializing ShadowScribe2.0 Central Engine...")
         
         # Load config
         self.config = get_config()
-        print(f"   Config loaded - Router: {self.config.router_llm_provider}, Final: {self.config.final_response_llm_provider}")
+        if verbose:
+            print(f"   Config loaded - Router: {self.config.router_llm_provider}, Final: {self.config.final_response_llm_provider}")
         
         # Load storage components
-        print("📦 Loading storage components...")
+        if verbose:
+            print("📦 Loading storage components...")
         
         # Load Duskryn character
         character_manager = CharacterManager()
         character_name = "Duskryn Nightwarden"
         try:
             character = character_manager.load_character(character_name)
-            print(f"   ✅ Character loaded: {character.character_base.name}")
+            if verbose:
+                print(f"   ✅ Character loaded: {character.character_base.name}")
             self.character_name = character.character_base.name
         except Exception as e:
-            print(f"   ⚠️  Failed to load character: {e}")
+            if verbose:
+                print(f"   ⚠️  Failed to load character: {e}")
             character = None
             self.character_name = "Demo Character"
         
@@ -56,12 +69,15 @@ class InteractiveCentralEngineDemo:
         try:
             rulebook_storage = RulebookStorage()
             if rulebook_storage.load_from_disk("rulebook_storage.pkl"):
-                print(f"   ✅ Rulebook storage loaded")
+                if verbose:
+                    print(f"   ✅ Rulebook storage loaded")
             else:
-                print(f"   ⚠️  Rulebook storage file not found")
+                if verbose:
+                    print(f"   ⚠️  Rulebook storage file not found")
                 rulebook_storage = None
         except Exception as e:
-            print(f"   ⚠️  Failed to load rulebook storage: {e}")
+            if verbose:
+                print(f"   ⚠️  Failed to load rulebook storage: {e}")
             rulebook_storage = None
         
         # Load session notes storage
@@ -69,12 +85,15 @@ class InteractiveCentralEngineDemo:
             session_notes_storage = SessionNotesStorage()
             main_campaign = session_notes_storage.get_campaign("main_campaign")
             if main_campaign:
-                print(f"   ✅ Session notes storage loaded for main_campaign")
+                if verbose:
+                    print(f"   ✅ Session notes storage loaded for main_campaign")
             else:
-                print(f"   ⚠️  Main campaign not found in session notes")
+                if verbose:
+                    print(f"   ⚠️  Main campaign not found in session notes")
                 main_campaign = None
         except Exception as e:
-            print(f"   ⚠️  Failed to load session notes: {e}")
+            if verbose:
+                print(f"   ⚠️  Failed to load session notes: {e}")
             main_campaign = None
         
         # Create components
@@ -89,107 +108,90 @@ class InteractiveCentralEngineDemo:
             campaign_session_notes=main_campaign
         )
         
-        print(f"   LLM Clients available: {list(self.engine.llm_clients.keys())}")
-        print("✅ Central Engine ready!\n")
+        if verbose:
+            print(f"   LLM Clients available: {list(self.engine.llm_clients.keys())}")
+            print("✅ Central Engine ready!\n")
     
-    async def process_query_with_visibility(self, user_query: str, character_name: str = None):
-        """Process a query with full visibility into routing and performance"""
+    async def process_query_with_visibility(self, user_query: str, character_name: str = None, show_details: bool = True):
+        """Process a query with full visibility into routing and performance
+        
+        Args:
+            user_query: The user's question
+            character_name: Character name to use (defaults to loaded character)
+            show_details: Whether to show detailed processing information
+        """
         
         # Use loaded character name if none provided
         if character_name is None:
             character_name = self.character_name
         
-        print("=" * 80)
-        print(f"🎯 PROCESSING QUERY: '{user_query}'")
-        print(f"📋 Character: {character_name}")
-        print("=" * 80)
+        # Add to conversation history
+        self.conversation_history.append({
+            "role": "user",
+            "content": user_query
+        })
         
-        # Step 1: Show router decisions
-        print("\n🧠 STEP 1: Router Decision Phase")
-        print("-" * 40)
-        
-        router_outputs = await self.engine.make_parallel_router_decisions(user_query, character_name)
-        
-        # Display character router decision
-        if router_outputs.character_output:
-            print(f"📊 Character Router:")
-            print(f"   • Needed: {router_outputs.character_output.is_needed}")
-            print(f"   • Intentions: {router_outputs.character_output.user_intentions}")
-            print(f"   • Entities: {len(router_outputs.character_output.entities)} found")
-            if router_outputs.character_output.entities:
-                for entity in router_outputs.character_output.entities[:3]:  # Show first 3
-                    print(f"     - {entity.get('name', 'Unknown')} ({entity.get('type', 'unknown')})")
-        
-        # Display rulebook router decision
-        if router_outputs.rulebook_output:
-            print(f"📚 Rulebook Router:")
-            print(f"   • Needed: {router_outputs.rulebook_output.is_needed}")
-            print(f"   • Intention: {router_outputs.rulebook_output.user_intention}")
-            print(f"   • Entities: {len(router_outputs.rulebook_output.entities)} found")
-            print(f"   • Context Hints: {len(router_outputs.rulebook_output.context_hints)} provided")
-        
-        # Display session notes router decision
-        if router_outputs.session_notes_output:
-            print(f"📝 Session Notes Router:")
-            print(f"   • Needed: {router_outputs.session_notes_output.is_needed}")
-            print(f"   • Intention: {router_outputs.session_notes_output.user_intention}")
-            print(f"   • Entities: {len(router_outputs.session_notes_output.entities)} found")
-        
-        # Step 2: Execute routers and show performance
-        print(f"\n⚡ STEP 2: Router Execution Phase")
-        print("-" * 40)
+        if show_details:
+            print("=" * 80)
+            print(f"🎯 PROCESSING QUERY: '{user_query}'")
+            print(f"📋 Character: {character_name}")
+            print("=" * 80)
         
         import time
         start_time = time.time()
         
-        raw_results = await self.engine.execute_needed_routers(router_outputs, user_query)
+        # Use the actual process_query method from CentralEngine
+        try:
+            final_response = await self.engine.process_query(user_query, character_name)
+        except Exception as e:
+            print(f"❌ Error processing query: {e}")
+            import traceback
+            traceback.print_exc()
+            return f"Error: {str(e)}"
         
         execution_time = time.time() - start_time
         
-        print(f"🏃 Execution completed in {execution_time:.2f}s")
-        print(f"📊 Results obtained from {len(raw_results)} router(s)")
+        # Add response to conversation history
+        self.conversation_history.append({
+            "role": "assistant",
+            "content": final_response
+        })
         
-        for router_name, result in raw_results.items():
-            print(f"   • {router_name.title()} Router: {'✅ Success' if result else '❌ No data'}")
+        if show_details:
+            print(f"\n🏃 Total execution time: {execution_time:.2f}s")
+            print(f"📏 Response length: {len(final_response)} characters")
         
-        # Step 3: Generate final response
-        print(f"\n🎨 STEP 3: Final Response Generation")
-        print("-" * 40)
-        
-        start_time = time.time()
-        
-        final_response = await self.engine.generate_final_response(raw_results, user_query)
-        
-        generation_time = time.time() - start_time
-        
-        print(f"💬 Response generated in {generation_time:.2f}s")
-        print(f"📏 Response length: {len(final_response)} characters")
-        
-        # Step 4: Show configuration used
-        print(f"\n⚙️  CONFIGURATION USED")
-        print("-" * 40)
-        print(f"Router Model: {self.config.openai_router_model if self.config.router_llm_provider == 'openai' else self.config.anthropic_router_model}")
-        print(f"Router Temp: {self.config.router_temperature}")
-        print(f"Router Max Tokens: {self.config.router_max_tokens}")
-        print(f"Final Model: {self.config.openai_final_model if self.config.final_response_llm_provider == 'openai' else self.config.anthropic_final_model}")
-        print(f"Final Temp: {self.config.final_temperature}")
-        print(f"Final Max Tokens: {self.config.final_max_tokens}")
-        
-        # Step 5: Show final response
-        print(f"\n🎯 FINAL RESPONSE")
-        print("=" * 80)
-        print(final_response)
-        print("=" * 80)
+        if show_details:
+            # Show configuration used
+            print(f"\n⚙️  CONFIGURATION USED")
+            print("-" * 40)
+            print(f"Router Model: {self.config.anthropic_router_model if self.config.router_llm_provider == 'anthropic' else self.config.openai_router_model}")
+            print(f"Router Temp: {self.config.router_temperature}")
+            print(f"Router Max Tokens: {self.config.router_max_tokens}")
+            print(f"Final Model: {self.config.anthropic_final_model if self.config.final_response_llm_provider == 'anthropic' else self.config.openai_final_model}")
+            print(f"Final Temp: {self.config.final_temperature}")
+            print(f"Final Max Tokens: {self.config.final_max_tokens}")
+            
+            # Show final response
+            print(f"\n🎯 FINAL RESPONSE")
+            print("=" * 80)
+            print(final_response)
+            print("=" * 80)
+        else:
+            # Simple output for command-line mode
+            print(f"\n💬 Response:")
+            print(final_response)
         
         return final_response
     
-    async def _debug_character_router_response(self, user_query: str):
-        """Debug the character router LLM response to see what's wrong"""
-        print("\n🔍 DEBUGGING CHARACTER ROUTER RESPONSE")
+    async def _debug_tool_selector_response(self, user_query: str):
+        """Debug the tool selector LLM response to see what's working"""
+        print("\n🔍 DEBUGGING TOOL SELECTOR RESPONSE")
         print("-" * 50)
         
         try:
-            character_prompt = self.prompt_manager.get_character_router_prompt(user_query, self.character_name)
+            # Use the actual prompt method from CentralPromptManager
+            tool_selector_prompt = self.prompt_manager.get_tool_and_intention_selector_prompt(user_query, self.character_name)
             
             # Get the same client the engine would use
             provider = self.config.router_llm_provider
@@ -204,9 +206,9 @@ class InteractiveCentralEngineDemo:
             
             print(f"Provider: {provider}, Model: {model}")
             print(f"LLM Params: {llm_params}")
-            print("\nPrompt:")
+            print("\nPrompt Preview:")
             print("-" * 30)
-            print(character_prompt[:500] + "..." if len(character_prompt) > 500 else character_prompt)
+            print(tool_selector_prompt[:500] + "..." if len(tool_selector_prompt) > 500 else tool_selector_prompt)
             print("-" * 30)
             
             # Make the raw call
@@ -219,13 +221,14 @@ class InteractiveCentralEngineDemo:
             import traceback
             traceback.print_exc()
     
-    async def _debug_session_notes_router_response(self, user_query: str):
-        """Debug the session notes router LLM response to see what's wrong"""
-        print("\n🔍 DEBUGGING SESSION NOTES ROUTER RESPONSE")
+    async def _debug_entity_extractor_response(self, user_query: str):
+        """Debug the entity extractor LLM response to see what's working"""
+        print("\n🔍 DEBUGGING ENTITY EXTRACTOR RESPONSE")
         print("-" * 50)
         
         try:
-            session_prompt = self.prompt_manager.get_session_notes_router_prompt(user_query, self.character_name)
+            # Use the actual prompt method from CentralPromptManager
+            entity_prompt = self.prompt_manager.get_entity_extractor_prompt(user_query)
             
             # Get the same client the engine would use
             provider = self.config.router_llm_provider
@@ -257,6 +260,18 @@ class InteractiveCentralEngineDemo:
     
     
     
+    async def process_single_query(self, query: str, show_details: bool = False):
+        """Process a single query and return the response
+        
+        Args:
+            query: The question to process
+            show_details: Whether to show detailed processing information
+            
+        Returns:
+            The response string
+        """
+        return await self.process_query_with_visibility(query, show_details=show_details)
+    
     def run_interactive_demo(self):
         """Run the interactive demo loop"""
         print("🎮 Interactive ShadowScribe2.0 Demo")
@@ -282,7 +297,7 @@ class InteractiveCentralEngineDemo:
                     print(f"❌ Error processing query: {str(e)}")
                     # Debug raw LLM response
                     try:
-                        asyncio.run(self._debug_character_router_response(user_query))
+                        asyncio.run(self._debug_tool_selector_response(user_query))
                     except Exception as debug_e:
                         print(f"Debug failed: {debug_e}")
                 
@@ -298,23 +313,96 @@ class InteractiveCentralEngineDemo:
 
 def main():
     """Main entry point"""
+    parser = argparse.ArgumentParser(
+        description="ShadowScribe2.0 Central Engine Demo",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Ask a single question
+  python demo_central_engine.py -q "What is Duskryn's alignment?"
+  
+  # Ask multiple questions in sequence (maintains context)
+  python demo_central_engine.py -q "What is my AC?" -q "What about my HP?"
+  
+  # Run in interactive mode (default)
+  python demo_central_engine.py
+  
+  # Run quietly with minimal output
+  python demo_central_engine.py -q "What spells can I cast?" --quiet
+        """
+    )
+    parser.add_argument(
+        "-q", "--query",
+        action="append",
+        help="Query to process. Can be used multiple times for sequential questions."
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Minimal output - just show responses without details"
+    )
+    parser.add_argument(
+        "--no-test",
+        action="store_true",
+        help="Skip the auto-test query on startup"
+    )
+    
+    args = parser.parse_args()
     try:
-        demo = InteractiveCentralEngineDemo()
+        # Initialize demo with appropriate verbosity
+        demo = InteractiveCentralEngineDemo(verbose=not args.quiet)
         
-        # Auto-test the failing query
-        test_query = "What is Duskryn's alignment and background?"
-        print(f"🧪 Auto-testing query: {test_query}")
+        # Handle command-line queries
+        if args.query:
+            # Process queries from command line
+            for i, query in enumerate(args.query):
+                if i > 0 and not args.quiet:
+                    print("\n" + "="*80 + "\n")
+                    print(f"📝 Conversation question {i+1}/{len(args.query)}")
+                
+                try:
+                    response = asyncio.run(demo.process_single_query(
+                        query, 
+                        show_details=not args.quiet
+                    ))
+                except Exception as e:
+                    print(f"❌ Error processing query: {str(e)}")
+                    if not args.quiet:
+                        import traceback
+                        traceback.print_exc()
+            
+            # Show conversation summary if multiple queries
+            if len(args.query) > 1 and not args.quiet:
+                print("\n" + "="*80)
+                print("📚 Conversation Summary")
+                print("="*80)
+                print(f"Total queries: {len(args.query)}")
+                print(f"Conversation length: {len(demo.conversation_history)} turns")
         
-        try:
-            asyncio.run(demo.process_query_with_visibility(test_query))
-        except Exception as e:
-            print(f"❌ Main process failed: {str(e)}")
-            asyncio.run(demo._debug_character_router_response(test_query))
-            asyncio.run(demo._debug_session_notes_router_response(test_query))
-        
-        print("\n" + "="*80 + "\n")
-        
-        demo.run_interactive_demo()
+        else:
+            # Interactive mode
+            if not args.no_test and not args.quiet:
+                # Auto-test the example query
+                test_query = "What is Duskryn's alignment and background?"
+                print(f"🧪 Auto-testing query: {test_query}")
+                
+                try:
+                    asyncio.run(demo.process_query_with_visibility(test_query))
+                except Exception as e:
+                    print(f"❌ Main process failed: {str(e)}")
+                    # Try debugging with actual methods
+                    try:
+                        asyncio.run(demo._debug_tool_selector_response(test_query))
+                    except Exception as debug_e:
+                        print(f"Tool selector debug failed: {debug_e}")
+                    try:
+                        asyncio.run(demo._debug_entity_extractor_response(test_query))
+                    except Exception as debug_e:
+                        print(f"Entity extractor debug failed: {debug_e}")
+                
+                print("\n" + "="*80 + "\n")
+            
+            demo.run_interactive_demo()
     except Exception as e:
         print(f"❌ Failed to initialize demo: {str(e)}")
         print("Make sure you have activated the virtual environment and set up your API keys.")

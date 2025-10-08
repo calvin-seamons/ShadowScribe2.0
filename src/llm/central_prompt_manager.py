@@ -57,12 +57,17 @@ AVAILABLE TOOLS:
 TOOL SELECTION GUIDELINES:
 - Select ONLY the tools actually needed to answer the query
 - Most queries need 1-2 tools, rarely 3
+- For specific items, weapons, or inventory: ALWAYS use character_data
+- For NPCs or story characters: Use session_notes
+- For general D&D rules: Use rulebook
 - Examples:
   * "What's my AC?" → character_data only
-  * "Tell me about Elara" → session_notes only (if NPC)
+  * "Tell me about Elara" (if asking about an NPC) → session_notes + character_data
+  * "Tell me about Eldaryth" (if asking about an item/weapon) → character_data only
   * "How does grappling work?" → rulebook only
   * "What persuasion abilities do I have?" → character_data only
   * "Remind me about Elara and my persuasion abilities" → session_notes + character_data
+  * "Tell me about [weapon name]" → character_data (inventory_info)
 
 CHARACTER_DATA INTENTIONS (choose ONE per tool):
 {character_intentions_text}
@@ -109,6 +114,21 @@ Query: "Tell me about my weapon"
 Response: {{
   "tools_needed": [
     {{"tool": "character_data", "intention": "inventory_info", "confidence": 0.95}}
+  ]
+}}
+
+Query: "Tell me about Eldaryth of Regret"
+Response: {{
+  "tools_needed": [
+    {{"tool": "character_data", "intention": "inventory_info", "confidence": 0.9}}
+  ]
+}}
+
+Query: "What can you tell me about the Bag of Holding?"
+Response: {{
+  "tools_needed": [
+    {{"tool": "character_data", "intention": "inventory_info", "confidence": 0.8}},
+    {{"tool": "rulebook", "intention": "item_details", "confidence": 0.7}}
   ]
 }}
 

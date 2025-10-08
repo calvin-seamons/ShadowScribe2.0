@@ -48,7 +48,8 @@ class CharacterQueryRouter:
     def query_character(
         self, 
         user_intentions: List[str], 
-        entities: List[Dict[str, Any]] = None
+        entities: List[Dict[str, Any]] = None,
+        auto_include_sections: List[str] = None
     ) -> CharacterQueryResult:
         """
         Main method to query character information.
@@ -56,6 +57,7 @@ class CharacterQueryRouter:
         Args:
             user_intentions: List of intention strings (max 2) representing what user wants (e.g., ["inventory", "spell_list"])
             entities: List of entity dicts with keys like {'name': 'Longsword', 'type': 'weapon'}
+            auto_include_sections: List of section names to automatically include (from entity resolution)
         
         Returns:
             QueryResult with all relevant character data and nested objects
@@ -63,6 +65,7 @@ class CharacterQueryRouter:
         start_time = time.perf_counter()
         
         entities = entities or []
+        auto_include_sections = auto_include_sections or []
         warnings = []
         
         # Validate intentions count
@@ -134,9 +137,17 @@ class CharacterQueryRouter:
         intention_end = time.perf_counter()
         performance.intention_mapping_ms = (intention_end - intention_start) * 1000
         
-        # 4. Extract required character data (including optional fields)
-        extract_start = time.perf_counter()
+        # 4. Merge auto-include sections with intention-based fields
+        # Auto-include sections are passed from entity resolution in CentralEngine
         all_fields = combined_mapping.required_fields.union(combined_mapping.optional_fields)
+        
+        # Add auto-include sections to the fields set (avoid duplicates)
+        if auto_include_sections:
+            for section in auto_include_sections:
+                all_fields.add(section)
+        
+        # 5. Extract required character data (including optional fields and auto-includes)
+        extract_start = time.perf_counter()
         character_data = self._extract_character_data(character, all_fields)
         extract_end = time.perf_counter()
         performance.data_extraction_ms = (extract_end - extract_start) * 1000
@@ -161,7 +172,8 @@ class CharacterQueryRouter:
             metadata={
                 "intentions": user_intentions,
                 "entities": entities,
-                "required_fields": list(combined_mapping.required_fields)
+                "required_fields": list(combined_mapping.required_fields),
+                "auto_include_sections": auto_include_sections
             },
             warnings=warnings,
             performance_metrics=performance

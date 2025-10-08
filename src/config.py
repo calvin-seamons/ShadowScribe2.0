@@ -9,7 +9,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables at module level - find .env in project root
-project_root = Path(__file__).parent.parent.parent  # Go up from src/rag/config.py to project root
+project_root = Path(__file__).parent.parent  # Go up from src/config.py to project root
 env_path = project_root / '.env'
 load_dotenv(env_path)
 

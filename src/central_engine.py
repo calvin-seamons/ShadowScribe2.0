@@ -114,6 +114,29 @@ class CentralEngine:
                 rulebook_storage=self.rulebook_storage
             )
             print(f"🔧 DEBUG: Entity resolution found {len(entity_results)} entities")
+            print(f"🔧 DEBUG: Entity results detail: {entity_results}")
+            
+            # Step 3.5: Fallback search for entities not found in selected tools
+            empty_entities = [name for name, results in entity_results.items() if not results]
+            if empty_entities:
+                print(f"🔧 DEBUG: Step 3.5 - Fallback search for entities not found: {empty_entities}")
+                all_tools = ['character_data', 'session_notes', 'rulebook']
+                unselected_tools = [t for t in all_tools if t not in selected_tools]
+                
+                if unselected_tools:
+                    fallback_results = self.entity_search_engine.resolve_entities(
+                        entities=[e for e in entity_extractor_output.entities if e.get('name') in empty_entities],
+                        selected_tools=unselected_tools,
+                        character=self.character,
+                        session_notes_storage=self.campaign_session_notes,
+                        rulebook_storage=self.rulebook_storage
+                    )
+                    
+                    # Merge fallback results
+                    for entity_name, results in fallback_results.items():
+                        if results:
+                            entity_results[entity_name] = results
+                            print(f"🔧 DEBUG: Found '{entity_name}' in fallback tools: {[r.section for r in results]}")
         else:
             print("🔧 DEBUG: No entities to resolve")
         
@@ -124,6 +147,28 @@ class CentralEngine:
             tool_selector_output.tools_needed
         )
         print(f"🔧 DEBUG: Entity distribution: {entity_distribution}")
+        print(f"🔧 DEBUG: Tools needed: {tool_selector_output.tools_needed}")
+        
+        # Step 4.5: Add fallback tools if entities were found there but tool wasn't selected
+        tools_with_entities = set(entity_distribution.keys())
+        selected_tool_names = {t["tool"] for t in tool_selector_output.tools_needed}
+        new_tools_needed = tools_with_entities - selected_tool_names
+        
+        if new_tools_needed:
+            print(f"🔧 DEBUG: Step 4.5 - Adding fallback tools with entities: {new_tools_needed}")
+            for tool in new_tools_needed:
+                # Add tool with a generic intention based on tool type
+                intention_map = {
+                    "character_data": "inventory_info",
+                    "session_notes": "general_history", 
+                    "rulebook": "general_info"
+                }
+                tool_selector_output.tools_needed.append({
+                    "tool": tool,
+                    "intention": intention_map.get(tool, "general_info"),
+                    "confidence": 0.75
+                })
+            print(f"🔧 DEBUG: Updated tools needed: {tool_selector_output.tools_needed}")
         
         # Step 5: Execute RAG queries for selected tools
         print(f"🔧 DEBUG: Step 5 - Executing RAG queries...")
@@ -207,6 +252,16 @@ class CentralEngine:
             
             response = await client.generate_json_response(prompt, model=model, **llm_params)
             
+            # Debug: Print raw response
+            print(f"🔍 RAW TOOL SELECTOR RESPONSE:")
+            print(f"   Type: {type(response)}")
+            if hasattr(response, 'content'):
+                print(f"   Content: {response.content}")
+            elif isinstance(response, dict):
+                print(f"   Dict: {response}")
+            else:
+                print(f"   Value: {response}")
+            
             repair_result = JSONRepair.repair_tool_selector_response(response)
             
             if repair_result.was_repaired:
@@ -237,6 +292,16 @@ class CentralEngine:
             llm_params = self.config.get_router_llm_params(model)
             
             response = await client.generate_json_response(prompt, model=model, **llm_params)
+            
+            # Debug: Print raw response
+            print(f"🔍 RAW ENTITY EXTRACTOR RESPONSE:")
+            print(f"   Type: {type(response)}")
+            if hasattr(response, 'content'):
+                print(f"   Content: {response.content}")
+            elif isinstance(response, dict):
+                print(f"   Dict: {response}")
+            else:
+                print(f"   Value: {response}")
             
             repair_result = JSONRepair.repair_entity_extractor_response(response)
             
@@ -280,14 +345,16 @@ class CentralEngine:
         
         for entity_name, results in entity_results.items():
             for result in results:
-                tool = self._section_to_tool(result.section)
-                
-                if tool in selected_tools:
-                    if tool not in tool_entities:
-                        tool_entities[tool] = []
+                # EntitySearchResult has found_in_sections (list), not section (single)
+                for section in result.found_in_sections:
+                    tool = self._section_to_tool(section)
                     
-                    if entity_name not in tool_entities[tool]:
-                        tool_entities[tool].append(entity_name)
+                    if tool in selected_tools:
+                        if tool not in tool_entities:
+                            tool_entities[tool] = []
+                        
+                        if entity_name not in tool_entities[tool]:
+                            tool_entities[tool].append(entity_name)
         
         return tool_entities
     
@@ -376,9 +443,11 @@ class CentralEngine:
         for entity_name in entity_names:
             if entity_name in entity_results:
                 for result in entity_results[entity_name]:
-                    # Only include sections that belong to this tool
-                    if self._section_to_tool(result.section) == tool:
-                        sections.add(result.section)
+                    # EntitySearchResult has found_in_sections (list)
+                    for section in result.found_in_sections:
+                        # Only include sections that belong to this tool
+                        if self._section_to_tool(section) == tool:
+                            sections.add(section)
         
         return list(sections)
 

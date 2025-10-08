@@ -210,6 +210,7 @@ class JSONRepair:
         """
         Helper to get base repair result from any response type.
         Handles string, dict, or LLMResponse objects.
+        Also unwraps nested structures like {"json": {...}} or {"result": {...}}
         """
         repair_details = []
         
@@ -217,7 +218,13 @@ class JSONRepair:
         if hasattr(response, 'content'):
             json_str = response.content
         elif isinstance(response, dict):
-            return RepairResult(data=response, was_repaired=False, repair_details=[])
+            data = response
+            # Unwrap if nested in "json" or "result" keys
+            if len(data) == 1 and ("json" in data or "result" in data):
+                key = "json" if "json" in data else "result"
+                data = data[key]
+                repair_details.append(f"Unwrapped nested '{key}' key from response")
+            return RepairResult(data=data, was_repaired=len(repair_details) > 0, repair_details=repair_details)
         elif isinstance(response, str):
             json_str = response
         else:
@@ -226,7 +233,12 @@ class JSONRepair:
         # Try to parse JSON
         try:
             data = json.loads(json_str)
-            return RepairResult(data=data, was_repaired=False, repair_details=[])
+            # Unwrap if nested in "json" or "result" keys
+            if isinstance(data, dict) and len(data) == 1 and ("json" in data or "result" in data):
+                key = "json" if "json" in data else "result"
+                data = data[key]
+                repair_details.append(f"Unwrapped nested '{key}' key from response")
+            return RepairResult(data=data, was_repaired=len(repair_details) > 0, repair_details=repair_details)
         except json.JSONDecodeError as e:
             repair_details.append(f"JSON parsing failed: {str(e)}")
         
