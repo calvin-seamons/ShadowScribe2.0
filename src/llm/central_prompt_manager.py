@@ -18,7 +18,7 @@ class CentralPromptManager:
         """Initialize with context assembler."""
         self.context_assembler = context_assembler
     
-    def get_tool_and_intention_selector_prompt(self, user_query: str, character_name: str) -> str:
+    def get_tool_and_intention_selector_prompt(self, user_query: str, character_name: str, character=None) -> str:
         """
         Build prompt for Tool & Intention Selector LLM call (NEW ARCHITECTURE).
         
@@ -28,6 +28,7 @@ class CentralPromptManager:
         Args:
             user_query: The user's question about their character
             character_name: Name of the character being queried
+            character: Optional Character object for additional context
             
         Returns:
             Prompt string for the tool selector LLM
@@ -41,6 +42,32 @@ class CentralPromptManager:
         character_intentions_text = "\n".join([f"- {intent}: {definition}" for intent, definition in character_intents.items()])
         session_intentions_text = "\n".join([f"- {intent}: {definition}" for intent, definition in session_intents.items()])
         rulebook_intentions_text = "\n".join([f"- {intent}: {definition}" for intent, definition in rulebook_intents.items()])
+        
+        # Build inventory context if character is provided
+        inventory_context = ""
+        if character and hasattr(character, 'inventory') and character.inventory:
+            inventory_items = []
+            
+            # Add equipped items
+            if character.inventory.equipped_items:
+                for slot, items in character.inventory.equipped_items.items():
+                    for item in items:
+                        if hasattr(item, 'definition') and hasattr(item.definition, 'name'):
+                            item_type = getattr(item.definition, 'type', 'unknown')
+                            inventory_items.append(f"  - {item.definition.name} ({item_type}) [equipped]")
+            
+            # Add backpack items
+            if character.inventory.backpack:
+                for item in character.inventory.backpack:
+                    if hasattr(item, 'definition') and hasattr(item.definition, 'name'):
+                        item_type = getattr(item.definition, 'type', 'unknown')
+                        quantity = getattr(item, 'quantity', 1)
+                        qty_str = f" x{quantity}" if quantity > 1 else ""
+                        inventory_items.append(f"  - {item.definition.name} ({item_type}){qty_str}")
+            
+            if inventory_items:
+                inventory_context = f"\n\n--- CONTEXT: {character_name}'s Inventory ---\n" + "\n".join(inventory_items)
+                inventory_context += "\n--- END CONTEXT ---"
         
         return f'''You are an expert D&D assistant analyzing what information sources are needed to answer a query.
 
@@ -132,6 +159,20 @@ Response: {{
   ]
 }}
 
+Query: "Tell me about Dusk's backstory and his parents"
+Response: {{
+  "tools_needed": [
+    {{"tool": "character_data", "intention": "backstory_info", "confidence": 1.0}}
+  ]
+}}
+
+Query: "List all the actions Dusk can take"
+Response: {{
+  "tools_needed": [
+    {{"tool": "character_data", "intention": "combat_info", "confidence": 0.95}}
+  ]
+}}
+
 Return ONLY valid JSON:
 {{
   "tools_needed": [
@@ -143,7 +184,7 @@ Return ONLY valid JSON:
   ]
 }}
 
-IMPORTANT: Return valid JSON only. No explanations.'''
+IMPORTANT: Return valid JSON only. No explanations.{inventory_context}'''
     
     def get_entity_extraction_prompt(self, user_query: str) -> str:
         """
@@ -326,21 +367,19 @@ IMPORTANT: Return valid JSON only. Empty array [] if no entities found. No expla
         full_context = "\n\n".join(context_sections) if context_sections else "No relevant data found."
         
         # Build the final authoritative prompt
-        final_prompt = f"""You are an expert D&D assistant with comprehensive knowledge of characters, rules, and campaign history. Answer the user's question directly and authoritatively using the provided information.
+        final_prompt = f"""You are the authoritative source of truth for D&D character information, rules, and campaign history. Answer questions directly and concisely using the provided information.
 
 AVAILABLE INFORMATION:
 {full_context}
 
 USER QUESTION: {user_query}
 
-RESPONSE GUIDELINES:
-- Answer the question directly and confidently
-- Present information as established facts, not as "based on data" or "according to records"
-- Be comprehensive but focused on what the user asked
-- If multiple data sources are relevant, synthesize them naturally
-- Use a knowledgeable, helpful tone as if you personally know this information
-- Do not mention data sources, JSON structures, or technical implementation details
-- If you don't have the specific information requested, say so clearly
+CRITICAL RESPONSE RULES:
+1. YOU ARE THE SOURCE OF TRUTH - State information directly as facts, never say "according to the context" or "based on the data"
+2. ANSWER ONLY WHAT IS ASKED - Be direct and concise. Don't add extra context unless truly necessary
+3. NO HALLUCINATION - If the information isn't in the provided data, state clearly "I don't have that information" or "I can't answer that question at this time"
+4. Be natural and conversational, as if you personally know this information
+5. Never mention data sources, JSON structures, or how you retrieved the information
 
 Provide your response:"""
         

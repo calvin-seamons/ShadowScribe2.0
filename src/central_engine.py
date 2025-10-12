@@ -391,7 +391,11 @@ class CentralEngine:
         Determines which RAG tools are needed and what intention to use for each.
         """
         try:
-            prompt = self.prompt_manager.get_tool_and_intention_selector_prompt(user_query, character_name)
+            prompt = self.prompt_manager.get_tool_and_intention_selector_prompt(
+                user_query, 
+                character_name,
+                character=self.character
+            )
             
             provider = self.config.router_llm_provider
             client = self.llm_clients.get(provider) or self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
