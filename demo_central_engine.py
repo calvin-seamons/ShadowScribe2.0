@@ -37,7 +37,6 @@ class InteractiveCentralEngineDemo:
             verbose: Whether to show detailed initialization output
         """
         self.verbose = verbose
-        self.conversation_history: List[Dict[str, str]] = []
         
         if verbose:
             print("🚀 Initializing ShadowScribe2.0 Central Engine...")
@@ -125,12 +124,6 @@ class InteractiveCentralEngineDemo:
         if character_name is None:
             character_name = self.character_name
         
-        # Add to conversation history
-        self.conversation_history.append({
-            "role": "user",
-            "content": user_query
-        })
-        
         if show_details:
             print("=" * 80)
             print(f"🎯 PROCESSING QUERY: '{user_query}'")
@@ -162,12 +155,6 @@ class InteractiveCentralEngineDemo:
             return f"Error: {str(e)}"
         
         execution_time = time.time() - start_time
-        
-        # Add response to conversation history
-        self.conversation_history.append({
-            "role": "assistant",
-            "content": final_response
-        })
         
         if show_details:
             print(f"\n🏃 Total execution time: {execution_time:.2f}s")
@@ -384,7 +371,8 @@ Examples:
                 print("📚 Conversation Summary")
                 print("="*80)
                 print(f"Total queries: {len(args.query)}")
-                print(f"Conversation length: {len(demo.conversation_history)} turns")
+                history = demo.engine.get_conversation_history()
+                print(f"Conversation length: {len(history)} turns")
         
         else:
             # Interactive mode

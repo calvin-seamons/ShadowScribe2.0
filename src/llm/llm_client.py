@@ -92,15 +92,34 @@ class OpenAILLMClient(LLMClient):
         """
         Stream response chunks from OpenAI.
         Yields text chunks as they arrive.
+        
+        Args:
+            prompt: The user prompt (current message)
+            conversation_history: Optional list of previous conversation turns
+            **kwargs: Additional parameters
         """
         try:
             model = kwargs.get("model", self.default_model)
             cfg = get_config()
+            conversation_history = kwargs.get("conversation_history", [])
+            
+            # Build messages array with conversation history
+            messages = []
+            
+            # Add previous conversation turns (excluding the current prompt)
+            for turn in conversation_history:
+                messages.append({
+                    "role": turn["role"],
+                    "content": turn["content"]
+                })
+            
+            # Add current user prompt
+            messages.append({"role": "user", "content": prompt})
             
             # Base parameters
             base_params = {
                 "model": model,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": messages,
                 "stream": True
             }
             
@@ -236,19 +255,38 @@ class AnthropicLLMClient(LLMClient):
         """
         Stream response chunks from Anthropic.
         Yields text chunks as they arrive.
+        
+        Args:
+            prompt: The user prompt (current message)
+            conversation_history: Optional list of previous conversation turns
+            **kwargs: Additional parameters
         """
         try:
             model = kwargs.get("model", self.default_model)
             max_tokens = kwargs.get("max_tokens", 2000)
             temperature = kwargs.get("temperature", 0.3)
             stop = kwargs.get("stop")
+            conversation_history = kwargs.get("conversation_history", [])
+            
+            # Build messages array with conversation history
+            messages = []
+            
+            # Add previous conversation turns (excluding the current prompt)
+            for turn in conversation_history:
+                messages.append({
+                    "role": turn["role"],
+                    "content": turn["content"]
+                })
+            
+            # Add current user prompt
+            messages.append({"role": "user", "content": prompt})
 
             async with self.client.messages.stream(
                 model=model,
                 max_tokens=max_tokens,
                 temperature=temperature,
                 stop_sequences=stop if isinstance(stop, list) else ([stop] if stop else None),
-                messages=[{"role": "user", "content": prompt}]
+                messages=messages
             ) as stream:
                 async for text in stream.text_stream:
                     yield text

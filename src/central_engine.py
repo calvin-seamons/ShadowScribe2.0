@@ -69,6 +69,9 @@ class CentralEngine:
         self.character_router = CharacterQueryRouter(character) if character else None
         self.rulebook_router = RulebookQueryRouter(rulebook_storage) if rulebook_storage else None
         self.session_notes_router = SessionNotesQueryRouter(campaign_session_notes) if campaign_session_notes else None
+        
+        # Conversation history tracking
+        self.conversation_history: List[Dict[str, str]] = []
     
     @classmethod
     def create_from_config(cls, prompt_manager, character=None, 
@@ -76,6 +79,26 @@ class CentralEngine:
         """Create CentralEngine instance using default configuration."""
         llm_clients = LLMClientFactory.create_default_clients()
         return cls(llm_clients, prompt_manager, character, rulebook_storage, campaign_session_notes)
+    
+    def add_conversation_turn(self, role: str, content: str):
+        """Add a turn to the conversation history.
+        
+        Args:
+            role: Either "user" or "assistant"
+            content: The message content
+        """
+        self.conversation_history.append({
+            "role": role,
+            "content": content
+        })
+    
+    def clear_conversation_history(self):
+        """Clear all conversation history."""
+        self.conversation_history = []
+    
+    def get_conversation_history(self) -> List[Dict[str, str]]:
+        """Get the current conversation history."""
+        return self.conversation_history.copy()
     
     async def process_query(self, user_query: str, character_name: str) -> str:
         """
@@ -195,6 +218,9 @@ class CentralEngine:
         """
         print(f"🔧 DEBUG: Processing query (streaming): '{user_query}'")
         
+        # Add user query to conversation history
+        self.add_conversation_turn("user", user_query)
+        
         # Step 1: Make 2 parallel LLM calls
         print("🔧 DEBUG: Step 1 - Making parallel LLM calls (tool selector + entity extractor)")
         tool_selector_output, entity_extractor_output = await asyncio.gather(
@@ -288,8 +314,15 @@ class CentralEngine:
         
         # Step 6: Stream final response
         print(f"🔧 DEBUG: Step 6 - Streaming final response...")
+        
+        # Capture the full response as we stream it
+        full_response = ""
         async for chunk in self.generate_final_response_stream(raw_results, user_query):
+            full_response += chunk
             yield chunk
+        
+        # Add assistant response to conversation history
+        self.add_conversation_turn("assistant", full_response)
     
     async def generate_final_response(self, raw_results: Dict[str, Any], user_query: str) -> str:
         """
@@ -371,10 +404,11 @@ class CentralEngine:
             # Get LLM parameters from config
             llm_params = self.config.get_final_llm_params(model)
             
-            # Stream the response
+            # Stream the response with conversation history
             async for chunk in final_client.generate_response_stream(
                 final_prompt,
                 model=model,
+                conversation_history=self.conversation_history[:-1],  # Exclude current user query (already in prompt)
                 **llm_params
             ):
                 yield chunk
