@@ -160,24 +160,60 @@ if __name__ == "__main__":
 - **`src/character_creation/parsing/`**: Specialized parsers for different character data sections (core, actions, features, inventory, spells, background)
 - **`src/utils/character_manager.py`**: Character CRUD operations and pickle persistence
 - **`src/utils/character_inspector.py`**: Debugging/analysis tool with multiple output formats
+- **`demo_central_engine.py`**: Interactive demo and testing tool for the complete RAG system - **THE BEST way to test changes** (see Testing with Demo section below)
+- **`scripts/export_character_to_json.py`**: Export parsed Character objects from D&D Beyond JSON to readable JSON format in knowledge base
 - **`knowledge_base/legacy_json/Duskryn_Nightwarden/`**: Example character data as legacy JSON files
 - **`saved_characters/`**: Pickle storage for Character objects
 
 ## Testing & Debugging Commands
+
+### Interactive Demo - Primary Testing Tool
+**`demo_central_engine.py` is THE BEST way to test changes to the RAG system.** It provides a complete end-to-end testing environment with real LLM calls and full conversation history support.
+
 ```bash
 # ALWAYS activate virtual environment FIRST
 .\.venv\Scripts\Activate.ps1  # Windows PowerShell
-# OR .venv\Scripts\activate.bat  # Windows Command Prompt
-# OR source .venv/bin/activate  # Linux/Mac
 
+# Interactive mode - best for exploratory testing and conversations
+python demo_central_engine.py
+
+# Single query test - quick verification
+python demo_central_engine.py -q "What is my AC?"
+
+# Multiple sequential queries - test conversation history
+python demo_central_engine.py -q "What is my AC?" -q "What about my HP?"
+
+# Quiet mode - minimal output for CI/automation
+python demo_central_engine.py -q "Describe the last session" --quiet
+```
+
+**Why use demo_central_engine.py for testing:**
+- ✅ Full RAG pipeline: Tests routing, entity extraction, context assembly, and final response
+- ✅ Conversation history: Maintains context across multiple queries
+- ✅ Real LLM calls: Uses actual API keys and models from config
+- ✅ Streaming responses: Tests async streaming behavior
+- ✅ Performance metrics: Shows execution time and response length
+- ✅ Debug mode: Built-in error handling with detailed debug output
+- ✅ No setup required: Automatically loads character, rulebook, and session notes
+
+**When to use demo vs specific scripts:**
+- Use `demo_central_engine.py` for: RAG system changes, prompt testing, conversation flow, integration testing
+- Use specific scripts for: One-time data processing, bulk operations, specific tool testing
+
+### Other Testing Commands
+```bash
 # List all saved characters
 python -m scripts.run_inspector --list
 
 # Debug character data structure
 python -m scripts.run_inspector "Character Name" --format text --filter field_name
 
-# Create character from D&D Beyond JSON (modern approach)
+# Create character from D&D Beyond JSON
 python -m src.character_creation.character_builder <path_to_dndbeyond_json>
+
+# Export parsed character to JSON (for knowledge base)
+python -m scripts.export_character_to_json
+python -m scripts.export_character_to_json --input custom.json --output my_char.json
 
 # Run character manager demo
 python -m scripts.run_manager
