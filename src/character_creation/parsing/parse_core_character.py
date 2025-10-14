@@ -284,27 +284,54 @@ class DNDBeyondCoreParser:
         )
     
     def _calculate_armor_class(self) -> int:
-        """Calculate armor class from equipped items and bonuses."""
+        """Calculate armor class from equipped items and bonuses.
+        
+        AC Calculation:
+        1. Start with base armor AC (or 10 if no armor)
+        2. Add DEX modifier (limited by armor type)
+        3. Add shield AC bonus (+2 for standard shield)
+        4. Add any magical bonuses from equipped items
+        """
         base_ac = 10
         dex_mod = self._get_ability_modifier('dexterity')
         
-        # Look for equipped armor
+        # Look for equipped armor and shields
         inventory = self.data.get('inventory', [])
         armor_ac = None
+        shield_ac = 0
         max_dex_bonus = None
         
         for item in inventory:
-            if item.get('equipped') and item.get('definition', {}).get('armorClass'):
-                armor_def = item['definition']
-                if armor_def.get('armorClass'):
-                    armor_ac = armor_def['armorClass']
-                    # Some armors limit DEX bonus
-                    if armor_def.get('type') in ['Heavy Armor']:
-                        max_dex_bonus = 0
-                    elif armor_def.get('type') in ['Medium Armor']:
-                        max_dex_bonus = 2
+            if not item.get('equipped'):
+                continue
+                
+            item_def = item.get('definition', {})
+            item_ac = item_def.get('armorClass')
+            
+            if not item_ac:
+                continue
+            
+            # Check if this is a shield
+            armor_type = item_def.get('type') or ''
+            filter_type = item_def.get('filterType') or ''
+            armor_type_id = item_def.get('armorTypeId')
+            
+            if armor_type == 'Shield' or (filter_type == 'Armor' and armor_type_id == 4):
+                # This is a shield - add its AC bonus
+                shield_ac += item_ac
+            elif armor_ac is None:
+                # This is body armor - use as base AC
+                armor_ac = item_ac
+                
+                # Determine DEX modifier limits based on armor type ID
+                # ArmorTypeId: 1=Light, 2=Medium, 3=Heavy, 4=Shield
+                if armor_type_id == 3:  # Heavy Armor
+                    max_dex_bonus = 0
+                elif armor_type_id == 2:  # Medium Armor
+                    max_dex_bonus = 2
+                # Light armor (armorTypeId == 1) has no DEX limit (None)
         
-        # Calculate AC
+        # Calculate base AC with DEX modifier
         if armor_ac is not None:
             ac = armor_ac
             if max_dex_bonus is not None:
@@ -312,9 +339,13 @@ class DNDBeyondCoreParser:
             else:
                 ac += dex_mod
         else:
+            # No armor equipped - use base AC + DEX
             ac = base_ac + dex_mod
         
-        # Add AC bonuses from modifiers
+        # Add shield AC
+        ac += shield_ac
+        
+        # Add AC bonuses from magical items and other modifiers
         ac += self._get_ac_bonuses()
         
         return max(ac, 1)  # AC can't be less than 1

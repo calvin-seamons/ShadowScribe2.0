@@ -48,7 +48,8 @@ AnthropicModel = Literal[
     "claude-opus-4-1",            # Claude 4 Opus (alias)
     "claude-opus-4-20250514",     # Claude 4 Opus (May 2025)
     "claude-opus-4-0",            # Claude 4 Opus (alias)
-    "claude-sonnet-4-20250514",   # Claude 4 Sonnet
+    "claude-sonnet-4-5-20250929",   # Claude 4.5 Sonnet (Sept 2025)
+    "claude-sonnet-4-20250514",   # Claude 4 Sonnet (May 2025)
     "claude-sonnet-4-0",          # Claude 4 Sonnet (alias)
     
     # Claude 3.7 models - Advanced reasoning
@@ -86,7 +87,7 @@ class RAGConfig:
     
     # Anthropic Models  
     anthropic_router_model: str = "claude-3-5-haiku-latest"   # Fast, cost-effective for routing
-    anthropic_final_model: str = "claude-3-5-haiku-latest"    # Latest, highest quality Claude 4
+    anthropic_final_model: str = "claude-sonnet-4-5-20250929"    # Latest Claude 4.5 Sonnet (Sept 2025)
     
     # Embedding Model Settings
     embedding_model: EmbeddingModel = "text-embedding-3-small"  # Default: fast and good
@@ -232,7 +233,7 @@ class RAGConfig:
             "claude_4": [
                 "claude-opus-4-1-20250805", "claude-opus-4-1", 
                 "claude-opus-4-20250514", "claude-opus-4-0",
-                "claude-sonnet-4-20250514", "claude-sonnet-4-0"
+                "claude-sonnet-4-5-20250929", "claude-sonnet-4-20250514", "claude-sonnet-4-0"
             ],
             "claude_3_7": [
                 "claude-3-7-sonnet-20250219", "claude-3-7-sonnet-latest"

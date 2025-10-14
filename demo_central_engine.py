@@ -37,7 +37,6 @@ class InteractiveCentralEngineDemo:
             verbose: Whether to show detailed initialization output
         """
         self.verbose = verbose
-        self.conversation_history: List[Dict[str, str]] = []
         
         if verbose:
             print("🚀 Initializing ShadowScribe2.0 Central Engine...")
@@ -125,12 +124,6 @@ class InteractiveCentralEngineDemo:
         if character_name is None:
             character_name = self.character_name
         
-        # Add to conversation history
-        self.conversation_history.append({
-            "role": "user",
-            "content": user_query
-        })
-        
         if show_details:
             print("=" * 80)
             print(f"🎯 PROCESSING QUERY: '{user_query}'")
@@ -162,12 +155,6 @@ class InteractiveCentralEngineDemo:
             return f"Error: {str(e)}"
         
         execution_time = time.time() - start_time
-        
-        # Add response to conversation history
-        self.conversation_history.append({
-            "role": "assistant",
-            "content": final_response
-        })
         
         if show_details:
             print(f"\n🏃 Total execution time: {execution_time:.2f}s")
@@ -208,14 +195,14 @@ class InteractiveCentralEngineDemo:
             
             print(f"Provider: {provider}, Model: {model}")
             print(f"LLM Params: {llm_params}")
-            print("\nPrompt Preview:")
-            print("-" * 30)
-            print(tool_selector_prompt[:500] + "..." if len(tool_selector_prompt) > 500 else tool_selector_prompt)
-            print("-" * 30)
+            print("\n📝 FULL PROMPT:")
+            print("-" * 80)
+            print(tool_selector_prompt)
+            print("-" * 80)
             
             # Make the raw call
             response = await client.generate_json_response(tool_selector_prompt, model=model, **llm_params)
-            print("\nRAW RESPONSE:")
+            print("\n📤 RAW LLM RESPONSE (before any JSON repair):")
             print(json.dumps(response, indent=2))
             
         except Exception as e:
@@ -297,11 +284,16 @@ class InteractiveCentralEngineDemo:
                     asyncio.run(self.process_query_with_visibility(user_query))
                 except Exception as e:
                     print(f"❌ Error processing query: {str(e)}")
-                    # Debug raw LLM response
+                    print("\n🔍 Running debug to show raw LLM responses...")
+                    # Debug raw LLM responses
                     try:
                         asyncio.run(self._debug_tool_selector_response(user_query))
                     except Exception as debug_e:
-                        print(f"Debug failed: {debug_e}")
+                        print(f"Tool selector debug failed: {debug_e}")
+                    try:
+                        asyncio.run(self._debug_entity_extractor_response(user_query))
+                    except Exception as debug_e:
+                        print(f"Entity extractor debug failed: {debug_e}")
                 
                 print("\n" + "="*80 + "\n")
                 
@@ -379,31 +371,11 @@ Examples:
                 print("📚 Conversation Summary")
                 print("="*80)
                 print(f"Total queries: {len(args.query)}")
-                print(f"Conversation length: {len(demo.conversation_history)} turns")
+                history = demo.engine.get_conversation_history()
+                print(f"Conversation length: {len(history)} turns")
         
         else:
             # Interactive mode
-            if not args.no_test and not args.quiet:
-                # Auto-test the example query
-                test_query = "What is Duskryn's alignment and background?"
-                print(f"🧪 Auto-testing query: {test_query}")
-                
-                try:
-                    asyncio.run(demo.process_query_with_visibility(test_query))
-                except Exception as e:
-                    print(f"❌ Main process failed: {str(e)}")
-                    # Try debugging with actual methods
-                    try:
-                        asyncio.run(demo._debug_tool_selector_response(test_query))
-                    except Exception as debug_e:
-                        print(f"Tool selector debug failed: {debug_e}")
-                    try:
-                        asyncio.run(demo._debug_entity_extractor_response(test_query))
-                    except Exception as debug_e:
-                        print(f"Entity extractor debug failed: {debug_e}")
-                
-                print("\n" + "="*80 + "\n")
-            
             demo.run_interactive_demo()
     except Exception as e:
         print(f"❌ Failed to initialize demo: {str(e)}")

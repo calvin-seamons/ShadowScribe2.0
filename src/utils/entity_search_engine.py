@@ -302,15 +302,15 @@ class EntitySearchEngine:
         # Search in backstory sections
         if character.backstory.sections:
             for idx, section in enumerate(character.backstory.sections):
-                # Search in section title
-                if section.title:
-                    match_result = self.match_entity_name(entity_name, section.title)
+                # Search in section heading
+                if section.heading:
+                    match_result = self.match_entity_name(entity_name, section.heading)
                     if match_result:
                         confidence, strategy, matched_text = match_result
                         if confidence > best_confidence:
                             best_match = matched_text
                             best_confidence = confidence
-                            best_section = f'backstory.sections[{idx}].title'
+                            best_section = f'backstory.sections[{idx}].heading'
                             best_strategy = strategy
                 
                 # Search in section content
@@ -321,13 +321,13 @@ class EntitySearchEngine:
                     if normalized_entity in normalized_content:
                         confidence = 0.85  # High confidence for content matches
                         if confidence > best_confidence:
-                            best_match = section.title or f"Section {idx}"
+                            best_match = section.heading or f"Section {idx}"
                             best_confidence = confidence
                             best_section = f'backstory.sections[{idx}].content'
                             best_strategy = "content_match"
         
         # Return result if confidence above threshold
-        if best_match and best_confidence >= self.fuzzy_threshold:
+        if best_match and best_confidence >= self.threshold:
             return EntitySearchResult(
                 entity_name=entity_name,
                 found_in_sections=[best_section],
