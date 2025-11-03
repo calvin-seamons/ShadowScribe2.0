@@ -208,28 +208,46 @@ class CentralEngine:
         
         return final_response
     
-    async def process_query_stream(self, user_query: str, character_name: str):
+    async def process_query_stream(self, user_query: str, character_name: str, metadata_callback=None):
         """
         Main processing pipeline with streaming final response.
         Performs all routing and RAG queries, then streams the final response.
+        
+        Args:
+            user_query: User's question
+            character_name: Name of the character
+            metadata_callback: Optional async callback function for emitting metadata events.
+                              Called with (event_type: str, data: dict)
         
         Yields:
             str: Chunks of the final response as they are generated
         """
         print(f"🔧 DEBUG: Processing query (streaming): '{user_query}'")
         
+        # Track timing for performance metrics
+        start_time = time.time()
+        timing = {}
+        
         # Add user query to conversation history
         self.add_conversation_turn("user", user_query)
         
         # Step 1: Make 2 parallel LLM calls
         print("🔧 DEBUG: Step 1 - Making parallel LLM calls (tool selector + entity extractor)")
+        step1_start = time.time()
         tool_selector_output, entity_extractor_output = await asyncio.gather(
             self._call_tool_selector(user_query, character_name),
             self._call_entity_extractor(user_query)
         )
+        timing['routing_and_entities'] = (time.time() - step1_start) * 1000  # Convert to ms
         
         print(f"🔧 DEBUG: Tool selector returned {len(tool_selector_output.tools_needed)} tools")
         print(f"🔧 DEBUG: Entity extractor returned {len(entity_extractor_output.entities)} entities")
+        
+        # Emit routing metadata
+        if metadata_callback:
+            await metadata_callback('routing_metadata', {
+                'tools_needed': tool_selector_output.tools_needed
+            })
         
         # Step 2: Derive selected tools from tool selector output
         selected_tools = [t["tool"] for t in tool_selector_output.tools_needed]
@@ -237,6 +255,7 @@ class CentralEngine:
         
         # Step 3: Resolve entities ONLY in selected tools
         print(f"🔧 DEBUG: Step 3 - Resolving entities in selected tools...")
+        step3_start = time.time()
         entity_results = {}
         if entity_extractor_output.entities:
             entity_results = self.entity_search_engine.resolve_entities(
@@ -303,23 +322,54 @@ class CentralEngine:
                 })
             print(f"🔧 DEBUG: Updated tools needed: {tool_selector_output.tools_needed}")
         
+        timing['entity_resolution'] = (time.time() - step3_start) * 1000
+        
+        # Emit entities metadata
+        if metadata_callback:
+            await metadata_callback('entities_metadata', {
+                'entities': [
+                    {
+                        'name': name,
+                        'found_in_sections': [r.found_in_sections for r in results],
+                        'match_confidence': [r.match_confidence for r in results],
+                        'match_strategy': [r.match_strategy for r in results]
+                    }
+                    for name, results in entity_results.items()
+                ]
+            })
+        
         # Step 5: Execute RAG queries for selected tools
         print(f"🔧 DEBUG: Step 5 - Executing RAG queries...")
+        step5_start = time.time()
         raw_results = await self._execute_rag_queries(
             tool_selector_output.tools_needed,
             entity_distribution,
             entity_results,
             user_query
         )
+        timing['rag_queries'] = (time.time() - step5_start) * 1000
+        
+        # Emit context sources metadata
+        if metadata_callback:
+            context_sources = self._extract_context_sources(raw_results)
+            await metadata_callback('context_sources', context_sources)
         
         # Step 6: Stream final response
         print(f"🔧 DEBUG: Step 6 - Streaming final response...")
+        step6_start = time.time()
         
         # Capture the full response as we stream it
         full_response = ""
         async for chunk in self.generate_final_response_stream(raw_results, user_query):
             full_response += chunk
             yield chunk
+        
+        timing['response_generation'] = (time.time() - step6_start) * 1000
+        timing['total'] = (time.time() - start_time) * 1000
+        
+        # Emit performance metrics
+        if metadata_callback:
+            await metadata_callback('performance_metrics', {'timing': timing})
         
         # Add assistant response to conversation history
         self.add_conversation_turn("assistant", full_response)
@@ -547,6 +597,49 @@ class CentralEngine:
                             tool_entities[tool].append(entity_name)
         
         return tool_entities
+    
+    def _extract_context_sources(self, raw_results: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Extract structured context sources from RAG results for metadata display.
+        
+        Returns:
+            dict with character_fields, rulebook_sections, session_notes keys
+        """
+        context_sources = {
+            'character_fields': [],
+            'rulebook_sections': [],
+            'session_notes': []
+        }
+        
+        # Extract character data fields
+        if 'character_data' in raw_results:
+            char_result = raw_results['character_data']
+            if hasattr(char_result, 'metadata') and 'required_fields' in char_result.metadata:
+                context_sources['character_fields'] = char_result.metadata['required_fields']
+        
+        # Extract rulebook sections
+        if 'rulebook' in raw_results:
+            rulebook_results = raw_results['rulebook']
+            if isinstance(rulebook_results, list):
+                for result in rulebook_results:
+                    if hasattr(result, 'section'):
+                        context_sources['rulebook_sections'].append({
+                            'title': result.section.title,
+                            'id': result.section.id,
+                            'score': getattr(result, 'score', 0)
+                        })
+        
+        # Extract session notes
+        if 'session_notes' in raw_results:
+            session_result = raw_results['session_notes']
+            if hasattr(session_result, 'contexts'):
+                for ctx in session_result.contexts:
+                    context_sources['session_notes'].append({
+                        'session_number': ctx.session_number,
+                        'relevance_score': getattr(ctx, 'relevance_score', 0)
+                    })
+        
+        return context_sources
     
     async def _execute_rag_queries(
         self,

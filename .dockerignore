@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+*.egg-info/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+WARP.md
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
+
+# Frontend (not needed in API container)
+frontend/
+node_modules/
+
+# Database
+*.db
+*.sqlite
+
+# Environment
+.env.example
