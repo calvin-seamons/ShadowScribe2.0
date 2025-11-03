@@ -18,7 +18,7 @@ class CentralPromptManager:
         """Initialize with context assembler."""
         self.context_assembler = context_assembler
     
-    def get_tool_and_intention_selector_prompt(self, user_query: str, character_name: str, character=None) -> str:
+    def get_tool_and_intention_selector_prompt(self, user_query: str, character_name: str, character=None, conversation_history=None) -> str:
         """
         Build prompt for Tool & Intention Selector LLM call (NEW ARCHITECTURE).
         
@@ -29,6 +29,7 @@ class CentralPromptManager:
             user_query: The user's question about their character
             character_name: Name of the character being queried
             character: Optional Character object for additional context
+            conversation_history: Previous conversation turns for context
             
         Returns:
             Prompt string for the tool selector LLM
@@ -69,12 +70,24 @@ class CentralPromptManager:
                 inventory_context = f"\n\n--- CONTEXT: {character_name}'s Inventory ---\n" + "\n".join(inventory_items)
                 inventory_context += "\n--- END CONTEXT ---"
         
-        return f'''You are an expert D&D assistant analyzing what information sources are needed to answer a query.
+        history_context = ""
+        if conversation_history and len(conversation_history) > 0:
+            history_context = "\n\n--- CONVERSATION HISTORY ---\n"
+            for turn in conversation_history[-5:]:
+                role = turn.get('role', 'unknown').upper()
+                content = turn.get('content', '')
+                history_context += f"{role}: {content}\n"
+            history_context += "--- END HISTORY ---\n"
+        
+        return f'''You are an expert D&D assistant analyzing what information sources are needed to answer a query.{history_context}
 
-Query: "{user_query}"
+Current Query: "{user_query}"
 Character: "{character_name}"
 
 TASK: Determine which RAG tools are needed and what intention to use for each tool.
+
+⚠️ CRITICAL: Select ONLY ONE intention per tool unless the query explicitly asks multiple distinct questions.
+Most queries need just ONE tool with ONE intention. Multi-tool responses should be rare.
 
 AVAILABLE TOOLS:
 1. character_data - Character stats, inventory, spells, abilities, features
@@ -186,7 +199,7 @@ Return ONLY valid JSON:
 
 IMPORTANT: Return valid JSON only. No explanations.{inventory_context}'''
     
-    def get_entity_extraction_prompt(self, user_query: str) -> str:
+    def get_entity_extraction_prompt(self, user_query: str, conversation_history=None) -> str:
         """
         Build prompt for Entity Extraction LLM call (NEW ARCHITECTURE).
         
@@ -196,13 +209,23 @@ IMPORTANT: Return valid JSON only. No explanations.{inventory_context}'''
         
         Args:
             user_query: The user's question
+            conversation_history: Previous conversation turns for context
             
         Returns:
             Prompt string for the entity extractor LLM
         """
-        return f'''You are an expert D&D entity extractor. Extract ALL specific named entities from this query.
+        history_context = ""
+        if conversation_history and len(conversation_history) > 0:
+            history_context = "\n\n--- CONVERSATION HISTORY ---\n"
+            for turn in conversation_history[-5:]:
+                role = turn.get('role', 'unknown').upper()
+                content = turn.get('content', '')
+                history_context += f"{role}: {content}\n"
+            history_context += "--- END HISTORY ---\n"
+        
+        return f'''You are an expert D&D entity extractor. Extract ALL specific named entities from this query.{history_context}
 
-Query: "{user_query}"
+Current Query: "{user_query}"
 
 TASK: Extract entity names with confidence scores. DO NOT determine where to search - that's handled separately.
 

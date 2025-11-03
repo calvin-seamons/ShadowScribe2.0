@@ -172,7 +172,10 @@ class SessionNotesQueryRouter:
     
     def _get_relevant_sessions(self, intention: str, entities: List[Entity], context_hints: List[str]) -> List[SessionNotes]:
         """Get sessions relevant to the query based on intention and entities"""
-        all_sessions = self.campaign_storage.get_all_sessions()
+        all_processed_sessions = self.campaign_storage.get_all_sessions()
+        
+        # Extract SessionNotes from ProcessedSession objects
+        all_sessions = [ps.raw_notes for ps in all_processed_sessions if ps.raw_notes]
         
         # Handle temporal filters
         sessions = self._apply_temporal_filters(all_sessions, context_hints)
@@ -539,6 +542,10 @@ class SessionNotesQueryRouter:
     def _handle_party_dynamics(self, session: SessionNotes, context: SessionNotesContext, entities: List[Entity], context_hints: List[str]) -> None:
         """Handle party dynamics queries"""
         dynamics = {}
+        
+        # Include player characters information
+        if session.player_characters:
+            dynamics["party_members"] = session.player_characters
         
         if session.party_conflicts:
             dynamics["conflicts"] = session.party_conflicts

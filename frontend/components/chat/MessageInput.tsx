@@ -28,7 +28,7 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
   }
   
   return (
-    <div className="border-t p-4">
+    <div className="border-t bg-card p-4">
       <form onSubmit={handleSubmit} className="flex gap-2">
         <textarea
           value={input}
@@ -36,13 +36,13 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
           onKeyDown={handleKeyDown}
           placeholder="Ask about your character..."
           disabled={isStreaming}
-          className="flex-1 rounded-lg border bg-background px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+          className="flex-1 rounded-lg border bg-background px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 max-h-32"
           rows={1}
         />
         <button
           type="submit"
           disabled={!input.trim() || isStreaming}
-          className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors self-end"
         >
           {isStreaming ? 'Sending...' : 'Send'}
         </button>

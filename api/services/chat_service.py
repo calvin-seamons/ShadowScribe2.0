@@ -66,6 +66,11 @@ class ChatService:
         self._engines[character_name] = engine
         return engine
     
+    def clear_conversation_history(self, character_name: str):
+        """Clear conversation history for a character."""
+        if character_name in self._engines:
+            self._engines[character_name].clear_conversation_history()
+    
     async def process_query_stream(
         self, 
         user_query: str, 

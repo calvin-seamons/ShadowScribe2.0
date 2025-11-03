@@ -295,6 +295,7 @@ class SessionMetadata:
     session_id: str
     session_date: datetime
     title: str
+    session_number: Optional[int] = None
     file_path: Optional[str] = None
     processed_date: datetime = field(default_factory=datetime.now)
 
@@ -306,6 +307,11 @@ class ProcessedSession:
     summary: str
     entities_mentioned: List[str] = field(default_factory=list)
     raw_notes: Optional[SessionNotes] = None
+    
+    @property
+    def session_number(self) -> Optional[int]:
+        """Get session number from metadata"""
+        return self.metadata.session_number if self.metadata else None
 
 @dataclass
 class SessionEntity:

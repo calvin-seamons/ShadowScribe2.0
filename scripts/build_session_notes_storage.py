@@ -14,7 +14,9 @@ sys.path.insert(0, str(project_root))
 from src.rag.session_notes.session_notes_parser import SessionNotesParser, parse_session_notes_directory
 from src.rag.session_notes.session_notes_storage import SessionNotesStorage
 from src.rag.session_notes.session_notes_query_router import SessionNotesQueryRouter
-from src.rag.session_notes.session_types import UserIntention, EntityType, Entity
+from src.rag.session_notes.session_types import (
+    UserIntention, EntityType, Entity, SessionMetadata, ProcessedSession, SessionEntity
+)
 
 
 def main():
@@ -56,7 +58,54 @@ def main():
     print("\nStoring sessions and generating embeddings...")
     for session_note in session_notes:
         print(f"  Processing Session {session_note.session_number}...")
-        campaign.add_session(session_note)
+        
+        # Convert SessionNotes to ProcessedSession
+        session_id = f"session_{session_note.session_number}"
+        
+        # Create metadata
+        metadata = SessionMetadata(
+            session_id=session_id,
+            session_date=session_note.date,
+            title=session_note.title,
+            session_number=session_note.session_number
+        )
+        
+        # Create processed session
+        processed = ProcessedSession(
+            metadata=metadata,
+            content=session_note.summary,  # Use summary as content for now
+            summary=session_note.summary,
+            raw_notes=session_note
+        )
+        
+        # Add to campaign storage
+        campaign.sessions[session_id] = processed
+        
+        # Extract and store entities
+        all_entities = (
+            session_note.player_characters +
+            session_note.npcs +
+            session_note.locations +
+            session_note.items
+        )
+        
+        for entity in all_entities:
+            entity_key = entity.name
+            if entity_key not in campaign.entities:
+                # Create new SessionEntity
+                session_entity = SessionEntity(
+                    name=entity.name,
+                    entity_type=entity.entity_type.value,
+                    description="",
+                    first_mentioned=session_note.session_number,
+                    sessions_appeared=[session_note.session_number],
+                    aliases=entity.aliases if hasattr(entity, 'aliases') else []
+                )
+                campaign.entities[entity_key] = session_entity
+            else:
+                # Update existing entity
+                if session_note.session_number not in campaign.entities[entity_key].sessions_appeared:
+                    campaign.entities[entity_key].sessions_appeared.append(session_note.session_number)
     
     # Save campaign to disk
     print("\nSaving campaign to disk...")
@@ -80,49 +129,52 @@ def main():
     # Test NPC interaction query
     print("\nTest 1: NPC Interactions")
     results = query_engine.query(
-        user_query="Tell me about Ghul'vor interactions",
-        intention=UserIntention.NPC_INFO,
-        entities=[Entity(name="Ghul'vor", entity_type=EntityType.NPC)],
-        k=3
+        character_name="Duskryn",
+        original_query="Tell me about Ghul'vor interactions",
+        intention="npc_info",
+        entities=[{"name": "Ghul'vor", "type": "npc"}],
+        context_hints=[],
+        top_k=3
     )
     
-    print(f"Found {len(results)} results:")
-    for result in results:
-        print(f"  - Session {result.session_number}: {result.session_title}")
-        if hasattr(result, 'npc_name'):
-            print(f"    NPC: {result.npc_name}, Type: {result.interaction_type}")
+    print(f"Found {len(results.contexts)} results:")
+    for context in results.contexts:
+        print(f"  - Session {context.session_number}: {context.session_summary[:100]}...")
     
     # Test character arc query
     print("\nTest 2: Character Development")
     results = query_engine.query(
-        user_query="How has Duskryn changed over time?",
-        intention=UserIntention.CHARACTER_STATUS,
-        entities=[Entity(name="Duskryn", entity_type=EntityType.PC)],
-        k=3
+        character_name="Duskryn",
+        original_query="How has Duskryn changed over time?",
+        intention="character_status",
+        entities=[{"name": "Duskryn", "type": "player_character"}],
+        context_hints=[],
+        top_k=3
     )
     
-    print(f"Found {len(results)} results:")
-    for result in results:
-        print(f"  - Session {result.session_number}: {result.session_title}")
-        if hasattr(result, 'character_name'):
-            print(f"    Character: {result.character_name}")
+    print(f"Found {len(results.contexts)} results:")
+    for context in results.contexts:
+        print(f"  - Session {context.session_number}: {context.session_summary[:100]}...")
     
     # Test recent events
     print("\nTest 3: Recent Events")
     results = query_engine.query(
-        user_query="What happened recently?",
-        intention=UserIntention.EVENT_SEQUENCE,
+        character_name="Duskryn",
+        original_query="What happened recently?",
+        intention="event_sequence",
         entities=[],
-        k=2
+        context_hints=[],
+        top_k=2
     )
     
-    print(f"Found {len(results)} results:")
-    for result in results:
-        print(f"  - Session {result.session_number}: {result.session_title}")
-        print(f"    Summary: {result.session_summary[:100]}...")
+    print(f"Found {len(results.contexts)} results:")
+    for context in results.contexts:
+        print(f"  - Session {context.session_number}: {context.session_summary[:100]}...")
     
     print(f"\n✓ Session notes storage system ready!")
-    print(f"Available query intentions: {[intent.value for intent in query_engine.get_available_intents()]}")
+    print(f"Campaign: {campaign_name}")
+    print(f"Sessions: {len(campaign.sessions)}")
+    print(f"Entities: {len(campaign.entities)}")
 
 
 if __name__ == "__main__":

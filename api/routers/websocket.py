@@ -45,6 +45,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_json({'type': 'pong'})
                 continue
             
+            if message_type == 'clear_history':
+                character_name = message_data.get('character_name')
+                if character_name:
+                    chat_service.clear_conversation_history(character_name)
+                    await websocket.send_json({'type': 'history_cleared'})
+                continue
+            
             user_message = message_data.get('message')
             character_name = message_data.get('character_name')
             

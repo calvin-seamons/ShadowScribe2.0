@@ -44,26 +44,21 @@ OpenAIReasoningModel = Literal[
 
 AnthropicModel = Literal[
     # Claude 4 models - Latest generation
-    "claude-opus-4-1-20250805",   # Latest Claude 4 Opus
-    "claude-opus-4-1",            # Claude 4 Opus (alias)
-    "claude-opus-4-20250514",     # Claude 4 Opus (May 2025)
-    "claude-opus-4-0",            # Claude 4 Opus (alias)
-    "claude-sonnet-4-5-20250929",   # Claude 4.5 Sonnet (Sept 2025)
-    "claude-sonnet-4-20250514",   # Claude 4 Sonnet (May 2025)
-    "claude-sonnet-4-0",          # Claude 4 Sonnet (alias)
+    "claude-opus-4-1",            # Claude 4 Opus
+    "claude-haiku-4-5",           # Claude 4.5 Haiku - Fast, cost-effective
+    "claude-sonnet-4-5",          # Claude 4.5 Sonnet - Balanced quality/speed
+    "claude-sonnet-4-0",          # Claude 4 Sonnet
     
     # Claude 3.7 models - Advanced reasoning
-    "claude-3-7-sonnet-20250219", # Claude 3.7 Sonnet
-    "claude-3-7-sonnet-latest",   # Claude 3.7 Sonnet (latest alias)
+    "claude-3-7-sonnet-latest",   # Claude 3.7 Sonnet
     
-    # Claude 3.5 models - Balanced quality/speed
-    "claude-3-5-haiku-20241022",  # Claude 3.5 Haiku (specific version)
-    "claude-3-5-haiku-latest",    # Claude 3.5 Haiku (latest alias) - Fast, cost-effective
-    "claude-3-5-sonnet-latest",   # Claude 3.5 Sonnet (latest alias) - Balanced quality/speed
+    # Claude 3.5 models
+    "claude-3-5-haiku-latest",    # Claude 3.5 Haiku - Fast, cost-effective
+    "claude-3-5-sonnet-latest",   # Claude 3.5 Sonnet - Balanced quality/speed
     
-    # Claude 3 models - Stable versions
-    "claude-3-opus-latest",       # Claude 3 Opus (highest quality)
-    "claude-3-haiku-20240307"     # Claude 3 Haiku (specific version)
+    # Claude 3 models
+    "claude-3-opus-latest",       # Claude 3 Opus
+    "claude-3-haiku-20240307"     # Claude 3 Haiku
 ]
 
 
@@ -86,8 +81,8 @@ class RAGConfig:
     openai_final_model: str = "gpt-4o"        # High quality for final responses
     
     # Anthropic Models  
-    anthropic_router_model: str = "claude-3-5-haiku-latest"   # Fast, cost-effective for routing
-    anthropic_final_model: str = "claude-sonnet-4-5-20250929"    # Latest Claude 4.5 Sonnet (Sept 2025)
+    anthropic_router_model: str = "claude-haiku-4-5"   # Latest Claude 4.5 Haiku - Fast, cost-effective for routing
+    anthropic_final_model: str = "claude-sonnet-4-5"    # Latest Claude 4.5 Sonnet - Default response model
     
     # Embedding Model Settings
     embedding_model: EmbeddingModel = "text-embedding-3-small"  # Default: fast and good
@@ -148,8 +143,8 @@ class RAGConfig:
             # Model Settings - Updated defaults
             openai_router_model=os.getenv('RAG_OPENAI_ROUTER_MODEL', 'gpt-4o-mini'),
             openai_final_model=os.getenv('RAG_OPENAI_FINAL_MODEL', 'gpt-4o'),
-            anthropic_router_model=os.getenv('RAG_ANTHROPIC_ROUTER_MODEL', 'claude-3-5-haiku-latest'),
-            anthropic_final_model=os.getenv('RAG_ANTHROPIC_FINAL_MODEL', 'claude-opus-4-1'),
+            anthropic_router_model=os.getenv('RAG_ANTHROPIC_ROUTER_MODEL', 'claude-haiku-4-5'),
+            anthropic_final_model=os.getenv('RAG_ANTHROPIC_FINAL_MODEL', 'claude-sonnet-4-5'),
             
             # Embedding and Query Settings
             embedding_model=os.getenv('RAG_EMBEDDING_MODEL', 'text-embedding-3-small'),
@@ -231,20 +226,21 @@ class RAGConfig:
         """Get all available Anthropic models categorized by generation"""
         return {
             "claude_4": [
-                "claude-opus-4-1-20250805", "claude-opus-4-1", 
-                "claude-opus-4-20250514", "claude-opus-4-0",
-                "claude-sonnet-4-5-20250929", "claude-sonnet-4-20250514", "claude-sonnet-4-0"
+                "claude-opus-4-1",
+                "claude-haiku-4-5",
+                "claude-sonnet-4-5",
+                "claude-sonnet-4-0"
             ],
             "claude_3_7": [
-                "claude-3-7-sonnet-20250219", "claude-3-7-sonnet-latest"
+                "claude-3-7-sonnet-latest"
             ],
             "claude_3_5": [
-                "claude-3-5-haiku-20241022", "claude-3-5-haiku-latest"
-                # Removed claude-3-5-sonnet-latest - returns 404
+                "claude-3-5-haiku-latest",
+                "claude-3-5-sonnet-latest"
             ],
             "claude_3": [
+                "claude-3-opus-latest",
                 "claude-3-haiku-20240307"
-                # Removed claude-3-opus-latest - returns 404
             ]
         }
     

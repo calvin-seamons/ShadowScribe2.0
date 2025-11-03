@@ -14,27 +14,22 @@ interface ChatContainerProps {
 }
 
 export default function ChatContainer({ characterName }: ChatContainerProps) {
-  const { messages, addMessage, startStreaming, appendToStreamingMessage, completeStreaming, setError, clearMessages } = useChatStore()
+  const { messages, addMessage, startStreaming, appendToStreamingMessage, completeStreaming, setError, clearMessages, clearHistory } = useChatStore()
   const { updateCurrentMetadata, saveMessageMetadata, clearCurrentMetadata } = useMetadataStore()
   const [isConnecting, setIsConnecting] = useState(true)
   const conversationIdRef = useRef<string | null>(null)
   const currentMessageIdRef = useRef<string | null>(null)
   
   useEffect(() => {
-    // Load conversation history from localStorage
+    // Always start with a fresh conversation
     const characterId = characterName.toLowerCase().replace(/\s+/g, '-')
-    let conversation = getConversationByCharacter(characterId)
-    
-    if (!conversation) {
-      conversation = createConversation(characterId, characterName)
-      saveConversation(conversation)
-    }
+    const conversation = createConversation(characterId, characterName)
+    saveConversation(conversation)
     
     conversationIdRef.current = conversation.id
     
-    // Load messages into store
+    // Start with empty messages
     clearMessages()
-    conversation.messages.forEach(msg => addMessage(msg))
     
     // Connect WebSocket
     const connect = async () => {
@@ -108,6 +103,33 @@ export default function ChatContainer({ characterName }: ChatContainerProps) {
     }
   }, [messages, characterName])
   
+  const clearConversation = async () => {
+    if (!websocketService.isConnected()) {
+      setError('Not connected to server')
+      return
+    }
+    
+    try {
+      // Clear backend conversation history
+      await websocketService.clearHistory(characterName)
+      
+      // Clear frontend state
+      clearHistory()
+      
+      // Create new conversation in localStorage
+      const characterId = characterName.toLowerCase().replace(/\s+/g, '-')
+      const conversation = createConversation(characterId, characterName)
+      saveConversation(conversation)
+      conversationIdRef.current = conversation.id
+      
+      // Clear metadata
+      clearCurrentMetadata()
+    } catch (error) {
+      console.error('Error clearing conversation:', error)
+      setError('Failed to clear conversation')
+    }
+  }
+  
   const handleSendMessage = async (content: string) => {
     if (!websocketService.isConnected()) {
       setError('Not connected to server')
@@ -150,9 +172,22 @@ export default function ChatContainer({ characterName }: ChatContainerProps) {
   }
   
   return (
-    <div className="flex h-full flex-col">
-      <MessageList />
-      <MessageInput onSendMessage={handleSendMessage} />
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0 border-b border-border p-3">
+        <button
+          onClick={clearConversation}
+          className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-muted transition-colors"
+          disabled={isConnecting || messages.length === 0}
+        >
+          New Conversation
+        </button>
+      </div>
+      <div className="flex-1 overflow-hidden">
+        <MessageList />
+      </div>
+      <div className="flex-shrink-0">
+        <MessageInput onSendMessage={handleSendMessage} />
+      </div>
     </div>
   )
 }

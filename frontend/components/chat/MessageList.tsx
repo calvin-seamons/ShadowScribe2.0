@@ -17,7 +17,7 @@ export default function MessageList() {
   }, [messages, currentStreamingMessage])
   
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="h-full overflow-y-auto p-4 space-y-4">
       {messages.length === 0 && !isStreaming && (
         <div className="flex h-full items-center justify-center">
           <div className="text-center text-muted-foreground">

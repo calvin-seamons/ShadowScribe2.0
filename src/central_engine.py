@@ -475,10 +475,13 @@ class CentralEngine:
         Determines which RAG tools are needed and what intention to use for each.
         """
         try:
+            history = self.conversation_history[:-1] if len(self.conversation_history) > 0 else []
+            
             prompt = self.prompt_manager.get_tool_and_intention_selector_prompt(
                 user_query, 
                 character_name,
-                character=self.character
+                character=self.character,
+                conversation_history=history
             )
             
             provider = self.config.router_llm_provider
@@ -520,7 +523,9 @@ class CentralEngine:
         Extracts entity names from the user query without guessing search contexts.
         """
         try:
-            prompt = self.prompt_manager.get_entity_extraction_prompt(user_query)
+            history = self.conversation_history[:-1] if len(self.conversation_history) > 0 else []
+            
+            prompt = self.prompt_manager.get_entity_extraction_prompt(user_query, conversation_history=history)
             
             provider = self.config.router_llm_provider
             client = self.llm_clients.get(provider) or self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
