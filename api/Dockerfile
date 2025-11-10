@@ -1,5 +1,5 @@
 # FastAPI Backend Dockerfile
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -27,7 +27,9 @@ RUN pip install --no-cache-dir \
     numpy \
     scikit-learn \
     cryptography \
-    pymysql
+    pymysql \
+    httpx==0.25.2 \
+    dacite==1.8.1
 
 # Copy application code
 COPY . .

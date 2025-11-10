@@ -1,12 +1,20 @@
-"""WebSocket router for real-time chat."""
+"""WebSocket router for real-time chat and character creation."""
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 import json
 import uuid
+import sys
+from pathlib import Path
 from typing import Dict
+
+# Add project root to path for character builder imports
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 from api.database.connection import get_db
 from api.services.chat_service import ChatService
+from api.services.dndbeyond_service import DndBeyondService
+from src.character_creation.async_character_builder import AsyncCharacterBuilder
 
 router = APIRouter()
 
@@ -106,3 +114,160 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.close()
         except:
             pass
+
+
+@router.websocket("/ws/character/create")
+async def character_creation_websocket(websocket: WebSocket):
+    """
+    WebSocket endpoint for character creation with real-time progress updates.
+    
+    Message Types (Client -> Server):
+        - create_character: Start character creation
+          {
+            "type": "create_character",
+            "url": "https://dndbeyond.com/characters/152248393"
+          }
+        - ping: Keep-alive ping
+    
+    Message Types (Server -> Client):
+        - parser_started: Parser has begun execution
+        - parser_complete: Parser has finished
+        - parser_error: Parser encountered an error
+        - assembly_started: Character object assembly begun
+        - creation_complete: Character creation finished
+        - creation_error: Character creation failed
+        - pong: Keep-alive response
+    """
+    await websocket.accept()
+    
+    connection_id = str(uuid.uuid4())
+    active_connections[connection_id] = websocket
+    
+    try:
+        while True:
+            # Receive message from client
+            data = await websocket.receive_text()
+            message_data = json.loads(data)
+            
+            message_type = message_data.get('type')
+            
+            # Handle ping
+            if message_type == 'ping':
+                await websocket.send_json({'type': 'pong'})
+                continue
+            
+            # Handle character creation
+            if message_type == 'create_character':
+                url = message_data.get('url')
+                json_data = message_data.get('json_data')
+                
+                # Validate input - need either URL or json_data
+                if not url and not json_data:
+                    await websocket.send_json({
+                        'type': 'creation_error',
+                        'error': 'Missing required field: url or json_data'
+                    })
+                    continue
+                
+                try:
+                    # Step 1: Fetch character JSON if URL provided
+                    if url:
+                        # Extract character ID
+                        character_id = DndBeyondService.extract_character_id(url)
+                        if not character_id:
+                            await websocket.send_json({
+                                'type': 'creation_error',
+                                'error': 'Invalid D&D Beyond URL format'
+                            })
+                            continue
+                        
+                        # Emit fetch started event
+                        await websocket.send_json({
+                            'type': 'fetch_started',
+                            'character_id': character_id
+                        })
+                        
+                        # Fetch character data
+                        json_data = await DndBeyondService.fetch_character_json(character_id)
+                        
+                        # Emit fetch complete event
+                        await websocket.send_json({
+                            'type': 'fetch_complete',
+                            'character_id': character_id,
+                            'character_name': json_data.get('data', {}).get('name', 'Unknown')
+                        })
+                    
+                    # Step 2: Parse character with async builder
+                    async def progress_callback(event):
+                        """Forward progress events to WebSocket client."""
+                        # Don't forward the builder's creation_complete event
+                        # as we'll send our own with the full character data
+                        if event['type'] != 'creation_complete':
+                            await websocket.send_json(event)
+                    
+                    builder = AsyncCharacterBuilder(json_data)
+                    character = await builder.build_async(progress_callback=progress_callback)
+                    
+                    # Step 3: Serialize character for response
+                    from dataclasses import asdict
+                    from datetime import datetime
+                    import json as json_lib
+                    
+                    def serialize_datetime(obj):
+                        """Custom JSON encoder for datetime objects."""
+                        if isinstance(obj, datetime):
+                            return obj.isoformat()
+                        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+                    
+                    character_dict = asdict(character)
+                    
+                    # Pre-serialize character_data to handle datetime objects
+                    character_data_json = json_lib.loads(
+                        json_lib.dumps(character_dict, default=serialize_datetime)
+                    )
+                    
+                    # Send full parsed character data for frontend editing
+                    await websocket.send_json({
+                        'type': 'creation_complete',
+                        'character_id': character.character_base.name,
+                        'character_name': character.character_base.name,
+                        'character_data': character_data_json,
+                        'character_summary': {
+                            'name': character.character_base.name,
+                            'race': character.character_base.race,
+                            'character_class': character.character_base.character_class,
+                            'level': character.character_base.total_level,
+                            'hp': character.combat_stats.max_hp,
+                            'ac': character.combat_stats.armor_class
+                        }
+                    })
+                
+                except Exception as e:
+                    # Send error response
+                    await websocket.send_json({
+                        'type': 'creation_error',
+                        'error': str(e)
+                    })
+                    import traceback
+                    print(f"Character creation error: {traceback.format_exc()}")
+    
+    except WebSocketDisconnect:
+        print(f"Client disconnected: {connection_id}")
+    except Exception as e:
+        print(f"Error in WebSocket connection: {str(e)}")
+        try:
+            await websocket.send_json({
+                'type': 'error',
+                'error': str(e)
+            })
+        except:
+            pass
+    finally:
+        # Clean up connection
+        if connection_id in active_connections:
+            del active_connections[connection_id]
+        try:
+            await websocket.close()
+        except:
+            pass
+

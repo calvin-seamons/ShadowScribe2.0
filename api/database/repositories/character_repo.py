@@ -94,6 +94,76 @@ class CharacterRepository:
         )
         return result.rowcount > 0
     
+    async def update_section(self, character_id: str, section: str, data: dict) -> Optional[CharacterModel]:
+        """
+        Update a specific section of a character.
+        
+        Args:
+            character_id: Character ID to update
+            section: Section name (e.g., 'ability_scores', 'inventory', 'spell_list')
+            data: Dictionary containing the updated section data
+            
+        Returns:
+            Updated CharacterModel or None if character not found
+            
+        Raises:
+            ValueError: If section name is invalid
+        """
+        # Valid section names based on Character dataclass
+        valid_sections = {
+            'character_base',
+            'characteristics',
+            'ability_scores',
+            'combat_stats',
+            'background_info',
+            'personality',
+            'backstory',
+            'organizations',
+            'allies',
+            'enemies',
+            'proficiencies',
+            'damage_modifiers',
+            'passive_scores',
+            'senses',
+            'action_economy',
+            'features_and_traits',
+            'inventory',
+            'spell_list',
+            'objectives_and_contracts',
+            'notes'
+        }
+        
+        if section not in valid_sections:
+            raise ValueError(
+                f"Invalid section '{section}'. "
+                f"Valid sections: {', '.join(sorted(valid_sections))}"
+            )
+        
+        # Get current character
+        character = await self.get_by_id(character_id)
+        if not character:
+            return None
+        
+        # Update the specific section in the data JSON
+        character_data = character.data.copy()
+        character_data[section] = data
+        
+        # Handle serialization of datetime objects
+        character_data_json = json.dumps(character_data, default=default_json_serializer)
+        character_data = json.loads(character_data_json)
+        
+        # Update database record
+        await self.session.execute(
+            update(CharacterModel)
+            .where(CharacterModel.id == character_id)
+            .values(
+                data=character_data,
+                updated_at=datetime.utcnow()
+            )
+        )
+        
+        return await self.get_by_id(character_id)
+    
     @staticmethod
     def _generate_id(name: str) -> str:
         """Generate URL-safe ID from character name."""

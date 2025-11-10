@@ -41,9 +41,29 @@ if anthropic_key:
 
 ## Critical Development Patterns
 
-### Virtual Environment (ESSENTIAL)
-**ALWAYS activate the virtual environment before running any Python CODE AT ALL!!**:
+### Running Python Scripts (ESSENTIAL)
+**ALWAYS use `uv run` to execute Python scripts and modules**:
 ```bash
+# Correct way to run scripts
+uv run python -m scripts.run_inspector --list
+uv run python -m scripts.run_manager
+uv run python scripts/test_integration.py
+uv run python demo_central_engine.py
+
+# NOT: python -m scripts.run_inspector
+# NOT: python scripts/test_integration.py
+```
+
+**Why `uv run`?**
+- Automatically manages virtual environment
+- Ensures dependencies are available
+- Works consistently across all environments
+- No need to manually activate venv
+
+### Virtual Environment (LEGACY - Use uv run instead)
+**Note**: With `uv run`, you no longer need to manually activate the virtual environment:
+```bash
+# Old way (still works but not recommended)
 # On Windows (PowerShell)
 .\.venv\Scripts\Activate.ps1
 
@@ -59,9 +79,9 @@ source .venv/bin/activate
 ### Import System (ESSENTIAL)
 **Always run from project root** and use module execution to avoid import issues:
 ```bash
-# Correct way to run scripts (with venv activated)
-python -m scripts.run_inspector --list
-python -m scripts.run_manager
+# Correct way to run scripts with uv run
+uv run python -m scripts.run_inspector --list
+uv run python -m scripts.run_manager
 
 # NOT: python scripts/run_inspector.py
 ```

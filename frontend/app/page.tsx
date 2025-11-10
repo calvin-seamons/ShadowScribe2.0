@@ -7,7 +7,8 @@ import { LogoText } from '@/components/Logo'
 import { ConversationHistorySidebar } from '@/components/sidebar/ConversationHistorySidebar'
 import { MetadataSidebar } from '@/components/sidebar/MetadataSidebar'
 import { useMetadataStore } from '@/lib/stores/metadataStore'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Plus } from 'lucide-react'
+import Link from 'next/link'
 
 export default function Home() {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
@@ -38,6 +39,14 @@ export default function Home() {
                 )}
               </button>
             )}
+            <Link
+              href="/characters/create"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity text-sm font-medium shadow-sm"
+              title="Create new character"
+            >
+              <Plus className="w-4 h-4" />
+              Create Character
+            </Link>
             <CharacterSelector 
               selectedCharacter={selectedCharacter}
               onSelectCharacter={setSelectedCharacter}
@@ -73,6 +82,13 @@ export default function Home() {
                 Select a character above to begin your adventure. ShadowScribe provides 
                 intelligent answers about your character, rulebook rules, and campaign history.
               </p>
+              <Link
+                href="/characters/create"
+                className="inline-flex items-center gap-2 px-6 py-3 mt-4 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity font-medium shadow-md"
+              >
+                <Plus className="w-5 h-5" />
+                Create Your First Character
+              </Link>
             </div>
           </div>
         )}

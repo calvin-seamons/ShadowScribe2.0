@@ -20,16 +20,33 @@ export default function CharacterSelector({ selectedCharacter, onSelectCharacter
   
   const loadCharacters = async () => {
     setLoading(true)
-    try {
-      const response = await fetchCharacters()
-      setCharacters(response.characters)
-      setError(null)
-    } catch (error) {
-      console.error('Error loading characters:', error)
-      setError('Failed to load characters')
-    } finally {
-      setLoading(false)
+    setError(null) // Clear previous errors
+    
+    // Retry logic for initial load
+    const maxRetries = 3
+    let lastError: Error | null = null
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetchCharacters()
+        setCharacters(response.characters)
+        setError(null)
+        setLoading(false)
+        return // Success!
+      } catch (error) {
+        console.error(`Error loading characters (attempt ${attempt}/${maxRetries}):`, error)
+        lastError = error as Error
+        
+        // Wait before retrying (except on last attempt)
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        }
+      }
     }
+    
+    // All retries failed
+    setError('Failed to load characters. Please check if the API server is running.')
+    setLoading(false)
   }
   
   const handleSelect = (character: Character) => {
