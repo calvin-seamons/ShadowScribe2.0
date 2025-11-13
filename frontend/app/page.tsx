@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import ChatContainer from '@/components/chat/ChatContainer'
 import CharacterSelector from '@/components/character/CharacterSelector'
 import { LogoText } from '@/components/Logo'
@@ -11,8 +12,30 @@ import { Eye, EyeOff, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Home() {
+  const searchParams = useSearchParams()
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
   const { sidebarVisible, toggleSidebar } = useMetadataStore()
+
+  // Check for character query param on mount
+  useEffect(() => {
+    const characterParam = searchParams.get('character')
+    if (characterParam) {
+      setSelectedCharacter(decodeURIComponent(characterParam))
+    }
+  }, [searchParams])
+
+  const handleNewConversation = () => {
+    setSelectedConversationId(null)
+  }
+
+  const handleConversationSelect = (conversationId: string) => {
+    setSelectedConversationId(conversationId)
+  }
+
+  const handleConversationCreated = (conversationId: string) => {
+    setSelectedConversationId(conversationId)
+  }
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -59,11 +82,19 @@ export default function Home() {
         {selectedCharacter ? (
           <>
             {/* Left sidebar - Conversation history */}
-            <ConversationHistorySidebar characterName={selectedCharacter} />
+            <ConversationHistorySidebar 
+              characterName={selectedCharacter}
+              onConversationSelect={handleConversationSelect}
+              onNewConversation={handleNewConversation}
+            />
             
             {/* Center - Chat */}
             <div className="flex-1 overflow-hidden">
-              <ChatContainer characterName={selectedCharacter} />
+              <ChatContainer 
+                characterName={selectedCharacter}
+                conversationId={selectedConversationId}
+                onConversationCreated={handleConversationCreated}
+              />
             </div>
             
             {/* Right sidebar - Metadata */}

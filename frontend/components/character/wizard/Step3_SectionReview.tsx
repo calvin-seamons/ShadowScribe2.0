@@ -15,6 +15,8 @@ import {
   InventoryEditor,
   SpellListEditor,
   ActionsEditor,
+  CombatStatsEditor,
+  FeaturesAndTraitsEditor,
 } from '../editors'
 
 interface Step3_SectionReviewProps {
@@ -46,7 +48,7 @@ const SECTIONS: SectionConfig[] = [
     label: 'Combat Stats',
     icon: '⚔️',
     description: 'Hit Points, Armor Class, Initiative, Speed',
-    hasEditor: false,
+    hasEditor: true,
   },
   {
     name: 'inventory',
@@ -74,7 +76,7 @@ const SECTIONS: SectionConfig[] = [
     label: 'Features & Traits',
     icon: '🎖️',
     description: 'Class features, racial traits, and special abilities',
-    hasEditor: false,
+    hasEditor: true,
   },
   {
     name: 'backstory',
@@ -183,6 +185,12 @@ export function Step3_SectionReview({
                                 onSave={async (data) => handleSectionSave(section.name)}
                               />
                             )}
+                            {section.name === 'combat_stats' && (
+                              <CombatStatsEditor
+                                data={characterData[section.name]}
+                                onSave={async (data) => handleSectionSave(section.name)}
+                              />
+                            )}
                             {section.name === 'inventory' && (
                               <InventoryEditor
                                 data={characterData[section.name]}
@@ -197,6 +205,12 @@ export function Step3_SectionReview({
                             )}
                             {section.name === 'action_economy' && (
                               <ActionsEditor
+                                data={characterData[section.name]}
+                                onSave={async (data) => handleSectionSave(section.name)}
+                              />
+                            )}
+                            {section.name === 'features_and_traits' && (
+                              <FeaturesAndTraitsEditor
                                 data={characterData[section.name]}
                                 onSave={async (data) => handleSectionSave(section.name)}
                               />

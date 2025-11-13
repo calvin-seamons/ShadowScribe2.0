@@ -76,17 +76,28 @@ export function SpellListEditor({ data, onSave }: SpellListEditorProps) {
     })
   }
   
-  const removeSpell = (index: number) => {
+  const removeSpell = (spellToRemove: Spell) => {
+    const currentSpells = Array.isArray(spellList.spells) 
+      ? spellList.spells 
+      : []
+    
     setSpellList({
       ...spellList,
-      spells: spellList.spells?.filter((_, i) => i !== index) || []
+      spells: currentSpells.filter(spell => spell !== spellToRemove)
     })
   }
   
-  const updateSpell = (index: number, field: string, value: any) => {
-    const updated = [...(spellList.spells || [])]
-    updated[index] = { ...updated[index], [field]: value }
-    setSpellList({ ...spellList, spells: updated })
+  const updateSpellName = (spellToUpdate: Spell, newName: string) => {
+    const currentSpells = Array.isArray(spellList.spells) 
+      ? spellList.spells 
+      : []
+    
+    setSpellList({
+      ...spellList,
+      spells: currentSpells.map(spell => 
+        spell === spellToUpdate ? { ...spell, name: newName } : spell
+      )
+    })
   }
   
   const getSpellsByLevel = (level: number) => {
@@ -125,7 +136,7 @@ export function SpellListEditor({ data, onSave }: SpellListEditorProps) {
       {/* Info Notice */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <p className="text-sm text-blue-800">
-          ℹ️ <strong>Read-Only View:</strong> Spell data is imported from D&D Beyond and cannot be edited here. Use D&D Beyond to modify your spell list.
+          ℹ️ <strong>Spell Management:</strong> Spell data is imported from D&D Beyond. You can add custom spells or remove spells from your list.
         </p>
       </div>
       
@@ -205,7 +216,7 @@ export function SpellListEditor({ data, onSave }: SpellListEditorProps) {
       <div>
         <h3 className="text-lg font-bold text-gray-900 mb-3">Spells by Level</h3>
         <div className="space-y-4">
-          {SPELL_LEVELS.map((level) => {
+          {SPELL_LEVELS.filter(level => getSpellsByLevel(level).length > 0).map((level) => {
             const spells = getSpellsByLevel(level)
             const isExpanded = selectedLevel === level
             
@@ -224,6 +235,16 @@ export function SpellListEditor({ data, onSave }: SpellListEditorProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        addSpell(level)
+                        setSelectedLevel(level)
+                      }}
+                      className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
+                    >
+                      + Add Spell
+                    </button>
                     <span className={`text-xl transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
@@ -233,91 +254,79 @@ export function SpellListEditor({ data, onSave }: SpellListEditorProps) {
                 {/* Expanded Spell List */}
                 {isExpanded && (
                   <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-                    {spells.length === 0 ? (
-                      <p className="text-center text-gray-500 py-4">No spells at this level</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {spells.map((spell, spellIndex) => {
-                          // Use level and spellIndex as unique identifier since spells is a nested dict
-                          return (
-                            <div key={`${level}-${spellIndex}`} className="bg-white rounded-lg p-3 border border-gray-300">
-                              <div className="grid md:grid-cols-2 gap-3 mb-2">
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Spell Name
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={spell.name || ''}
-                                    readOnly
-                                    className="w-full px-2 py-1 border border-gray-200 rounded bg-gray-50"
-                                    title="Spell data is read-only"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    School
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={spell.school || ''}
-                                    readOnly
-                                    className="w-full px-2 py-1 border border-gray-200 rounded bg-gray-50"
-                                  />
-                                  {/* <select
-                                    value={spell.school || 'Evocation'}
-                                    disabled
-                                    className="w-full px-2 py-1 border border-gray-300 rounded"
-                                  >
-                                    <option value="Abjuration">Abjuration</option>
-                                    <option value="Conjuration">Conjuration</option>
-                                    <option value="Divination">Divination</option>
-                                    <option value="Enchantment">Enchantment</option>
-                                    <option value="Evocation">Evocation</option>
-                                    <option value="Illusion">Illusion</option>
-                                    <option value="Necromancy">Necromancy</option>
-                                    <option value="Transmutation">Transmutation</option>
-                                  </select> */}
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Casting Time
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={spell.casting_time || ''}
-                                    readOnly
-                                    className="w-full px-2 py-1 border border-gray-200 rounded bg-gray-50"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Range
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={spell.range || ''}
-                                    readOnly
-                                    className="w-full px-2 py-1 border border-gray-200 rounded bg-gray-50"
-                                  />
-                                </div>
-                              </div>
-                              <div className="mb-2">
+                    <div className="space-y-3">
+                      {spells.map((spell, spellIndex) => {
+                        return (
+                          <div key={`${level}-${spellIndex}`} className="bg-white rounded-lg p-3 border border-gray-300">
+                            <div className="grid md:grid-cols-2 gap-3 mb-2">
+                              <div>
                                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Description
+                                  Spell Name
                                 </label>
-                                <textarea
-                                  value={spell.description || ''}
+                                <input
+                                  type="text"
+                                  value={spell.name || ''}
+                                  onChange={(e) => updateSpellName(spell, e.target.value)}
+                                  className="w-full px-2 py-1 border border-gray-300 rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                  School
+                                </label>
+                                <input
+                                  type="text"
+                                  value={spell.school || ''}
                                   readOnly
-                                  rows={3}
-                                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm bg-gray-50"
+                                  className="w-full px-2 py-1 border border-gray-200 rounded bg-gray-50"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                  Casting Time
+                                </label>
+                                <input
+                                  type="text"
+                                  value={spell.casting_time || ''}
+                                  readOnly
+                                  className="w-full px-2 py-1 border border-gray-200 rounded bg-gray-50"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                  Range
+                                </label>
+                                <input
+                                  type="text"
+                                  value={spell.range || ''}
+                                  readOnly
+                                  className="w-full px-2 py-1 border border-gray-200 rounded bg-gray-50"
                                 />
                               </div>
                             </div>
-                          )
-                        })}
-                      </div>
-                    )}
+                            <div className="mb-2">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Description
+                              </label>
+                              <textarea
+                                value={spell.description || ''}
+                                readOnly
+                                rows={3}
+                                className="w-full px-2 py-1 border border-gray-200 rounded text-sm bg-gray-50"
+                              />
+                            </div>
+                            <div className="flex justify-end">
+                              <button
+                                onClick={() => removeSpell(spell)}
+                                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium"
+                              >
+                                🗑️ Delete Spell
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

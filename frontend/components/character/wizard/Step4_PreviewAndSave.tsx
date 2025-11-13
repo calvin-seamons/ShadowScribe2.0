@@ -7,6 +7,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { CharacterData } from '@/lib/types/character'
 
 interface Step4_PreviewAndSaveProps {
@@ -22,6 +23,7 @@ export function Step4_PreviewAndSave({
   onSave,
   onReset,
 }: Step4_PreviewAndSaveProps) {
+  const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   
@@ -70,15 +72,28 @@ export function Step4_PreviewAndSave({
           </div>
           
           <div className="flex flex-col gap-4">
-            <a
-              href={`/characters/${savedCharacterId}`}
+            <button
+              onClick={() => {
+                const characterName = characterData.character_base?.name
+                if (characterName) {
+                  // Encode character name for URL
+                  const encodedName = encodeURIComponent(characterName)
+                  router.push(`/?character=${encodedName}`)
+                }
+              }}
               className="px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 font-bold text-lg transition-all transform hover:scale-105 active:scale-95 text-center"
             >
-              View Character Details →
+              Start Chatting with {characterData.character_base?.name || 'Character'} →
+            </button>
+            <a
+              href={`/characters/${savedCharacterId}`}
+              className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium transition-colors text-center"
+            >
+              View Character Details
             </a>
             <button
               onClick={onReset}
-              className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+              className="px-6 py-3 bg-white border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 font-medium transition-colors"
             >
               Import Another Character
             </button>

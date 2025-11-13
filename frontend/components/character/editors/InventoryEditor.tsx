@@ -44,7 +44,6 @@ export function InventoryEditor({ data, onSave }: InventoryEditorProps) {
     const initial = data || {
       equipped_items: {},
       backpack: [],
-      currency: { copper: 0, silver: 0, electrum: 0, gold: 0, platinum: 0 },
     }
     
     // Ensure equipped_items is initialized as empty dict if needed
@@ -129,21 +128,52 @@ export function InventoryEditor({ data, onSave }: InventoryEditorProps) {
     })
   }
   
-  const updateCurrency = (type: string, value: string) => {
+  // Move item from backpack to equipped slot
+  const moveToEquipped = (backpackIndex: number, targetSlot: string) => {
+    const item = inventory.backpack?.[backpackIndex]
+    if (!item) return
+    
+    const newBackpack = inventory.backpack?.filter((_, i) => i !== backpackIndex) || []
+    const slotItems = inventory.equipped_items?.[targetSlot] || []
+    
     setInventory({
       ...inventory,
-      currency: {
-        ...inventory.currency,
-        [type]: parseInt(value) || 0
+      backpack: newBackpack,
+      equipped_items: {
+        ...inventory.equipped_items,
+        [targetSlot]: [...slotItems, item]
+      }
+    })
+  }
+  
+  // Move item from equipped slot to backpack
+  const moveToBackpack = (slot: string, itemIndex: number) => {
+    const item = inventory.equipped_items?.[slot]?.[itemIndex]
+    if (!item) return
+    
+    const slotItems = inventory.equipped_items?.[slot]?.filter((_, i) => i !== itemIndex) || []
+    
+    setInventory({
+      ...inventory,
+      backpack: [...(inventory.backpack || []), item],
+      equipped_items: {
+        ...inventory.equipped_items,
+        [slot]: slotItems
       }
     })
   }
   
   const totalWeight = () => {
     let total = 0
-    inventory.backpack?.forEach(item => total += (item.weight || 0) * item.quantity)
+    inventory.backpack?.forEach(item => {
+      const weight = item.definition?.weight || item.weight || 0
+      total += weight * item.quantity
+    })
     Object.values(inventory.equipped_items || {}).forEach(slotItems => {
-      slotItems.forEach(item => total += (item.weight || 0) * item.quantity)
+      slotItems.forEach(item => {
+        const weight = item.definition?.weight || item.weight || 0
+        total += weight * item.quantity
+      })
     })
     return total.toFixed(1)
   }
@@ -153,31 +183,8 @@ export function InventoryEditor({ data, onSave }: InventoryEditorProps) {
       {/* Info Notice */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <p className="text-sm text-blue-800">
-          ℹ️ <strong>Read-Only View:</strong> Inventory data is imported from D&D Beyond. Item names and weights cannot be edited here. Currency can be adjusted.
+          ℹ️ <strong>Item Management:</strong> Inventory data is imported from D&D Beyond. You can adjust quantities and move items between backpack and equipped slots.
         </p>
-      </div>
-      
-      {/* Currency */}
-      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-4 border-2 border-yellow-300">
-        <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-          <span>💰</span> Currency
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {['platinum', 'gold', 'electrum', 'silver', 'copper'].map((coin) => (
-            <div key={coin}>
-              <label className="block text-xs font-medium text-gray-700 mb-1 capitalize">
-                {coin} ({{platinum: 'pp', gold: 'gp', electrum: 'ep', silver: 'sp', copper: 'cp'}[coin]})
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={inventory.currency?.[coin as keyof typeof inventory.currency] || 0}
-                onChange={(e) => updateCurrency(coin, e.target.value)}
-                className="w-full px-3 py-2 text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              />
-            </div>
-          ))}
-        </div>
       </div>
       
       {/* Equipped Items */}
@@ -202,13 +209,22 @@ export function InventoryEditor({ data, onSave }: InventoryEditorProps) {
                   <div className="space-y-2">
                     {slotItems.map((item, index) => (
                       <div key={index} className="bg-gray-50 rounded p-2">
-                        <input
-                          type="text"
-                          value={item.definition?.name || item.name || ''}
-                          readOnly
-                          className="w-full text-sm px-2 py-1 border border-gray-200 rounded bg-gray-50 mb-1"
-                          title="Item data is read-only"
-                        />
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <input
+                            type="text"
+                            value={item.definition?.name || item.name || ''}
+                            readOnly
+                            className="flex-1 text-sm px-2 py-1 border border-gray-200 rounded bg-gray-50"
+                            title="Item data is read-only"
+                          />
+                          <button
+                            onClick={() => moveToBackpack(slot, index)}
+                            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                            title="Move to backpack"
+                          >
+                            🎒
+                          </button>
+                        </div>
                         <div className="flex gap-2">
                           <input
                             type="number"
@@ -248,7 +264,7 @@ export function InventoryEditor({ data, onSave }: InventoryEditorProps) {
           <div className="space-y-2">
             {inventory.backpack.map((item, index) => (
               <div key={index} className="bg-white border border-gray-200 rounded-lg p-3">
-                <div className="grid md:grid-cols-6 gap-2">
+                <div className="grid md:grid-cols-7 gap-2">
                   <div className="md:col-span-2">
                     <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
                     <input
@@ -289,6 +305,26 @@ export function InventoryEditor({ data, onSave }: InventoryEditorProps) {
                       className="w-full px-2 py-1 border border-gray-200 rounded bg-gray-50 text-xs"
                       title="Read-only"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Equip to</label>
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          moveToEquipped(index, e.target.value)
+                          e.target.value = '' // Reset selector
+                        }
+                      }}
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                      defaultValue=""
+                    >
+                      <option value="">Select slot...</option>
+                      {EQUIPMENT_SLOTS.map(slot => (
+                        <option key={slot} value={slot}>
+                          {slot.replace('_', ' ')}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>

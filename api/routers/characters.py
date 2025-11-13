@@ -126,15 +126,30 @@ async def create_character(
             )
         )
         
-        # Create in database
+        # Create in database (or update if already exists)
         repo = CharacterRepository(db)
-        db_character = await repo.create(character)
+        
+        # Check if character already exists by name
+        existing = await repo.get_by_name(character.character_base.name)
+        
+        if existing:
+            # Update existing character
+            print(f"⚠️  Character '{character.character_base.name}' already exists, updating...")
+            db_character = await repo.update(existing.id, character)
+        else:
+            # Create new character
+            db_character = await repo.create(character)
+        
         await db.commit()
         
         return db_character.to_dict()
     
     except Exception as e:
         await db.rollback()
+        # Log detailed error for debugging
+        import traceback
+        print(f"❌ Error creating/updating character: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=400,
             detail=f"Failed to create character: {str(e)}"
