@@ -6,7 +6,7 @@ Build a testing framework to compare two different RAG system architectures for 
 ## System Architectures
 
 ### System 1: OpenAI + In-Memory (Baseline)
-- **Embedding Model**: OpenAI `text-embedding-3-small` (1536 dimensions)
+- **Embedding Model**: OpenAI `text-embedding-3-large` (3072 dimensions)
 - **Storage**: In-memory pickle file with NumPy arrays
 - **Filtering**: Python-based category pre-filtering
 - **Search**: Linear cosine similarity (brute-force over filtered sections)
@@ -14,7 +14,7 @@ Build a testing framework to compare two different RAG system architectures for 
 
 **Query Flow**:
 ```
-Query → OpenAI API (1536-dim)
+Query → OpenAI API (3072-dim)
       ↓
 Category filter in Python (1000 → 50-200 sections)
       ↓
@@ -46,9 +46,10 @@ Top-k results
 ## What We're Testing
 
 ### Variables Being Isolated:
-1. **Embedding Model**: OpenAI 1536-dim (API) vs Qwen 512-dim (local)
+1. **Embedding Model**: OpenAI 3072-dim (API, high-quality) vs Qwen 512-dim (local, efficient)
 2. **Retrieval Mechanism**: In-memory linear search vs Vector DB ANN search
 3. **Filtering Strategy**: Python pre-filter vs Database native filtering
+4. **Cost vs Performance Trade-off**: API with higher dimensions vs local with lower dimensions
 
 ### Controlled Variables (Identical Across Both):
 - ✅ Entity boosting logic and weights
@@ -57,6 +58,45 @@ Top-k results
 - ✅ Scoring formula: `final_score = semantic * 0.75 + entity * 0.25`
 - ✅ Test questions and ground truth data
 - ✅ Category-to-intention mappings
+
+### Additional Comparison Dimensions:
+1. **Embedding Quality vs Dimensionality**
+   - Does 3072-dim (OpenAI) actually retrieve better results than 512-dim (Qwen)?
+   - Quality-to-cost ratio analysis
+
+2. **Cold Start vs Warm Performance**
+   - First query latency (model initialization, cache misses)
+   - Repeated query latency (warm cache, reused embeddings)
+   - API vs local model loading patterns
+
+3. **Semantic Understanding**
+   - Paraphrased queries (same intent, different wording)
+   - D&D-specific terminology comprehension
+   - Ambiguous query resolution
+
+4. **Filtering Effectiveness**
+   - Pre-filtering (System 1) vs native filtering (System 2)
+   - Edge cases where category filtering is ambiguous
+
+5. **Scalability Projections**
+   - Current: ~1000 sections
+   - Projected: 10,000 sections
+   - Linear vs sub-linear growth patterns
+
+6. **Resource Efficiency**
+   - Memory footprint during queries
+   - Network bandwidth (API calls vs local)
+   - Energy consumption patterns
+
+7. **Result Diversity & Overlap**
+   - Top-k overlap between systems
+   - Category diversity in results
+   - Ranking disagreement analysis
+
+8. **Error Pattern Analysis**
+   - Query types where each system fails
+   - False positives: irrelevant high-scoring results
+   - False negatives: relevant results ranked too low
 
 ## Framework Structure
 
@@ -79,7 +119,7 @@ Top-k results
 │   └── system2_qwen_milvus.py       # Qwen + Milvus implementation
 │
 ├── embeddings/                        # Pre-computed embeddings storage
-│   ├── openai_embeddings.pkl         # Rulebook embedded with OpenAI (1536-dim)
+│   ├── openai_embeddings.pkl         # Rulebook embedded with OpenAI (3072-dim)
 │   └── qwen_milvus.db                # Milvus Lite database with Qwen embeddings (512-dim)
 │
 ├── ground_truth/
@@ -262,7 +302,7 @@ class OpenAIInMemoryRAG(BaseRAG):
             return self.embedding_cache[query]
         
         response = openai.embeddings.create(
-            model="text-embedding-3-small",
+            model="text-embedding-3-large",
             input=query
         )
         embedding = response.data[0].embedding
@@ -374,7 +414,7 @@ def build_openai_embeddings():
     save_data = {
         'sections': {sid: section.to_dict() for sid, section in storage.sections.items()},
         'category_index': storage.category_index,
-        'embedding_model': 'text-embedding-3-small'
+        'embedding_model': 'text-embedding-3-large'
     }
     
     with open('574-Assignment/embeddings/openai_embeddings.pkl', 'wb') as f:
@@ -616,14 +656,14 @@ if __name__ == "__main__":
 ## Expected Performance Comparison
 
 ### System 1 (OpenAI + In-Memory):
-- **Query latency**: ~115-125ms
-  - Embedding: ~100ms (API call)
+- **Query latency**: ~120-135ms
+  - Embedding: ~105-120ms (API call, larger model)
   - Filtering: ~1ms
-  - Search: ~10-20ms (NumPy linear)
+  - Search: ~10-20ms (NumPy linear, 3072-dim vectors)
   - Post-processing: ~5ms
-- **Memory**: ~100MB (loaded sections)
-- **Storage**: ~50MB (pickle file)
-- **Cost**: $0.0001 per query (API)
+- **Memory**: ~200MB (loaded sections with 3072-dim vectors)
+- **Storage**: ~100MB (pickle file, 2x larger due to dimensions)
+- **Cost**: $0.00013 per query (API, text-embedding-3-large pricing)
 
 ### System 2 (Qwen + Milvus):
 - **Query latency**: ~20-70ms
@@ -635,11 +675,14 @@ if __name__ == "__main__":
 - **Cost**: $0 per query (local)
 
 ### Expected Findings:
-- **Speed**: System 2 likely faster (no API latency)
-- **Quality**: Comparable retrieval quality (test with metrics)
-- **Scalability**: System 2 better for larger datasets
-- **Cost**: System 2 better for high query volume
-- **Setup**: System 1 simpler, System 2 requires more infrastructure
+- **Speed**: System 2 likely 2-3x faster (no API latency, but quality comparison needed)
+- **Quality**: OpenAI 3072-dim may have edge in semantic understanding vs Qwen 512-dim (empirical test)
+- **Dimensionality Impact**: Test if 6x more dimensions translates to measurably better retrieval
+- **Cost-Quality Trade-off**: System 1 pays per query but may retrieve better; System 2 free but possibly lower quality
+- **Scalability**: System 2 sub-linear growth (HNSW ANN); System 1 linear growth (brute-force)
+- **Resource Usage**: System 2 higher memory (model + DB); System 1 higher network bandwidth
+- **Setup**: System 1 simpler (just API key); System 2 more complex (model download, DB setup)
+- **Production Suitability**: System 1 better for low-volume, high-quality needs; System 2 better for high-volume, cost-sensitive
 
 ## Evaluation Metrics Summary
 
@@ -652,14 +695,27 @@ if __name__ == "__main__":
 
 ### Performance:
 - **Query latency** (ms)
+  - Cold start (first query)
+  - Warm cache (repeated queries)
 - **Embedding time** (ms)
 - **Search time** (ms)
 - **Memory footprint** (MB)
 - **Storage size** (MB)
 
+### Result Agreement:
+- **Top-k overlap**: % of shared sections in top-k
+- **Rank correlation**: Spearman's rho between systems
+- **Category diversity**: Entropy of categories in results
+
+### Error Analysis:
+- **Query failure types**: Categories where each system struggles
+- **False positive rate**: Irrelevant results in top-k
+- **False negative analysis**: Relevant sections missed
+
 ### Cost (if applicable):
 - API costs per 1000 queries
 - Compute costs (GPU/CPU time)
+- Cost per successful retrieval (cost/precision)
 
 ## Dependencies
 

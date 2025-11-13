@@ -1,0 +1,9 @@
+# results directory - generated experiment outputs
+*.json
+*.csv
+*.html
+*.pkl
+*.db
+
+# Keep directory structure
+!.gitkeep
