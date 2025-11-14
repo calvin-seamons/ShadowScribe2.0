@@ -11,19 +11,19 @@ Comprehensive testing framework comparing two RAG system architectures for D&D 5
 - **Search**: Linear cosine similarity (brute-force)
 - **Expected**: ~120-135ms query latency, $0.00013 per query
 
-### System 2: Qwen + Milvus (Modern Vector DB)
-- **Embedding Model**: Local `Qwen/Qwen2.5-Coder-0.5B-Instruct` (896 dimensions)
-- **Storage**: Milvus Lite vector database
-- **Filtering**: Milvus native metadata filtering
+### System 2: Qwen + FAISS (Local Vector Search)
+- **Embedding Model**: Local `Qwen/Qwen3-Embedding-0.6B` (1024 dimensions)
+- **Storage**: FAISS HNSW index with metadata pickle
+- **Filtering**: Python-based category pre-filtering with FAISS subset search
 - **Search**: HNSW approximate nearest neighbor (ANN)
-- **Expected**: ~20-70ms query latency, $0 per query
+- **Expected**: ~120-150ms query latency, $0 per query
 
 ## What We're Comparing
 
 **Variables Being Isolated:**
-1. Embedding Model: OpenAI 3072-dim (API) vs Qwen 896-dim (local)
-2. Retrieval Mechanism: In-memory linear search vs Vector DB ANN search
-3. Filtering Strategy: Python pre-filter vs Database native filtering
+1. Embedding Model: OpenAI 3072-dim (API) vs Qwen3 1024-dim (local)
+2. Retrieval Mechanism: In-memory linear search vs FAISS HNSW ANN search
+3. Filtering Strategy: Python pre-filter in both systems
 4. Cost vs Performance Trade-off
 
 **Controlled (Identical) Across Both:**
@@ -68,7 +68,7 @@ uv sync
 
 # Build embeddings
 uv run python scripts/1_build_openai_embeddings.py
-uv run python scripts/2_build_qwen_milvus.py
+uv run python scripts/2_build_qwen_faiss.py
 
 # Run evaluation
 uv run python scripts/3_run_evaluation.py
@@ -91,15 +91,15 @@ python scripts/1_build_openai_embeddings.py
 python scripts\1_build_openai_embeddings.py
 ```
 
-**System 2 (Qwen + Milvus):**
+**System 2 (Qwen + FAISS):**
 ```bash
 # macOS/Linux
-python scripts/2_build_qwen_milvus.py
+python scripts/2_build_qwen_faiss.py
 
 # Windows
-python scripts\2_build_qwen_milvus.py
+python scripts\2_build_qwen_faiss.py
 ```
-*Note: First run downloads ~600MB Qwen model*
+*Note: First run downloads Qwen3-Embedding model*
 
 ### 3. Run Evaluation
 ```bash
@@ -125,11 +125,12 @@ python scripts\3_run_evaluation.py
 ├── implementations/                   # RAG systems
 │   ├── base_rag.py                   # Abstract interface
 │   ├── system1_openai_inmemory.py   # OpenAI + NumPy
-│   └── system2_qwen_milvus.py       # Qwen + Milvus
+│   └── system2_qwen_faiss.py        # Qwen + FAISS
 │
 ├── embeddings/                        # Pre-computed storage
 │   ├── openai_embeddings.pkl         # System 1 (generated)
-│   └── qwen_milvus.db                # System 2 (generated)
+│   ├── qwen_faiss.index              # System 2 FAISS index (generated)
+│   └── qwen_metadata.pkl             # System 2 metadata (generated)
 │
 ├── ground_truth/                      # Test data
 │   └── test_questions.json           # 10 test queries
@@ -146,7 +147,7 @@ python scripts\3_run_evaluation.py
 │
 └── scripts/                           # Build & run scripts
     ├── 1_build_openai_embeddings.py
-    ├── 2_build_qwen_milvus.py
+    ├── 2_build_qwen_faiss.py
     └── 3_run_evaluation.py
 ```
 
@@ -223,7 +224,7 @@ See `ground_truth/test_questions.json` for details.
 
 Edit `config.py` to customize:
 - Embedding models and dimensions
-- Milvus connection parameters
+- FAISS index parameters
 - Scoring weights (semantic, entity, context)
 - Evaluation k-values
 
@@ -239,9 +240,9 @@ python -m scripts.build_rulebook_storage
 python -m scripts.build_rulebook_storage
 ```
 
-**"Milvus or SentenceTransformers not installed"**
+**"FAISS or SentenceTransformers not installed"**
 ```bash
-pip install pymilvus sentence-transformers torch
+uv sync
 ```
 
 **"OpenAI API key not found"**

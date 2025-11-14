@@ -11,7 +11,7 @@ from datetime import datetime
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from implementations import OpenAIInMemoryRAG, QwenMilvusRAG
+from implementations import OpenAIInMemoryRAG, QwenFAISSRAG
 from evaluation import RAGEvaluator
 from config import Config
 
@@ -55,7 +55,7 @@ def print_summary(results: dict):
     print(f"    Mean: {comp['system1']['latency']['mean_ms']:.1f}ms")
     print(f"    Range: {comp['system1']['latency']['min_ms']:.1f}ms - {comp['system1']['latency']['max_ms']:.1f}ms")
     
-    print(f"\n  System 2 (Qwen + Milvus):")
+    print(f"\n  System 2 (Qwen + FAISS):")
     print(f"    Mean: {comp['system2']['latency']['mean_ms']:.1f}ms")
     print(f"    Range: {comp['system2']['latency']['min_ms']:.1f}ms - {comp['system2']['latency']['max_ms']:.1f}ms")
     
@@ -113,12 +113,12 @@ def main():
         return False
     
     try:
-        print("   Loading System 2 (Qwen + Milvus)...")
-        system2 = QwenMilvusRAG()
+        print("   Loading System 2 (Qwen + FAISS)...")
+        system2 = QwenFAISSRAG()
         print("   ✅ System 2 ready")
     except Exception as e:
         print(f"   ❌ Error initializing System 2: {e}")
-        print("   Make sure to run: uv run python 574-Assignment/scripts/2_build_qwen_milvus.py")
+        print("   Make sure to run: uv run python 574-Assignment/scripts/2_build_qwen_faiss.py")
         return False
     
     # 3. Run evaluation

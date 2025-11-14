@@ -37,3 +37,4 @@ poppler-utils  # System dependency note - see README
 
 # OCR and API requests
 requests>=2.31.0
+sqlalchemy[asyncio]>=2.0.0

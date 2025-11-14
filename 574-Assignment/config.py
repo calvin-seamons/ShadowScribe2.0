@@ -23,11 +23,11 @@ class Config:
     OPENAI_EMBEDDING_DIM = 3072
     OPENAI_STORAGE_PATH = EMBEDDINGS_DIR / "openai_embeddings.pkl"
     
-    # System 2: Qwen + Milvus
-    QWEN_MODEL_NAME = 'Qwen/Qwen2.5-Coder-0.5B-Instruct'  # Smaller, faster model
-    QWEN_EMBEDDING_DIM = 512
-    MILVUS_URI = str(EMBEDDINGS_DIR / "qwen_milvus.db")
-    MILVUS_COLLECTION_NAME = "rulebook_sections"
+    # System 2: Qwen + FAISS
+    QWEN_MODEL_NAME = 'Qwen/Qwen3-Embedding-0.6B'  # Qwen3 embedding model
+    QWEN_EMBEDDING_DIM = 768  # Qwen3-Embedding dimension
+    FAISS_INDEX_PATH = str(EMBEDDINGS_DIR / "qwen_faiss.index")
+    FAISS_METADATA_PATH = str(EMBEDDINGS_DIR / "qwen_metadata.pkl")
     
     # Evaluation settings
     K_VALUES = [1, 3, 10]  # Precision@k, Recall@k, nDCG@k values
