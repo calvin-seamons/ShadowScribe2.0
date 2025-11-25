@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(xargs ls:*)",
+      "Bash(dir /s /b C:UserscalviRepositoriesShadowScribe2.0)",
+      "Bash(findstr:*)",
+      "WebSearch",
+      "Bash(dir:*)",
+      "Bash(python scripts/generate_dataset.py:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
