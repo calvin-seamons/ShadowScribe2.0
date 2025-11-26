@@ -41,6 +41,9 @@ CHARACTER_BASICS_TEMPLATES = [
     {"template": "What subclass am I?", "slots": {}},
     {"template": "What's my experience points total?", "slots": {}},
     {"template": "Tell me my base stats", "slots": {}},
+    # Additional templates
+    {"template": "What's my character's weight?", "slots": {}},
+    {"template": "What are my character's defining physical features?", "slots": {}},
 ]
 
 # =============================================================================
@@ -105,6 +108,9 @@ ABILITIES_INFO_TEMPLATES = [
     {"template": "What special abilities do I have?", "slots": {}},
     {"template": "How does my {feature} work?", "slots": {"feature": "feature"}},
     {"template": "What abilities do I get from being a {class_name}?", "slots": {"class_name": "class"}},
+    # Additional templates
+    {"template": "Do I have expertise in any skills?", "slots": {}},
+    {"template": "What's my passive investigation?", "slots": {}},
 ]
 
 # =============================================================================
@@ -137,6 +143,9 @@ INVENTORY_INFO_TEMPLATES = [
     {"template": "What's my carrying capacity?", "slots": {}},
     {"template": "How much weight am I carrying?", "slots": {}},
     {"template": "Am I encumbered?", "slots": {}},
+    # Additional templates
+    {"template": "What consumables do I have?", "slots": {}},
+    {"template": "Do I have any potions?", "slots": {}},
 ]
 
 # =============================================================================
@@ -171,6 +180,9 @@ MAGIC_INFO_TEMPLATES = [
     {"template": "What level is {spell}?", "slots": {"spell": "spell"}},
     {"template": "How does my {spell} work?", "slots": {"spell": "spell"}},
     {"template": "What ritual spells do I have?", "slots": {}},
+    # Additional templates
+    {"template": "What concentration spells do I have prepared?", "slots": {}},
+    {"template": "How many spells can I prepare?", "slots": {}},
 ]
 
 # =============================================================================
@@ -202,6 +214,10 @@ STORY_INFO_TEMPLATES = [
     {"template": "How would my character react to this?", "slots": {}},
     {"template": "What would my character say?", "slots": {}},
     {"template": "What's my character's background feature?", "slots": {}},
+    # Additional templates
+    {"template": "What secrets does my character have?", "slots": {}},
+    {"template": "What fears does my character have?", "slots": {}},
+    {"template": "What's my character's greatest regret?", "slots": {}},
 ]
 
 # =============================================================================
@@ -232,6 +248,11 @@ SOCIAL_INFO_TEMPLATES = [
     {"template": "Do I have any family?", "slots": {}},
     {"template": "What contacts do I have?", "slots": {}},
     {"template": "Who owes me a favor?", "slots": {}},
+    # Additional templates
+    {"template": "Who do I owe favors to?", "slots": {}},
+    {"template": "What's my reputation in the area?", "slots": {}},
+    {"template": "Do I have any romantic interests?", "slots": {}},
+    {"template": "Who is my character's closest friend?", "slots": {}},
 ]
 
 # =============================================================================
@@ -264,6 +285,11 @@ PROGRESS_INFO_TEMPLATES = [
     {"template": "Show me my character progression", "slots": {}},
     {"template": "How has my character grown?", "slots": {}},
     {"template": "What milestones have I achieved?", "slots": {}},
+    # Additional templates
+    {"template": "How close am I to leveling up?", "slots": {}},
+    {"template": "What rewards am I expecting?", "slots": {}},
+    {"template": "What deadlines do I have for my quests?", "slots": {}},
+    {"template": "What's the priority of my current objectives?", "slots": {}},
 ]
 
 # =============================================================================
@@ -281,6 +307,17 @@ FULL_CHARACTER_TEMPLATES = [
     {"template": "Print my entire character sheet", "slots": {}},
     {"template": "Show me everything", "slots": {}},
     {"template": "Complete character dump", "slots": {}},
+    # Additional templates
+    {"template": "Display my full character profile", "slots": {}},
+    {"template": "What's on my character sheet?", "slots": {}},
+    {"template": "Give me the complete rundown of my character", "slots": {}},
+    {"template": "I want to see all my character info", "slots": {}},
+    {"template": "Show me my character's complete stats and info", "slots": {}},
+    {"template": "Pull up my entire character", "slots": {}},
+    {"template": "What does my full character look like?", "slots": {}},
+    {"template": "Read me my whole character sheet", "slots": {}},
+    {"template": "Dump all character information", "slots": {}},
+    {"template": "Let me see my complete character data", "slots": {}},
 ]
 
 # =============================================================================
@@ -298,6 +335,17 @@ CHARACTER_SUMMARY_TEMPLATES = [
     {"template": "TL;DR my character", "slots": {}},
     {"template": "What's essential to know about my character?", "slots": {}},
     {"template": "Quick character rundown", "slots": {}},
+    # Additional templates
+    {"template": "Summarize my character in a few sentences", "slots": {}},
+    {"template": "What's the short version of my character?", "slots": {}},
+    {"template": "Give me the basics of my character", "slots": {}},
+    {"template": "What should I know about my character at a glance?", "slots": {}},
+    {"template": "Condense my character info", "slots": {}},
+    {"template": "What's my character's quick profile?", "slots": {}},
+    {"template": "Character snapshot please", "slots": {}},
+    {"template": "Just the important bits about my character", "slots": {}},
+    {"template": "What defines my character?", "slots": {}},
+    {"template": "Sum up my character quickly", "slots": {}},
 ]
 
 # =============================================================================

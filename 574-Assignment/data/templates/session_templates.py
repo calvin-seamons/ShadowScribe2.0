@@ -42,6 +42,16 @@ CHARACTER_STATUS_TEMPLATES = [
     {"template": "Am I injured?", "slots": {}},
     {"template": "What debuffs do I have?", "slots": {}},
     {"template": "Is my character conscious?", "slots": {}},
+    {"template": "How many hit points am I missing?", "slots": {}},
+    {"template": "What status effects are currently on me?", "slots": {}},
+    {"template": "Did I take damage last session?", "slots": {}},
+    {"template": "Am I exhausted?", "slots": {}},
+    {"template": "What level of exhaustion do I have?", "slots": {}},
+    {"template": "Is my character poisoned or diseased?", "slots": {}},
+    {"template": "What buffs are affecting me?", "slots": {}},
+    {"template": "Did I rest last session?", "slots": {}},
+    {"template": "Am I at full health?", "slots": {}},
+    {"template": "What's my current hit die situation?", "slots": {}},
 ]
 
 # =============================================================================
@@ -59,6 +69,16 @@ EVENT_SEQUENCE_TEMPLATES = [
     {"template": "Recap what happened", "slots": {}},
     {"template": "What did we do last time?", "slots": {}},
     {"template": "Summarize the session events", "slots": {}},
+    {"template": "How did the session begin?", "slots": {}},
+    {"template": "What happened at the end of the session?", "slots": {}},
+    {"template": "What was the turning point of the session?", "slots": {}},
+    {"template": "Break down the session into major beats", "slots": {}},
+    {"template": "What were the main story beats?", "slots": {}},
+    {"template": "How did events unfold?", "slots": {}},
+    {"template": "What sequence of events led to the climax?", "slots": {}},
+    {"template": "Give me the highlights in order", "slots": {}},
+    {"template": "What was the order of encounters?", "slots": {}},
+    {"template": "How did the session progress?", "slots": {}},
 ]
 
 # =============================================================================
@@ -78,6 +98,14 @@ NPC_INFO_TEMPLATES = [
     {"template": "What's the relationship with the NPCs we met?", "slots": {}},
     {"template": "Did we make any new allies?", "slots": {}},
     {"template": "Who betrayed us?", "slots": {}},
+    {"template": "What was the {creature}'s motivation?", "slots": {"creature": "creature"}},
+    {"template": "Who gave us information?", "slots": {}},
+    {"template": "What did the shopkeeper sell us?", "slots": {}},
+    {"template": "Who seemed suspicious?", "slots": {}},
+    {"template": "What NPC quest givers did we meet?", "slots": {}},
+    {"template": "Did any NPCs lie to us?", "slots": {}},
+    {"template": "Who did we negotiate with?", "slots": {}},
+    {"template": "What NPCs owe us favors?", "slots": {}},
 ]
 
 # =============================================================================
@@ -95,6 +123,16 @@ LOCATION_DETAILS_TEMPLATES = [
     {"template": "Tell me about the dungeon we went through", "slots": {}},
     {"template": "What was the environment like?", "slots": {}},
     {"template": "What dangers were in the {location}?", "slots": {"location": "location"}},
+    {"template": "What rooms did we explore?", "slots": {}},
+    {"template": "Describe the layout of the {location}", "slots": {"location": "location"}},
+    {"template": "What landmarks did we pass?", "slots": {}},
+    {"template": "Were there any hidden areas?", "slots": {}},
+    {"template": "What was the atmosphere of the place?", "slots": {}},
+    {"template": "How did we enter the {location}?", "slots": {"location": "location"}},
+    {"template": "What exits did we find?", "slots": {}},
+    {"template": "Was the location trapped?", "slots": {}},
+    {"template": "What environmental hazards were there?", "slots": {}},
+    {"template": "What secrets did the {location} hold?", "slots": {"location": "location"}},
 ]
 
 # =============================================================================
@@ -112,6 +150,16 @@ ITEM_TRACKING_TEMPLATES = [
     {"template": "Did we buy or sell anything?", "slots": {}},
     {"template": "What equipment changed hands?", "slots": {}},
     {"template": "Track the {item} - where is it now?", "slots": {"item": "item"}},
+    {"template": "What consumables did we use?", "slots": {}},
+    {"template": "Did we break any items?", "slots": {}},
+    {"template": "What potions did we drink?", "slots": {}},
+    {"template": "What scrolls did we use?", "slots": {}},
+    {"template": "Did we give away any items?", "slots": {}},
+    {"template": "What items were stolen from us?", "slots": {}},
+    {"template": "Did we identify any magic items?", "slots": {}},
+    {"template": "What ammunition did we expend?", "slots": {}},
+    {"template": "Did anyone attune to the {item}?", "slots": {"item": "item"}},
+    {"template": "What happened to our supplies?", "slots": {}},
 ]
 
 # =============================================================================
@@ -130,6 +178,15 @@ COMBAT_RECAP_TEMPLATES = [
     {"template": "What was the hardest fight?", "slots": {}},
     {"template": "Did anyone go down in combat?", "slots": {}},
     {"template": "What enemies did we face?", "slots": {}},
+    {"template": "How many {creature} did we kill?", "slots": {"creature": "creature"}},
+    {"template": "What was the initiative order?", "slots": {}},
+    {"template": "Did we win or lose the fight?", "slots": {}},
+    {"template": "What special attacks did enemies use?", "slots": {}},
+    {"template": "Did anyone get a critical hit?", "slots": {}},
+    {"template": "How did we start the fight?", "slots": {}},
+    {"template": "Did we get ambushed?", "slots": {}},
+    {"template": "What legendary actions did the {creature} use?", "slots": {"creature": "creature"}},
+    {"template": "How did the combat end?", "slots": {}},
 ]
 
 # =============================================================================
@@ -147,6 +204,16 @@ SPELL_ABILITY_USAGE_TEMPLATES = [
     {"template": "How did {feature} work in that situation?", "slots": {"feature": "feature"}},
     {"template": "What resources did we expend?", "slots": {}},
     {"template": "Track spell slot usage", "slots": {}},
+    {"template": "What concentration spells were active?", "slots": {}},
+    {"template": "Did any spells fail?", "slots": {}},
+    {"template": "What saves did enemies make against {spell}?", "slots": {"spell": "spell"}},
+    {"template": "Did we use any racial abilities?", "slots": {}},
+    {"template": "What class features were used?", "slots": {}},
+    {"template": "How many spell slots remain?", "slots": {}},
+    {"template": "What was the best spell moment?", "slots": {}},
+    {"template": "Did anyone counterspell?", "slots": {}},
+    {"template": "What ritual spells were cast?", "slots": {}},
+    {"template": "What cantrips were used?", "slots": {}},
 ]
 
 # =============================================================================
@@ -164,6 +231,16 @@ CHARACTER_DECISIONS_TEMPLATES = [
     {"template": "Why did my character do that?", "slots": {}},
     {"template": "What influenced our decisions?", "slots": {}},
     {"template": "What consequences came from our choices?", "slots": {}},
+    {"template": "Did we spare or kill the {creature}?", "slots": {"creature": "creature"}},
+    {"template": "What ethical dilemmas did we face?", "slots": {}},
+    {"template": "Why did we accept that quest?", "slots": {}},
+    {"template": "What deals did we make?", "slots": {}},
+    {"template": "Did we break any laws?", "slots": {}},
+    {"template": "What alignments did our actions reflect?", "slots": {}},
+    {"template": "Did we lie to anyone?", "slots": {}},
+    {"template": "What sacrifices did we make?", "slots": {}},
+    {"template": "Who did we choose to help?", "slots": {}},
+    {"template": "What did we refuse to do?", "slots": {}},
 ]
 
 # =============================================================================
@@ -181,6 +258,16 @@ PARTY_DYNAMICS_TEMPLATES = [
     {"template": "What bonding moments happened?", "slots": {}},
     {"template": "How did party roles develop?", "slots": {}},
     {"template": "What's the group dynamic like?", "slots": {}},
+    {"template": "Did anyone disagree on tactics?", "slots": {}},
+    {"template": "Who saved whom in combat?", "slots": {}},
+    {"template": "What secrets were shared?", "slots": {}},
+    {"template": "Did any character development happen?", "slots": {}},
+    {"template": "How did relationships change?", "slots": {}},
+    {"template": "Who is the party leader right now?", "slots": {}},
+    {"template": "Were there any romantic moments?", "slots": {}},
+    {"template": "Did anyone leave or join the party?", "slots": {}},
+    {"template": "What trust issues emerged?", "slots": {}},
+    {"template": "How well did we coordinate?", "slots": {}},
 ]
 
 # =============================================================================
@@ -198,6 +285,16 @@ QUEST_TRACKING_TEMPLATES = [
     {"template": "How close are we to finishing the quest?", "slots": {}},
     {"template": "What quest rewards did we get?", "slots": {}},
     {"template": "What quest-related NPCs did we meet?", "slots": {}},
+    {"template": "Did we fail any quests?", "slots": {}},
+    {"template": "What quest items did we find?", "slots": {}},
+    {"template": "What are our current quest objectives?", "slots": {}},
+    {"template": "Did we get any new quest hooks?", "slots": {}},
+    {"template": "What's the next step in our main quest?", "slots": {}},
+    {"template": "How many quests are we tracking?", "slots": {}},
+    {"template": "What quest deadlines are approaching?", "slots": {}},
+    {"template": "Did we turn in any quests?", "slots": {}},
+    {"template": "What bounties did we complete?", "slots": {}},
+    {"template": "What contracts did we fulfill?", "slots": {}},
 ]
 
 # =============================================================================
@@ -215,6 +312,16 @@ PUZZLE_SOLUTIONS_TEMPLATES = [
     {"template": "What challenges required thinking?", "slots": {}},
     {"template": "What clues did we find?", "slots": {}},
     {"template": "How did we figure it out?", "slots": {}},
+    {"template": "What was the password or code?", "slots": {}},
+    {"template": "What lever combination worked?", "slots": {}},
+    {"template": "How did we open the locked door?", "slots": {}},
+    {"template": "What patterns did we notice?", "slots": {}},
+    {"template": "Who solved the puzzle?", "slots": {}},
+    {"template": "What tools did we need for the puzzle?", "slots": {}},
+    {"template": "What happens if we failed the puzzle?", "slots": {}},
+    {"template": "Were there any hint inscriptions?", "slots": {}},
+    {"template": "What mechanism did the puzzle control?", "slots": {}},
+    {"template": "Did we brute force any puzzles?", "slots": {}},
 ]
 
 # =============================================================================
@@ -232,6 +339,16 @@ LOOT_REWARDS_TEMPLATES = [
     {"template": "What did the {creature} drop?", "slots": {"creature": "creature"}},
     {"template": "What quest rewards did we receive?", "slots": {}},
     {"template": "What's the total value of our haul?", "slots": {}},
+    {"template": "What gems or jewels did we find?", "slots": {}},
+    {"template": "What art objects did we pick up?", "slots": {}},
+    {"template": "Did we find any rare items?", "slots": {}},
+    {"template": "What potions were in the loot?", "slots": {}},
+    {"template": "How much XP did we gain?", "slots": {}},
+    {"template": "What mundane items did we loot?", "slots": {}},
+    {"template": "Was there any cursed loot?", "slots": {}},
+    {"template": "What treasure hoard did we find?", "slots": {}},
+    {"template": "Did we find any spell scrolls?", "slots": {}},
+    {"template": "What was hidden in the chest?", "slots": {}},
 ]
 
 # =============================================================================
@@ -249,6 +366,16 @@ DEATH_REVIVAL_TEMPLATES = [
     {"template": "What brought someone back?", "slots": {}},
     {"template": "Any near-death experiences?", "slots": {}},
     {"template": "What were the consequences of dying?", "slots": {}},
+    {"template": "How many death saves did someone fail?", "slots": {}},
+    {"template": "Who stabilized the downed party member?", "slots": {}},
+    {"template": "Did we use {spell} to bring someone back?", "slots": {"spell": "spell"}},
+    {"template": "What killed the character?", "slots": {}},
+    {"template": "Did the soul return willingly?", "slots": {}},
+    {"template": "What resurrection components did we need?", "slots": {}},
+    {"template": "Was the death permanent?", "slots": {}},
+    {"template": "Did we lose any NPCs?", "slots": {}},
+    {"template": "How did the party react to the death?", "slots": {}},
+    {"template": "What happened while unconscious?", "slots": {}},
 ]
 
 # =============================================================================
@@ -266,6 +393,16 @@ DIVINE_RELIGIOUS_TEMPLATES = [
     {"template": "Did we interact with any clerics or priests?", "slots": {}},
     {"template": "What religious factions were involved?", "slots": {}},
     {"template": "Were there any omens or signs?", "slots": {}},
+    {"template": "What deity blessed us?", "slots": {}},
+    {"template": "Did we make any religious offerings?", "slots": {}},
+    {"template": "Were there any holy or unholy places?", "slots": {}},
+    {"template": "What divine magic was used?", "slots": {}},
+    {"template": "Did we break any religious taboos?", "slots": {}},
+    {"template": "What celestial or fiendish beings appeared?", "slots": {}},
+    {"template": "Were we cursed by a deity?", "slots": {}},
+    {"template": "What religious ceremonies occurred?", "slots": {}},
+    {"template": "Did anyone have a crisis of faith?", "slots": {}},
+    {"template": "What sacred texts did we find?", "slots": {}},
 ]
 
 # =============================================================================
@@ -283,6 +420,16 @@ MEMORY_VISION_TEMPLATES = [
     {"template": "What did we learn from the vision?", "slots": {}},
     {"template": "Who had the vision?", "slots": {}},
     {"template": "What supernatural experiences occurred?", "slots": {}},
+    {"template": "What was the nightmare about?", "slots": {}},
+    {"template": "Did we see glimpses of the future?", "slots": {}},
+    {"template": "What memories were unlocked?", "slots": {}},
+    {"template": "Was the vision magical or natural?", "slots": {}},
+    {"template": "What warning did the vision contain?", "slots": {}},
+    {"template": "Did we experience someone else's memories?", "slots": {}},
+    {"template": "What was symbolic in the vision?", "slots": {}},
+    {"template": "How did the vision guide us?", "slots": {}},
+    {"template": "What trauma was revealed?", "slots": {}},
+    {"template": "Did we have shared dreams?", "slots": {}},
 ]
 
 # =============================================================================
@@ -300,6 +447,16 @@ RULES_MECHANICS_TEMPLATES = [
     {"template": "How did we resolve the rules dispute?", "slots": {}},
     {"template": "What ruling did we go with?", "slots": {}},
     {"template": "Were there any contested rolls?", "slots": {}},
+    {"template": "Did we use flanking rules?", "slots": {}},
+    {"template": "How did grappling work?", "slots": {}},
+    {"template": "What skill check was required?", "slots": {}},
+    {"template": "Did we use optional rules?", "slots": {}},
+    {"template": "How did cover work in combat?", "slots": {}},
+    {"template": "What saving throw was needed?", "slots": {}},
+    {"template": "Did we use variant rules?", "slots": {}},
+    {"template": "How did concentration work?", "slots": {}},
+    {"template": "What ability check was contested?", "slots": {}},
+    {"template": "How did opportunity attacks work?", "slots": {}},
 ]
 
 # =============================================================================
@@ -317,6 +474,16 @@ HUMOR_MOMENTS_TEMPLATES = [
     {"template": "What unexpected humor occurred?", "slots": {}},
     {"template": "What running jokes continued?", "slots": {}},
     {"template": "What was the most ridiculous thing that happened?", "slots": {}},
+    {"template": "What puns were made?", "slots": {}},
+    {"template": "What character quirks were funny?", "slots": {}},
+    {"template": "What comedic misunderstandings happened?", "slots": {}},
+    {"template": "What inside jokes did we create?", "slots": {}},
+    {"template": "What embarrassing moments occurred?", "slots": {}},
+    {"template": "What absurd plans did we try?", "slots": {}},
+    {"template": "What one-liners were memorable?", "slots": {}},
+    {"template": "Did anyone break character laughing?", "slots": {}},
+    {"template": "What NPC interactions were hilarious?", "slots": {}},
+    {"template": "What creative solutions were unexpectedly funny?", "slots": {}},
 ]
 
 # =============================================================================
@@ -334,6 +501,16 @@ UNRESOLVED_MYSTERIES_TEMPLATES = [
     {"template": "What was left unexplained?", "slots": {}},
     {"template": "What suspicious things happened?", "slots": {}},
     {"template": "What unanswered questions came up?", "slots": {}},
+    {"template": "Who is the mysterious figure?", "slots": {}},
+    {"template": "What's the hidden agenda?", "slots": {}},
+    {"template": "What clues haven't we connected?", "slots": {}},
+    {"template": "What's the real motivation behind events?", "slots": {}},
+    {"template": "What doors haven't we opened?", "slots": {}},
+    {"template": "What's the villain's true plan?", "slots": {}},
+    {"template": "What symbols keep appearing?", "slots": {}},
+    {"template": "What patterns are we missing?", "slots": {}},
+    {"template": "What's behind the locked door?", "slots": {}},
+    {"template": "What rumors need investigation?", "slots": {}},
 ]
 
 # =============================================================================
@@ -351,6 +528,16 @@ FUTURE_IMPLICATIONS_TEMPLATES = [
     {"template": "What foreshadowing happened?", "slots": {}},
     {"template": "What plans did we make?", "slots": {}},
     {"template": "Where are we heading next?", "slots": {}},
+    {"template": "What enemies are still out there?", "slots": {}},
+    {"template": "What promises will come due?", "slots": {}},
+    {"template": "What deadlines are approaching?", "slots": {}},
+    {"template": "What should we buy before next session?", "slots": {}},
+    {"template": "What spells should I prepare?", "slots": {}},
+    {"template": "What allies might help us?", "slots": {}},
+    {"template": "What's the next logical destination?", "slots": {}},
+    {"template": "What long-term consequences did we trigger?", "slots": {}},
+    {"template": "What revenge plots are brewing?", "slots": {}},
+    {"template": "What opportunities did we create?", "slots": {}},
 ]
 
 # =============================================================================
@@ -368,6 +555,16 @@ CROSS_SESSION_TEMPLATES = [
     {"template": "What character arcs are progressing?", "slots": {}},
     {"template": "What story threads connected?", "slots": {}},
     {"template": "How does this fit the bigger picture?", "slots": {}},
+    {"template": "What NPCs from before returned?", "slots": {}},
+    {"template": "What items from earlier sessions were useful?", "slots": {}},
+    {"template": "What consequences from earlier caught up?", "slots": {}},
+    {"template": "How has my character grown?", "slots": {}},
+    {"template": "What recurring villains appeared?", "slots": {}},
+    {"template": "What prophecies are being fulfilled?", "slots": {}},
+    {"template": "What locations did we revisit?", "slots": {}},
+    {"template": "What old allies came back?", "slots": {}},
+    {"template": "How is the main plot advancing?", "slots": {}},
+    {"template": "What seeds planted earlier are blooming?", "slots": {}},
 ]
 
 # =============================================================================

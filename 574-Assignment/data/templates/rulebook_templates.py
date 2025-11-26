@@ -55,6 +55,13 @@ DESCRIBE_ENTITY_TEMPLATES = [
     {"template": "Explain {feature} to me", "slots": {"feature": "feature"}},
     {"template": "What are the details of {spell}?", "slots": {"spell": "spell"}},
     {"template": "Describe the {creature} creature", "slots": {"creature": "creature"}},
+    {"template": "What is the {race} race?", "slots": {"race": "race"}},
+    {"template": "Tell me about the {class_name} class", "slots": {"class_name": "class"}},
+    {"template": "What is {feat}?", "slots": {"feat": "feat"}},
+    {"template": "Describe the {subclass} subclass", "slots": {"subclass": "subclass"}},
+    {"template": "What is the {skill} skill?", "slots": {"skill": "skill"}},
+    {"template": "Explain {magic_item}", "slots": {"magic_item": "magic_item"}},
+    {"template": "What is the {background} background?", "slots": {"background": "background"}},
 ]
 
 # =============================================================================
@@ -73,6 +80,15 @@ COMPARE_ENTITIES_TEMPLATES = [
     {"template": "Difference between {condition1} and {condition2}?", "slots": {"condition1": "condition", "condition2": "condition"}},
     {"template": "{class1} vs {class2} for damage?", "slots": {"class1": "class", "class2": "class"}},
     {"template": "Is {spell1} or {spell2} better for combat?", "slots": {"spell1": "spell", "spell2": "spell"}},
+    {"template": "Which class is more versatile, {class1} or {class2}?", "slots": {"class1": "class", "class2": "class"}},
+    {"template": "{subclass1} or {subclass2} for this build?", "slots": {"subclass1": "subclass", "subclass2": "subclass"}},
+    {"template": "Compare {feat} to {feat2}", "slots": {"feat": "feat", "feat2": "feat"}},
+    {"template": "What's better for healing, {spell1} or {spell2}?", "slots": {"spell1": "spell", "spell2": "spell"}},
+    {"template": "{damage_type1} vs {damage_type2} damage?", "slots": {"damage_type1": "damage_type", "damage_type2": "damage_type"}},
+    {"template": "Which is tankier, {class1} or {class2}?", "slots": {"class1": "class", "class2": "class"}},
+    {"template": "Compare {magic_item} to {magic_item2}", "slots": {"magic_item": "magic_item", "magic_item2": "magic_item"}},
+    {"template": "What's the trade-off between {weapon1} and {weapon2}?", "slots": {"weapon1": "weapon", "weapon2": "weapon"}},
+    {"template": "{race1} or {race2} for a {class_name}?", "slots": {"race1": "race", "race2": "race", "class_name": "class"}},
 ]
 
 # =============================================================================
@@ -92,6 +108,14 @@ LEVEL_PROGRESSION_TEMPLATES = [
     {"template": "XP requirements for level {level}", "slots": {"level": "level"}},
     {"template": "What abilities does a {class_name} unlock at higher levels?", "slots": {"class_name": "class"}},
     {"template": "Spell slot progression for {class_name}", "slots": {"class_name": "class"}},
+    {"template": "When does a {class_name} get 3rd level spells?", "slots": {"class_name": "class"}},
+    {"template": "What level do you get an ASI?", "slots": {}},
+    {"template": "How many hit dice does a level {level} {class_name} have?", "slots": {"level": "level", "class_name": "class"}},
+    {"template": "What capstone ability does {class_name} get?", "slots": {"class_name": "class"}},
+    {"template": "At what level do {class_name}s get their second subclass feature?", "slots": {"class_name": "class"}},
+    {"template": "Show me the {class_name} class table", "slots": {"class_name": "class"}},
+    {"template": "How many cantrips does a level {level} {class_name} know?", "slots": {"level": "level", "class_name": "class"}},
+    {"template": "What's the max spell level for a level {level} caster?", "slots": {"level": "level"}},
 ]
 
 # =============================================================================
@@ -113,6 +137,12 @@ ACTION_OPTIONS_TEMPLATES = [
     {"template": "What triggers an opportunity attack?", "slots": {}},
     {"template": "What free actions can I take?", "slots": {}},
     {"template": "How does the Dash action work?", "slots": {}},
+    {"template": "What is the Disengage action?", "slots": {}},
+    {"template": "Can I take the Hide action in combat?", "slots": {}},
+    {"template": "What is the Search action?", "slots": {}},
+    {"template": "How does the Use an Object action work?", "slots": {}},
+    {"template": "Can I grapple as an action?", "slots": {}},
+    {"template": "What is the Shove action?", "slots": {}},
 ]
 
 # =============================================================================
@@ -133,6 +163,13 @@ RULE_MECHANICS_TEMPLATES = [
     {"template": "What are the flanking rules?", "slots": {}},
     {"template": "How does concentration work?", "slots": {}},
     {"template": "What breaks concentration?", "slots": {}},
+    {"template": "How does surprise work?", "slots": {}},
+    {"template": "What's the two-weapon fighting rules?", "slots": {}},
+    {"template": "How does mounted combat work?", "slots": {}},
+    {"template": "What are the rules for hiding?", "slots": {}},
+    {"template": "How does initiative work?", "slots": {}},
+    {"template": "What is the passive check?", "slots": {}},
+    {"template": "How does group checks work?", "slots": {}},
 ]
 
 # =============================================================================
@@ -152,6 +189,14 @@ CALCULATE_VALUES_TEMPLATES = [
     {"template": "How is passive perception calculated?", "slots": {}},
     {"template": "What's the damage formula for {spell}?", "slots": {"spell": "spell"}},
     {"template": "How much healing does {spell} do?", "slots": {"spell": "spell"}},
+    {"template": "How do I calculate my spell attack bonus?", "slots": {}},
+    {"template": "What's my proficiency bonus at level {level}?", "slots": {"level": "level"}},
+    {"template": "How is grapple DC calculated?", "slots": {}},
+    {"template": "What's the formula for jump distance?", "slots": {}},
+    {"template": "How do I calculate sneak attack damage?", "slots": {}},
+    {"template": "How much does falling damage do?", "slots": {}},
+    {"template": "What's the DC for a {spell} spell?", "slots": {"spell": "spell"}},
+    {"template": "How is push/pull distance calculated?", "slots": {}},
 ]
 
 # =============================================================================
@@ -172,6 +217,13 @@ SPELL_DETAILS_TEMPLATES = [
     {"template": "Is {spell} a ritual?", "slots": {"spell": "spell"}},
     {"template": "What's the area of effect for {spell}?", "slots": {"spell": "spell"}},
     {"template": "Does {spell} have verbal components?", "slots": {"spell": "spell"}},
+    {"template": "What material component does {spell} need?", "slots": {"spell": "spell"}},
+    {"template": "Does {spell} require somatic components?", "slots": {"spell": "spell"}},
+    {"template": "Is {spell} an attack spell?", "slots": {"spell": "spell"}},
+    {"template": "Can {spell} target multiple creatures?", "slots": {"spell": "spell"}},
+    {"template": "What save does {spell} require?", "slots": {"spell": "spell"}},
+    {"template": "Does {spell} have a costly component?", "slots": {"spell": "spell"}},
+    {"template": "Is {spell} instantaneous?", "slots": {"spell": "spell"}},
 ]
 
 # =============================================================================
@@ -190,6 +242,15 @@ CLASS_SPELL_ACCESS_TEMPLATES = [
     {"template": "What's on the {class_name} spell list?", "slots": {"class_name": "class"}},
     {"template": "Best {class_name} spells at level {level}?", "slots": {"class_name": "class", "level": "level"}},
     {"template": "What damage spells can {class_name}s use?", "slots": {"class_name": "class"}},
+    {"template": "What cantrips does a {class_name} get?", "slots": {"class_name": "class"}},
+    {"template": "Does {subclass} get access to {spell}?", "slots": {"subclass": "subclass", "spell": "spell"}},
+    {"template": "What exclusive spells does {class_name} have?", "slots": {"class_name": "class"}},
+    {"template": "Can any class cast {spell}?", "slots": {"spell": "spell"}},
+    {"template": "What utility spells can {class_name}s cast?", "slots": {"class_name": "class"}},
+    {"template": "What {class_name} spells don't require concentration?", "slots": {"class_name": "class"}},
+    {"template": "Best {class_name} ritual spells?", "slots": {"class_name": "class"}},
+    {"template": "What domain spells does {subclass} get?", "slots": {"subclass": "subclass"}},
+    {"template": "Can {class_name}s prepare {spell}?", "slots": {"class_name": "class", "spell": "spell"}},
 ]
 
 # =============================================================================
@@ -209,6 +270,14 @@ MONSTER_STATS_TEMPLATES = [
     {"template": "What abilities does a {creature} have?", "slots": {"creature": "creature"}},
     {"template": "What's the {creature}'s challenge rating?", "slots": {"creature": "creature"}},
     {"template": "How much damage does a {creature} deal?", "slots": {"creature": "creature"}},
+    {"template": "What's a {creature}'s Strength score?", "slots": {"creature": "creature"}},
+    {"template": "Does a {creature} have darkvision?", "slots": {"creature": "creature"}},
+    {"template": "What type of creature is a {creature}?", "slots": {"creature": "creature"}},
+    {"template": "What size is a {creature}?", "slots": {"creature": "creature"}},
+    {"template": "Does a {creature} have spellcasting?", "slots": {"creature": "creature"}},
+    {"template": "What's the XP value of a {creature}?", "slots": {"creature": "creature"}},
+    {"template": "What languages does a {creature} speak?", "slots": {"creature": "creature"}},
+    {"template": "What vulnerabilities does a {creature} have?", "slots": {"creature": "creature"}},
 ]
 
 # =============================================================================
@@ -227,6 +296,15 @@ CONDITION_EFFECTS_TEMPLATES = [
     {"template": "How long does {condition} last?", "slots": {"condition": "condition"}},
     {"template": "What's the difference between {condition1} and {condition2}?", "slots": {"condition1": "condition", "condition2": "condition"}},
     {"template": "List all conditions", "slots": {}},
+    {"template": "Can I cast spells while {condition}?", "slots": {"condition": "condition"}},
+    {"template": "Does {condition} end my concentration?", "slots": {"condition": "condition"}},
+    {"template": "Can I move while {condition}?", "slots": {"condition": "condition"}},
+    {"template": "What happens when {condition} ends?", "slots": {"condition": "condition"}},
+    {"template": "What saves can end {condition}?", "slots": {"condition": "condition"}},
+    {"template": "Is {condition} magical?", "slots": {"condition": "condition"}},
+    {"template": "What creatures are immune to {condition}?", "slots": {"condition": "condition"}},
+    {"template": "Does {condition} stack?", "slots": {"condition": "condition"}},
+    {"template": "What level of exhaustion is lethal?", "slots": {}},
 ]
 
 # =============================================================================
@@ -246,6 +324,14 @@ CHARACTER_CREATION_TEMPLATES = [
     {"template": "Starting gold for a {class_name}?", "slots": {"class_name": "class"}},
     {"template": "How do I choose skills?", "slots": {}},
     {"template": "What's the standard array?", "slots": {}},
+    {"template": "What languages can I start with?", "slots": {}},
+    {"template": "How many proficiencies do I get?", "slots": {}},
+    {"template": "What's a good first level {class_name}?", "slots": {"class_name": "class"}},
+    {"template": "How do I pick starting spells?", "slots": {}},
+    {"template": "What determines starting hit points?", "slots": {}},
+    {"template": "How do I choose a background?", "slots": {}},
+    {"template": "What tool proficiencies can I get?", "slots": {}},
+    {"template": "How does the {background} background work?", "slots": {"background": "background"}},
 ]
 
 # =============================================================================
@@ -264,6 +350,15 @@ MULTICLASS_RULES_TEMPLATES = [
     {"template": "How do extra attacks work with multiclass?", "slots": {}},
     {"template": "Can I multiclass as a {race}?", "slots": {"race": "race"}},
     {"template": "Multiclass spell slot table", "slots": {}},
+    {"template": "What class features don't stack when multiclassing?", "slots": {}},
+    {"template": "How does Unarmored Defense work with multiclass?", "slots": {}},
+    {"template": "Can I multiclass into {class_name} at level 1?", "slots": {"class_name": "class"}},
+    {"template": "Do I get starting equipment from multiclassing?", "slots": {}},
+    {"template": "How do I calculate caster level for multiclass?", "slots": {}},
+    {"template": "What's a good multiclass dip for {class_name}?", "slots": {"class_name": "class"}},
+    {"template": "Can paladins and warlocks multiclass well?", "slots": {}},
+    {"template": "What happens to my spells known when I multiclass?", "slots": {}},
+    {"template": "How does channel divinity work for multiclass?", "slots": {}},
 ]
 
 # =============================================================================
@@ -283,6 +378,14 @@ EQUIPMENT_PROPERTIES_TEMPLATES = [
     {"template": "What properties does {weapon} have?", "slots": {"weapon": "weapon"}},
     {"template": "What's the difference between light and heavy armor?", "slots": {}},
     {"template": "Can I dual wield {weapon}?", "slots": {"weapon": "weapon"}},
+    {"template": "What's the weight of {armor}?", "slots": {"armor": "armor"}},
+    {"template": "What does the versatile property do?", "slots": {}},
+    {"template": "What weapons have reach?", "slots": {}},
+    {"template": "Does {armor} have a Strength requirement?", "slots": {"armor": "armor"}},
+    {"template": "What's a loading weapon?", "slots": {}},
+    {"template": "What ammunition does {weapon} use?", "slots": {"weapon": "weapon"}},
+    {"template": "What's the thrown range for {weapon}?", "slots": {"weapon": "weapon"}},
+    {"template": "Is {weapon} one-handed or two-handed?", "slots": {"weapon": "weapon"}},
 ]
 
 # =============================================================================
@@ -300,6 +403,16 @@ DAMAGE_TYPES_TEMPLATES = [
     {"template": "What creatures are immune to {damage_type}?", "slots": {"damage_type": "damage_type"}},
     {"template": "Does {spell} deal {damage_type} damage?", "slots": {"spell": "spell", "damage_type": "damage_type"}},
     {"template": "How does {damage_type} resistance work?", "slots": {"damage_type": "damage_type"}},
+    {"template": "What's the most resisted damage type?", "slots": {}},
+    {"template": "What's the least resisted damage type?", "slots": {}},
+    {"template": "Can magic weapons bypass {damage_type} resistance?", "slots": {"damage_type": "damage_type"}},
+    {"template": "What damage type is {spell}?", "slots": {"spell": "spell"}},
+    {"template": "Do undead resist {damage_type}?", "slots": {"damage_type": "damage_type"}},
+    {"template": "What deals magical {damage_type} damage?", "slots": {"damage_type": "damage_type"}},
+    {"template": "Is {damage_type} physical or elemental?", "slots": {"damage_type": "damage_type"}},
+    {"template": "What class deals the most {damage_type} damage?", "slots": {"damage_type": "damage_type"}},
+    {"template": "How does vulnerability to {damage_type} work?", "slots": {"damage_type": "damage_type"}},
+    {"template": "What fiends are immune to {damage_type}?", "slots": {"damage_type": "damage_type"}},
 ]
 
 # =============================================================================
@@ -318,6 +431,15 @@ REST_MECHANICS_TEMPLATES = [
     {"template": "What interrupts a long rest?", "slots": {}},
     {"template": "How many hit dice do I recover?", "slots": {}},
     {"template": "What features reset on a short rest?", "slots": {}},
+    {"template": "Can I take multiple short rests?", "slots": {}},
+    {"template": "What happens if I don't long rest?", "slots": {}},
+    {"template": "Do I recover all spell slots on long rest?", "slots": {}},
+    {"template": "How does the Catnap spell affect rests?", "slots": {}},
+    {"template": "What {class_name} features reset on short rest?", "slots": {"class_name": "class"}},
+    {"template": "Can I attune to items during a short rest?", "slots": {}},
+    {"template": "What activities can I do during a short rest?", "slots": {}},
+    {"template": "Do warlocks recover spells on short rest?", "slots": {}},
+    {"template": "What's the difference between a rest and sleeping?", "slots": {}},
 ]
 
 # =============================================================================
@@ -336,6 +458,15 @@ SKILL_USAGE_TEMPLATES = [
     {"template": "What skills does a {class_name} get?", "slots": {"class_name": "class"}},
     {"template": "Can I help with a {skill} check?", "slots": {"skill": "skill"}},
     {"template": "When would I roll {ability} instead of a skill?", "slots": {"ability": "ability"}},
+    {"template": "What's passive {skill}?", "slots": {"skill": "skill"}},
+    {"template": "Can I take 10 on {skill}?", "slots": {"skill": "skill"}},
+    {"template": "What expertise can I get in {skill}?", "slots": {"skill": "skill"}},
+    {"template": "How many skill proficiencies do I get?", "slots": {}},
+    {"template": "What backgrounds give {skill}?", "slots": {"skill": "skill"}},
+    {"template": "Can I retry a failed {skill} check?", "slots": {"skill": "skill"}},
+    {"template": "What tool proficiencies work with {skill}?", "slots": {"skill": "skill"}},
+    {"template": "Is {skill} common or rare?", "slots": {"skill": "skill"}},
+    {"template": "What's the DC for impossible {skill} checks?", "slots": {"skill": "skill"}},
 ]
 
 # =============================================================================
@@ -355,6 +486,14 @@ FIND_BY_CRITERIA_TEMPLATES = [
     {"template": "What ritual spells are there?", "slots": {}},
     {"template": "What bonus action spells exist?", "slots": {}},
     {"template": "What creatures are undead?", "slots": {}},
+    {"template": "What spells can be cast as a reaction?", "slots": {}},
+    {"template": "What creatures have flying speed?", "slots": {}},
+    {"template": "What heavy armor is available?", "slots": {}},
+    {"template": "What spells require no components?", "slots": {}},
+    {"template": "What creatures are fiends?", "slots": {}},
+    {"template": "What two-handed weapons are there?", "slots": {}},
+    {"template": "What spells last 1 hour?", "slots": {}},
+    {"template": "What creatures have darkvision?", "slots": {}},
 ]
 
 # =============================================================================
@@ -372,6 +511,16 @@ PREREQUISITE_CHECK_TEMPLATES = [
     {"template": "Prerequisites for {feature}?", "slots": {"feature": "feature"}},
     {"template": "Can I take {feat} at level {level}?", "slots": {"feat": "feat", "level": "level"}},
     {"template": "What's required to attune to {item}?", "slots": {"item": "item"}},
+    {"template": "Do I need a free hand for {spell}?", "slots": {"spell": "spell"}},
+    {"template": "What stat do I need for {feat}?", "slots": {"feat": "feat"}},
+    {"template": "Can any class take {feat}?", "slots": {"feat": "feat"}},
+    {"template": "What's required to learn {spell}?", "slots": {"spell": "spell"}},
+    {"template": "Do I need spellcasting for {feat}?", "slots": {"feat": "feat"}},
+    {"template": "What proficiency do I need for {item}?", "slots": {"item": "item"}},
+    {"template": "Can a {race} take {feat}?", "slots": {"race": "race", "feat": "feat"}},
+    {"template": "What level do I get {feature}?", "slots": {"feature": "feature"}},
+    {"template": "Requirements for the {subclass} subclass?", "slots": {"subclass": "subclass"}},
+    {"template": "Do I meet the requirements for {feat}?", "slots": {"feat": "feat"}},
 ]
 
 # =============================================================================
@@ -389,6 +538,16 @@ INTERACTION_RULES_TEMPLATES = [
     {"template": "Can I benefit from multiple {item} items?", "slots": {"item": "item"}},
     {"template": "How does {spell} work with {feature}?", "slots": {"spell": "spell", "feature": "feature"}},
     {"template": "Does {condition} affect {spell}?", "slots": {"condition": "condition", "spell": "spell"}},
+    {"template": "Can I combine {spell} with Extra Attack?", "slots": {"spell": "spell"}},
+    {"template": "Do AC bonuses from different sources stack?", "slots": {}},
+    {"template": "How does {spell} work on a {creature}?", "slots": {"spell": "spell", "creature": "creature"}},
+    {"template": "Can I use {feature} while polymorphed?", "slots": {"feature": "feature"}},
+    {"template": "Does {condition} prevent {spell} from working?", "slots": {"condition": "condition", "spell": "spell"}},
+    {"template": "How do multiple concentrations work?", "slots": {}},
+    {"template": "Can I twin {spell}?", "slots": {"spell": "spell"}},
+    {"template": "Does {spell} work through total cover?", "slots": {"spell": "spell"}},
+    {"template": "How does {spell} interact with antimagic?", "slots": {"spell": "spell"}},
+    {"template": "Can {creature} be affected by {spell}?", "slots": {"creature": "creature", "spell": "spell"}},
 ]
 
 # =============================================================================
@@ -406,6 +565,16 @@ TACTICAL_USAGE_TEMPLATES = [
     {"template": "Tips for using {spell} in combat?", "slots": {"spell": "spell"}},
     {"template": "How do I maximize damage as a {class_name}?", "slots": {"class_name": "class"}},
     {"template": "Best {class_name} combat strategies?", "slots": {"class_name": "class"}},
+    {"template": "When should I save {spell} for later?", "slots": {"spell": "spell"}},
+    {"template": "How do I protect the party as a {class_name}?", "slots": {"class_name": "class"}},
+    {"template": "Best opening move for a {class_name}?", "slots": {"class_name": "class"}},
+    {"template": "How do I conserve spell slots?", "slots": {}},
+    {"template": "When should I use {feature} defensively?", "slots": {"feature": "feature"}},
+    {"template": "Best targets for {spell}?", "slots": {"spell": "spell"}},
+    {"template": "How do I control the battlefield?", "slots": {}},
+    {"template": "When to use burst vs sustained damage?", "slots": {}},
+    {"template": "Best combos with {spell}?", "slots": {"spell": "spell"}},
+    {"template": "How do I handle being outnumbered?", "slots": {}},
 ]
 
 # =============================================================================
@@ -424,6 +593,15 @@ ENVIRONMENTAL_RULES_TEMPLATES = [
     {"template": "How does darkness affect combat?", "slots": {}},
     {"template": "What's the effect of being in water?", "slots": {}},
     {"template": "How does fog work?", "slots": {}},
+    {"template": "What happens in extreme heat?", "slots": {}},
+    {"template": "How does high altitude affect characters?", "slots": {}},
+    {"template": "What are the rules for squeezing?", "slots": {}},
+    {"template": "How does slippery ice work?", "slots": {}},
+    {"template": "What happens in strong wind?", "slots": {}},
+    {"template": "How does dim light affect vision?", "slots": {}},
+    {"template": "What are the rules for being buried?", "slots": {}},
+    {"template": "How does quicksand work?", "slots": {}},
+    {"template": "What happens in a vacuum?", "slots": {}},
 ]
 
 # =============================================================================
@@ -442,6 +620,15 @@ CREATURE_ABILITIES_TEMPLATES = [
     {"template": "What is regeneration?", "slots": {}},
     {"template": "How does frightful presence work?", "slots": {}},
     {"template": "What's the difference between fly and hover?", "slots": {}},
+    {"template": "What is multiattack?", "slots": {}},
+    {"template": "How does spider climb work?", "slots": {}},
+    {"template": "What is innate spellcasting?", "slots": {}},
+    {"template": "How does shapechanger work?", "slots": {}},
+    {"template": "What is damage transfer?", "slots": {}},
+    {"template": "How does swallow work?", "slots": {}},
+    {"template": "What is sunlight sensitivity?", "slots": {}},
+    {"template": "How does tremorsense work?", "slots": {}},
+    {"template": "What is blindsight?", "slots": {}},
 ]
 
 # =============================================================================
@@ -460,6 +647,15 @@ SAVING_THROWS_TEMPLATES = [
     {"template": "What triggers a concentration save?", "slots": {}},
     {"template": "What's the save DC for {creature}'s abilities?", "slots": {"creature": "creature"}},
     {"template": "Do I add proficiency to saving throws?", "slots": {}},
+    {"template": "What's the most common saving throw?", "slots": {}},
+    {"template": "How does a {ability} save differ from a check?", "slots": {"ability": "ability"}},
+    {"template": "Can I help someone make a saving throw?", "slots": {}},
+    {"template": "What gives advantage on saving throws?", "slots": {}},
+    {"template": "How does Magic Resistance affect saves?", "slots": {}},
+    {"template": "What happens on a successful save against {spell}?", "slots": {"spell": "spell"}},
+    {"template": "Can legendary resistance replace a save?", "slots": {}},
+    {"template": "What's the difference between a save and a check?", "slots": {}},
+    {"template": "How is save DC calculated for monsters?", "slots": {}},
 ]
 
 # =============================================================================
@@ -477,6 +673,16 @@ MAGIC_ITEM_USAGE_TEMPLATES = [
     {"template": "What are the charges on {magic_item}?", "slots": {"magic_item": "magic_item"}},
     {"template": "Can {magic_item} be used by anyone?", "slots": {"magic_item": "magic_item"}},
     {"template": "What happens when {magic_item} runs out of charges?", "slots": {"magic_item": "magic_item"}},
+    {"template": "Can I attune to {magic_item} during a short rest?", "slots": {"magic_item": "magic_item"}},
+    {"template": "What action is needed to use {magic_item}?", "slots": {"magic_item": "magic_item"}},
+    {"template": "Is {magic_item} legendary?", "slots": {"magic_item": "magic_item"}},
+    {"template": "What class restriction does {magic_item} have?", "slots": {"magic_item": "magic_item"}},
+    {"template": "How do I end attunement to {magic_item}?", "slots": {"magic_item": "magic_item"}},
+    {"template": "Can {magic_item} be cursed?", "slots": {"magic_item": "magic_item"}},
+    {"template": "How do cursed items work?", "slots": {}},
+    {"template": "What's a sentient magic item?", "slots": {}},
+    {"template": "Can I have multiple of the same magic item?", "slots": {}},
+    {"template": "How do artifact properties work?", "slots": {}},
 ]
 
 # =============================================================================
@@ -494,6 +700,16 @@ PLANAR_PROPERTIES_TEMPLATES = [
     {"template": "Describe the {plane}", "slots": {"plane": "plane"}},
     {"template": "What's the difference between the {plane1} and {plane2}?", "slots": {"plane1": "plane", "plane2": "plane"}},
     {"template": "What gods are associated with the {plane}?", "slots": {"plane": "plane"}},
+    {"template": "What happens if I die in the {plane}?", "slots": {"plane": "plane"}},
+    {"template": "How does time flow in the {plane}?", "slots": {"plane": "plane"}},
+    {"template": "What languages are spoken in the {plane}?", "slots": {"plane": "plane"}},
+    {"template": "Is there gravity in the {plane}?", "slots": {"plane": "plane"}},
+    {"template": "What resources exist in the {plane}?", "slots": {"plane": "plane"}},
+    {"template": "How hostile is the {plane}?", "slots": {"plane": "plane"}},
+    {"template": "What's the material plane like?", "slots": {}},
+    {"template": "How do the inner planes differ?", "slots": {}},
+    {"template": "What are the outer planes?", "slots": {}},
+    {"template": "How do transitive planes work?", "slots": {}},
 ]
 
 # =============================================================================
@@ -512,6 +728,15 @@ DOWNTIME_ACTIVITIES_TEMPLATES = [
     {"template": "How do I run a business during downtime?", "slots": {}},
     {"template": "Can I research during downtime?", "slots": {}},
     {"template": "How do I find work during downtime?", "slots": {}},
+    {"template": "Can I scribe spell scrolls?", "slots": {}},
+    {"template": "How long does tool training take?", "slots": {}},
+    {"template": "What's the recuperating activity?", "slots": {}},
+    {"template": "Can I build a stronghold?", "slots": {}},
+    {"template": "How does carousing work?", "slots": {}},
+    {"template": "What's the buying magic items activity?", "slots": {}},
+    {"template": "Can I brew potions during downtime?", "slots": {}},
+    {"template": "How does the pit fighting activity work?", "slots": {}},
+    {"template": "What's the gambling downtime activity?", "slots": {}},
 ]
 
 # =============================================================================
@@ -529,6 +754,16 @@ SUBCLASS_FEATURES_TEMPLATES = [
     {"template": "What's the best {class_name} subclass?", "slots": {"class_name": "class"}},
     {"template": "What spells does {subclass} get?", "slots": {"subclass": "subclass"}},
     {"template": "How does {subclass} change the {class_name}?", "slots": {"subclass": "subclass", "class_name": "class"}},
+    {"template": "What's the {subclass} capstone?", "slots": {"subclass": "subclass"}},
+    {"template": "What level do I choose the {subclass}?", "slots": {"subclass": "subclass"}},
+    {"template": "What bonus spells does {subclass} give?", "slots": {"subclass": "subclass"}},
+    {"template": "What's the flavor of {subclass}?", "slots": {"subclass": "subclass"}},
+    {"template": "Best race for {subclass}?", "slots": {"subclass": "subclass"}},
+    {"template": "What channel divinity does {subclass} get?", "slots": {"subclass": "subclass"}},
+    {"template": "What's the {subclass}'s main ability?", "slots": {"subclass": "subclass"}},
+    {"template": "How does {subclass} compare to other {class_name} subclasses?", "slots": {"subclass": "subclass", "class_name": "class"}},
+    {"template": "What's the signature feature of {subclass}?", "slots": {"subclass": "subclass"}},
+    {"template": "Is {subclass} good for beginners?", "slots": {"subclass": "subclass"}},
 ]
 
 # =============================================================================
@@ -546,6 +781,16 @@ COST_LOOKUP_TEMPLATES = [
     {"template": "Cost of living expenses?", "slots": {}},
     {"template": "How much does it cost to hire a {creature}?", "slots": {"creature": "creature"}},
     {"template": "What's the price of a {spell} scroll?", "slots": {"spell": "spell"}},
+    {"template": "How much is a potion of healing?", "slots": {}},
+    {"template": "What's the cost to resurrect someone?", "slots": {}},
+    {"template": "How much does plate armor cost?", "slots": {}},
+    {"template": "What's the price of spell components?", "slots": {}},
+    {"template": "How much gold to stay at an inn?", "slots": {}},
+    {"template": "What's the cost of a horse?", "slots": {}},
+    {"template": "How expensive is {magic_item}?", "slots": {"magic_item": "magic_item"}},
+    {"template": "What's the material cost for {spell}?", "slots": {"spell": "spell"}},
+    {"template": "How much is a spellbook?", "slots": {}},
+    {"template": "What does a {item} sell for?", "slots": {"item": "item"}},
 ]
 
 # =============================================================================
@@ -563,6 +808,16 @@ LEGENDARY_MECHANICS_TEMPLATES = [
     {"template": "How do I deal with legendary resistance?", "slots": {}},
     {"template": "What's a mythic creature?", "slots": {}},
     {"template": "How many legendary resistances does a {creature} have?", "slots": {"creature": "creature"}},
+    {"template": "When do lair actions happen?", "slots": {}},
+    {"template": "Can legendary actions be interrupted?", "slots": {}},
+    {"template": "What's the cost of {creature}'s legendary actions?", "slots": {"creature": "creature"}},
+    {"template": "How does a {creature}'s lair affect combat?", "slots": {"creature": "creature"}},
+    {"template": "Do all legendary creatures have lairs?", "slots": {}},
+    {"template": "What's a regional effect?", "slots": {}},
+    {"template": "How many times can legendary resistance be used?", "slots": {}},
+    {"template": "What creatures have mythic actions?", "slots": {}},
+    {"template": "How does mythic trait work?", "slots": {}},
+    {"template": "Can I ready against legendary actions?", "slots": {}},
 ]
 
 # =============================================================================
@@ -581,6 +836,15 @@ OPTIMIZATION_ADVICE_TEMPLATES = [
     {"template": "What's a good support build?", "slots": {}},
     {"template": "Best {race} class combinations?", "slots": {"race": "race"}},
     {"template": "How do I build for AC?", "slots": {}},
+    {"template": "What's the best healer build?", "slots": {}},
+    {"template": "How do I optimize for concentration?", "slots": {}},
+    {"template": "Best skill monkey build?", "slots": {}},
+    {"template": "How do I build a gish?", "slots": {}},
+    {"template": "What's the strongest martial build?", "slots": {}},
+    {"template": "How do I optimize a caster?", "slots": {}},
+    {"template": "Best nova damage build?", "slots": {}},
+    {"template": "How do I build for survivability?", "slots": {}},
+    {"template": "What feats synergize with {feature}?", "slots": {"feature": "feature"}},
 ]
 
 # =============================================================================

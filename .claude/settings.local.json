@@ -7,7 +7,9 @@
       "Bash(findstr:*)",
       "WebSearch",
       "Bash(dir:*)",
-      "Bash(python scripts/generate_dataset.py:*)"
+      "Bash(python scripts/generate_dataset.py:*)",
+      "Bash(python3:*)",
+      "Bash(uv run python:*)"
     ],
     "deny": [],
     "ask": []

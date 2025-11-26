@@ -23,8 +23,8 @@ import random
 import re
 import os
 from pathlib import Path
-from collections import defaultdict
-from typing import Dict, List, Tuple, Any
+from collections import defaultdict, Counter
+from typing import Dict, List, Tuple, Any, Optional
 
 # Import templates and gazetteers
 import sys
@@ -324,37 +324,47 @@ def fill_template(template: str, slots: Dict[str, str]) -> Tuple[str, List[Dict]
 
     # Calculate word-level positions for entities
     words = filled.split()
+    
     for entity in entities:
-        # Find which word(s) contain this entity
+        entity_text = entity["text"]
+        entity_start_char = entity["start_char"]
+        
+        # Find word positions by character offset
         char_pos = 0
         entity["start"] = -1
         entity["end"] = -1
-
+        
         for i, word in enumerate(words):
             word_start = char_pos
             word_end = char_pos + len(word)
-
-            # Check if entity starts in this word
-            if entity["start"] == -1 and word_start <= entity["start_char"] < word_end:
+            
+            # Check if this word is at or after the entity start position
+            if entity["start"] == -1 and word_start <= entity_start_char < word_end + 1:
                 entity["start"] = i
-
-            # Check if entity text is fully contained
-            entity_end_char = entity["start_char"] + len(entity["text"])
-            if word_start < entity_end_char <= word_end + 1:  # +1 for potential space
-                entity["end"] = i + 1
-                break
-
+            
             char_pos = word_end + 1  # +1 for space
-
-        # Handle multi-word entities
-        if entity["end"] == -1 and entity["start"] != -1:
-            # Count words in entity
-            entity_words = entity["text"].split()
+        
+        # If we found the start, calculate end based on entity word count
+        if entity["start"] != -1:
+            entity_words = entity_text.split()
             entity["end"] = min(entity["start"] + len(entity_words), len(words))
-
+        else:
+            # Fallback: search for the entity text directly in words
+            entity_words = entity_text.split()
+            for i in range(len(words) - len(entity_words) + 1):
+                # Check if consecutive words match the entity
+                potential_match = " ".join(words[i:i + len(entity_words)])
+                if potential_match.lower() == entity_text.lower() or potential_match == entity_text:
+                    entity["start"] = i
+                    entity["end"] = i + len(entity_words)
+                    break
+        
         del entity["start_char"]
-
-    return filled, entities
+    
+    # Filter out entities with invalid spans
+    valid_entities = [e for e in entities if e["start"] >= 0 and e["end"] > e["start"]]
+    
+    return filled, valid_entities
 
 
 def generate_bio_tags(query: str, entities: List[Dict]) -> List[str]:
@@ -512,30 +522,52 @@ def split_dataset(samples: List[Dict], train_ratio: float, val_ratio: float) -> 
     return samples[:train_end], samples[train_end:val_end], samples[val_end:]
 
 
-def analyze_dataset(samples: List[Dict], name: str):
-    """Print dataset statistics."""
+def analyze_dataset(samples: List[Dict], name: str) -> Dict[str, Any]:
+    """Print dataset statistics and return them for class weight calculation."""
     print(f"\n{name} Statistics:")
     print(f"  Total samples: {len(samples)}")
 
     # Tool distribution
     tool_counts = defaultdict(int)
     num_tools = defaultdict(int)
-    intent_counts = defaultdict(int)
+    intent_counts = defaultdict(lambda: defaultdict(int))  # per-tool intent counts
     entity_type_counts = defaultdict(int)
+    bio_tag_counts = defaultdict(int)
 
     for s in samples:
         for tool in s["tools"]:
             tool_counts[tool] += 1
         num_tools[len(s["tools"])] += 1
-        for intent in s["intents"].values():
-            intent_counts[intent] += 1
+        
+        # Track intents per tool
+        for tool, intent in s["intents"].items():
+            intent_counts[tool][intent] += 1
+            
         for entity in s["entities"]:
             entity_type_counts[entity["type"]] += 1
+            
+        for tag in s["bio_tags"]:
+            bio_tag_counts[tag] += 1
 
     print(f"  Tools: {dict(tool_counts)}")
     print(f"  Num tools per query: {dict(num_tools)}")
-    print(f"  Top 5 intents: {dict(sorted(intent_counts.items(), key=lambda x: -x[1])[:5])}")
+    
+    # Print per-tool intent distribution
+    print(f"  Intent distribution by tool:")
+    for tool in ["character_data", "session_notes", "rulebook"]:
+        if intent_counts[tool]:
+            top_intents = sorted(intent_counts[tool].items(), key=lambda x: -x[1])[:3]
+            print(f"    {tool}: {dict(top_intents)} ...")
+    
     print(f"  Entity types: {dict(entity_type_counts)}")
+    print(f"  BIO tag distribution (top 5): {dict(sorted(bio_tag_counts.items(), key=lambda x: -x[1])[:5])}")
+    
+    return {
+        "tool_counts": dict(tool_counts),
+        "intent_counts": {k: dict(v) for k, v in intent_counts.items()},
+        "entity_type_counts": dict(entity_type_counts),
+        "bio_tag_counts": dict(bio_tag_counts)
+    }
 
 
 def main():
@@ -556,12 +588,12 @@ def main():
     # Split
     train, val, test = split_dataset(samples, TRAIN_RATIO, VAL_RATIO)
 
-    # Analyze
-    analyze_dataset(train, "Train")
-    analyze_dataset(val, "Validation")
-    analyze_dataset(test, "Test")
+    # Analyze and get statistics for class weights
+    train_stats = analyze_dataset(train, "Train")
+    val_stats = analyze_dataset(val, "Validation")
+    test_stats = analyze_dataset(test, "Test")
 
-    # Save
+    # Save datasets
     print("\nSaving datasets...")
 
     with open(output_dir / "train.json", "w") as f:
@@ -576,49 +608,16 @@ def main():
         json.dump(test, f, indent=2)
     print(f"  Saved {len(test)} samples to {output_dir / 'test.json'}")
 
-    # Save label mappings
-    label_mappings = {
-        "tool_to_idx": {"character_data": 0, "session_notes": 1, "rulebook": 2},
-        "intent_to_idx": {},
-        "tag_to_idx": {
-            "O": 0,
-            "B-SPELL": 1, "I-SPELL": 2,
-            "B-CLASS": 3, "I-CLASS": 4,
-            "B-RACE": 5, "I-RACE": 6,
-            "B-CREATURE": 7, "I-CREATURE": 8,
-            "B-ITEM": 9, "I-ITEM": 10,
-            "B-LOCATION": 11, "I-LOCATION": 12,
-            "B-ABILITY": 13, "I-ABILITY": 14,
-            "B-SKILL": 15, "I-SKILL": 16,
-            "B-CONDITION": 17, "I-CONDITION": 18,
-            "B-DAMAGE_TYPE": 19, "I-DAMAGE_TYPE": 20,
-            "B-FEAT": 21, "I-FEAT": 22,
-            "B-BACKGROUND": 23, "I-BACKGROUND": 24,
-        },
-        "intent_to_tool": {}
-    }
-
-    # Build intent mappings
-    all_intents = []
-
-    for intent in CHARACTER_TEMPLATES.keys():
-        all_intents.append(intent)
-        label_mappings["intent_to_tool"][intent] = "character_data"
-
-    for intent in SESSION_TEMPLATES.keys():
-        all_intents.append(intent)
-        label_mappings["intent_to_tool"][intent] = "session_notes"
-
-    for intent in RULEBOOK_TEMPLATES.keys():
-        all_intents.append(intent)
-        label_mappings["intent_to_tool"][intent] = "rulebook"
-
-    for i, intent in enumerate(all_intents):
-        label_mappings["intent_to_idx"][intent] = i
+    # Build comprehensive label mappings
+    label_mappings = build_label_mappings(train_stats)
 
     with open(output_dir / "label_mappings.json", "w") as f:
         json.dump(label_mappings, f, indent=2)
     print(f"  Saved label mappings to {output_dir / 'label_mappings.json'}")
+
+    # Validate dataset
+    print("\nValidating dataset...")
+    validate_dataset(train + val + test, label_mappings)
 
     print("\n" + "=" * 60)
     print("Dataset generation complete!")
@@ -626,6 +625,187 @@ def main():
     print("\nTo use in Google Colab, upload the 'generated' folder to:")
     print("  Google Drive > My Drive > 574-assignment > data > generated")
     print("=" * 60)
+
+
+def build_label_mappings(train_stats: Dict[str, Any]) -> Dict[str, Any]:
+    """Build comprehensive label mappings including per-tool intent indices and class weights."""
+    
+    # Tool mappings
+    tool_to_idx = {"character_data": 0, "session_notes": 1, "rulebook": 2}
+    idx_to_tool = {v: k for k, v in tool_to_idx.items()}
+    
+    # BIO tag mappings
+    tag_to_idx = {
+        "O": 0,
+        "B-SPELL": 1, "I-SPELL": 2,
+        "B-CLASS": 3, "I-CLASS": 4,
+        "B-RACE": 5, "I-RACE": 6,
+        "B-CREATURE": 7, "I-CREATURE": 8,
+        "B-ITEM": 9, "I-ITEM": 10,
+        "B-LOCATION": 11, "I-LOCATION": 12,
+        "B-ABILITY": 13, "I-ABILITY": 14,
+        "B-SKILL": 15, "I-SKILL": 16,
+        "B-CONDITION": 17, "I-CONDITION": 18,
+        "B-DAMAGE_TYPE": 19, "I-DAMAGE_TYPE": 20,
+        "B-FEAT": 21, "I-FEAT": 22,
+        "B-BACKGROUND": 23, "I-BACKGROUND": 24,
+    }
+    idx_to_tag = {v: k for k, v in tag_to_idx.items()}
+    
+    # Per-tool intent mappings (THIS IS THE KEY CHANGE)
+    # Each tool has its own intent indices starting from 0
+    character_intents = list(CHARACTER_TEMPLATES.keys())
+    session_intents = list(SESSION_TEMPLATES.keys())
+    rulebook_intents = list(RULEBOOK_TEMPLATES.keys())
+    
+    intent_to_idx_per_tool = {
+        "character_data": {intent: i for i, intent in enumerate(character_intents)},
+        "session_notes": {intent: i for i, intent in enumerate(session_intents)},
+        "rulebook": {intent: i for i, intent in enumerate(rulebook_intents)},
+    }
+    
+    idx_to_intent_per_tool = {
+        "character_data": {i: intent for i, intent in enumerate(character_intents)},
+        "session_notes": {i: intent for i, intent in enumerate(session_intents)},
+        "rulebook": {i: intent for i, intent in enumerate(rulebook_intents)},
+    }
+    
+    # Global intent mapping (for backward compatibility)
+    all_intents = []
+    intent_to_tool = {}
+    for intent in character_intents:
+        all_intents.append(intent)
+        intent_to_tool[intent] = "character_data"
+    for intent in session_intents:
+        all_intents.append(intent)
+        intent_to_tool[intent] = "session_notes"
+    for intent in rulebook_intents:
+        all_intents.append(intent)
+        intent_to_tool[intent] = "rulebook"
+    
+    global_intent_to_idx = {intent: i for i, intent in enumerate(all_intents)}
+    
+    # Calculate class weights for imbalanced intents
+    intent_weights = calculate_intent_weights(train_stats["intent_counts"])
+    
+    # Calculate NER tag weights
+    ner_weights = calculate_ner_weights(train_stats["bio_tag_counts"], tag_to_idx)
+    
+    return {
+        # Core mappings
+        "tool_to_idx": tool_to_idx,
+        "idx_to_tool": idx_to_tool,
+        "tag_to_idx": tag_to_idx,
+        "idx_to_tag": idx_to_tag,
+        
+        # Per-tool intent mappings (for Stage 2 gated prediction)
+        "intent_to_idx_per_tool": intent_to_idx_per_tool,
+        "idx_to_intent_per_tool": idx_to_intent_per_tool,
+        
+        # Intent counts per tool (for model architecture)
+        "num_intents_per_tool": {
+            "character_data": len(character_intents),
+            "session_notes": len(session_intents),
+            "rulebook": len(rulebook_intents),
+        },
+        
+        # Global mappings (backward compatible)
+        "intent_to_idx": global_intent_to_idx,
+        "intent_to_tool": intent_to_tool,
+        
+        # Class weights for handling imbalance
+        "intent_weights_per_tool": intent_weights,
+        "ner_tag_weights": ner_weights,
+        
+        # Metadata
+        "num_tools": len(tool_to_idx),
+        "num_ner_tags": len(tag_to_idx),
+        "total_intents": len(all_intents),
+    }
+
+
+def calculate_intent_weights(intent_counts: Dict[str, Dict[str, int]]) -> Dict[str, Dict[str, float]]:
+    """Calculate class weights for imbalanced intents using inverse frequency."""
+    weights = {}
+    
+    for tool, counts in intent_counts.items():
+        if not counts:
+            continue
+            
+        total = sum(counts.values())
+        num_classes = len(counts)
+        
+        # Inverse frequency weighting: weight = total / (num_classes * count)
+        tool_weights = {}
+        for intent, count in counts.items():
+            weight = total / (num_classes * count) if count > 0 else 1.0
+            tool_weights[intent] = round(weight, 4)
+        
+        weights[tool] = tool_weights
+    
+    return weights
+
+
+def calculate_ner_weights(bio_tag_counts: Dict[str, int], tag_to_idx: Dict[str, int]) -> Dict[str, float]:
+    """Calculate class weights for NER tags (O tag is usually dominant)."""
+    total = sum(bio_tag_counts.values())
+    num_tags = len(tag_to_idx)
+    
+    weights = {}
+    for tag in tag_to_idx.keys():
+        count = bio_tag_counts.get(tag, 1)  # Avoid division by zero
+        weight = total / (num_tags * count) if count > 0 else 1.0
+        # Cap the weight to avoid extreme values for rare tags
+        weights[tag] = round(min(weight, 10.0), 4)
+    
+    return weights
+
+
+def validate_dataset(samples: List[Dict], label_mappings: Dict) -> bool:
+    """Validate that all samples have correct structure and valid labels."""
+    errors = []
+    
+    valid_tools = set(label_mappings["tool_to_idx"].keys())
+    valid_tags = set(label_mappings["tag_to_idx"].keys())
+    
+    for i, sample in enumerate(samples):
+        # Check tools
+        for tool in sample["tools"]:
+            if tool not in valid_tools:
+                errors.append(f"Sample {i}: Invalid tool '{tool}'")
+        
+        # Check intents map to correct tools
+        for tool, intent in sample["intents"].items():
+            if tool not in valid_tools:
+                errors.append(f"Sample {i}: Intent for invalid tool '{tool}'")
+            elif intent not in label_mappings["intent_to_idx_per_tool"].get(tool, {}):
+                errors.append(f"Sample {i}: Invalid intent '{intent}' for tool '{tool}'")
+        
+        # Check BIO tags
+        for tag in sample["bio_tags"]:
+            if tag not in valid_tags:
+                errors.append(f"Sample {i}: Invalid BIO tag '{tag}'")
+        
+        # Check entity spans align with BIO tags
+        words = sample["query"].split()
+        if len(words) != len(sample["bio_tags"]):
+            errors.append(f"Sample {i}: Word count ({len(words)}) != tag count ({len(sample['bio_tags'])})")
+        
+        # Check entity positions
+        for entity in sample["entities"]:
+            if entity["start"] < 0 or entity["end"] > len(words):
+                errors.append(f"Sample {i}: Entity '{entity['text']}' has invalid span [{entity['start']}, {entity['end']})")
+    
+    if errors:
+        print(f"  Found {len(errors)} validation errors:")
+        for error in errors[:10]:  # Show first 10
+            print(f"    - {error}")
+        if len(errors) > 10:
+            print(f"    ... and {len(errors) - 10} more")
+        return False
+    else:
+        print("  ✓ All samples validated successfully")
+        return True
 
 
 if __name__ == "__main__":

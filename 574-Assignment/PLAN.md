@@ -290,74 +290,73 @@ config = {
 
 ## Part 5: Deliverables
 
-### Google Drive Structure (Persistence Between Notebooks)
+### Local Development with VS Code Colab Extension
 
-All notebooks will mount Google Drive for data persistence:
+Notebooks use **relative paths** for portability. When using VS Code with the Google Colab extension, your local files are accessible directly - no Google Drive mounting needed.
 
 ```python
 # At the top of every notebook
-from google.colab import drive
-drive.mount('/content/drive')
+import os
+from pathlib import Path
 
-# Project root
-PROJECT_ROOT = '/content/drive/MyDrive/574-assignment'
+# Get project root (notebooks/ -> 574-Assignment/)
+NOTEBOOK_DIR = Path(os.getcwd())
+PROJECT_ROOT = NOTEBOOK_DIR.parent if NOTEBOOK_DIR.name == 'notebooks' else NOTEBOOK_DIR
+DATA_PATH = PROJECT_ROOT / 'data' / 'generated'
+MODEL_PATH = PROJECT_ROOT / 'models' / 'joint_deberta'
 ```
 
-### Directory Structure (on Google Drive)
+### Directory Structure
 
 ```
-MyDrive/
-└── 574-assignment/
-    ├── notebooks/
-    │   ├── 01_data_generation.ipynb      # Generate training data
-    │   ├── 02_model1_training.ipynb      # Tool & Intent classifier
-    │   ├── 03_model2_training.ipynb      # Entity extractor NER
-    │   └── 04_evaluation.ipynb           # Metrics, baselines, analysis
-    ├── src/
-    │   ├── data_utils.py                 # Data loading, augmentation
-    │   ├── models.py                     # Model architectures
-    │   └── metrics.py                    # Evaluation functions
-    ├── data/
-    │   ├── templates/                    # Pre-built template files
-    │   │   ├── character_templates.py
-    │   │   ├── session_templates.py
-    │   │   ├── rulebook_templates.py
-    │   │   ├── multi_tool_templates.py
-    │   │   └── entity_gazetteers.py
-    │   └── generated/                    # Generated datasets (persisted)
-    │       ├── train.json
-    │       ├── val.json
-    │       └── test.json
-    ├── models/                           # Saved model checkpoints
-    │   ├── tool_intent_classifier/
-    │   │   ├── best_model.pt
-    │   │   └── config.json
-    │   └── entity_extractor/
-    │       ├── best_model.pt
-    │       └── config.json
-    └── results/
-        ├── model1_results.json
-        ├── model2_results.json
-        └── figures/
+574-Assignment/
+├── notebooks/
+│   ├── 01_data_generation.ipynb      # Generate training data
+│   ├── 02_joint_model_training.ipynb # Joint DeBERTa model (Tool + Intent + NER)
+│   └── 03_evaluation.ipynb           # Metrics, baselines, analysis
+├── data/
+│   ├── templates/                    # Pre-built template files
+│   │   ├── character_templates.py
+│   │   ├── session_templates.py
+│   │   ├── rulebook_templates.py
+│   │   ├── multi_tool_templates.py
+│   │   └── entity_gazetteers.py
+│   └── generated/                    # Generated datasets
+│       ├── train.json
+│       ├── val.json
+│       ├── test.json
+│       └── label_mappings.json
+├── scripts/
+│   └── generate_dataset.py           # Data generation script
+├── models/                           # Saved model checkpoints
+│   └── joint_deberta/
+│       ├── pytorch_model.bin
+│       ├── config.json
+│       ├── training_config.json
+│       └── label_mappings.json
+├── results/
+│   ├── evaluation_results.csv
+│   └── figures/
+├── config.py                         # Project configuration
+├── PLAN.md
+├── README.md
+├── pyproject.toml
+└── requirements.txt
 ```
 
 ### Notebook Data Flow
 
 ```
 Notebook 1 (Data Generation)
-    ↓ saves to Drive
+    ↓ saves locally
     data/generated/train.json, val.json, test.json
     ↓
-Notebook 2 (Model 1 Training)
-    ↓ loads from Drive, saves checkpoints
-    models/tool_intent_classifier/
+Notebook 2 (Joint Model Training)
+    ↓ loads data, saves checkpoints
+    models/joint_deberta/
     ↓
-Notebook 3 (Model 2 Training)
-    ↓ loads from Drive, saves checkpoints
-    models/entity_extractor/
-    ↓
-Notebook 4 (Evaluation)
-    ↓ loads models + data from Drive
+Notebook 3 (Evaluation)
+    ↓ loads model + data, outputs results
     results/
 ```
 
