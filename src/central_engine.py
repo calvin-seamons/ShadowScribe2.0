@@ -3,12 +3,14 @@ Central Engine & Query Processing Pipeline
 
 Main orchestrator that makes LLM calls and coordinates the entire query processing pipeline.
 Uses 2 parallel LLM calls (tool selector + entity extractor) to determine query routing.
+Optionally runs local classifier in parallel for comparison logging.
 """
 
 import asyncio
 import time
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, field
+from pathlib import Path
 
 # Import LLM client abstraction
 from .llm.llm_client import LLMClient, LLMClientFactory
@@ -72,6 +74,37 @@ class CentralEngine:
         
         # Conversation history tracking
         self.conversation_history: List[Dict[str, str]] = []
+        
+        # Initialize local classifier if enabled for comparison logging
+        self.local_classifier = None
+        if self.config.comparison_logging or self.config.use_local_classifier:
+            self._init_local_classifier()
+    
+    def _init_local_classifier(self) -> None:
+        """Initialize the local classifier for comparison logging."""
+        try:
+            from .classifiers.local_classifier import LocalClassifier
+            
+            # Resolve paths relative to project root
+            project_root = Path(__file__).parent.parent
+            model_path = project_root / self.config.local_classifier_model_path
+            srd_cache_path = project_root / self.config.local_classifier_srd_cache
+            
+            if model_path.exists():
+                self.local_classifier = LocalClassifier(
+                    model_path=str(model_path),
+                    srd_cache_path=str(srd_cache_path),
+                    device=self.config.local_classifier_device,
+                    tool_threshold=self.config.local_classifier_tool_threshold,
+                    gazetteer_min_similarity=self.config.gazetteer_min_similarity
+                )
+                print("[CentralEngine] Local classifier initialized for comparison logging")
+            else:
+                print(f"[CentralEngine] Local classifier model not found at {model_path}")
+        except ImportError as e:
+            print(f"[CentralEngine] Could not import local classifier: {e}")
+        except Exception as e:
+            print(f"[CentralEngine] Failed to initialize local classifier: {e}")
     
     @classmethod
     def create_from_config(cls, prompt_manager, character=None, 
@@ -231,14 +264,36 @@ class CentralEngine:
         # Add user query to conversation history
         self.add_conversation_turn("user", user_query)
         
-        # Step 1: Make 2 parallel LLM calls
+        # Step 1: Make parallel LLM calls + local classifier (if enabled)
         print("🔧 DEBUG: Step 1 - Making parallel LLM calls (tool selector + entity extractor)")
         step1_start = time.time()
-        tool_selector_output, entity_extractor_output = await asyncio.gather(
+        
+        # Build list of async tasks
+        tasks = [
             self._call_tool_selector(user_query, character_name),
             self._call_entity_extractor(user_query)
-        )
+        ]
+        
+        # Add local classifier task if enabled for comparison
+        run_local_comparison = self.config.comparison_logging and self.local_classifier is not None
+        if run_local_comparison:
+            tasks.append(self._run_local_classifier(user_query))
+        
+        # Run all tasks in parallel
+        results = await asyncio.gather(*tasks)
+        
+        tool_selector_output = results[0]
+        entity_extractor_output = results[1]
+        local_classifier_result = results[2] if run_local_comparison else None
+        
         timing['routing_and_entities'] = (time.time() - step1_start) * 1000  # Convert to ms
+        
+        # Log comparison if enabled
+        if run_local_comparison and local_classifier_result:
+            await self._log_classifier_comparison(
+                user_query, tool_selector_output, entity_extractor_output, 
+                local_classifier_result, metadata_callback
+            )
         
         print(f"🔧 DEBUG: Tool selector returned {len(tool_selector_output.tools_needed)} tools")
         print(f"🔧 DEBUG: Entity extractor returned {len(entity_extractor_output.entities)} entities")
@@ -474,6 +529,7 @@ class CentralEngine:
         Make LLM call for Tool & Intention Selector.
         Determines which RAG tools are needed and what intention to use for each.
         """
+        start_time = time.time()
         try:
             history = self.conversation_history[:-1] if len(self.conversation_history) > 0 else []
             
@@ -495,8 +551,10 @@ class CentralEngine:
             
             response = await client.generate_json_response(prompt, model=model, **llm_params)
             
-            # Debug: Print raw response
-            print(f"🔍 RAW TOOL SELECTOR RESPONSE:")
+            elapsed_ms = (time.time() - start_time) * 1000
+            
+            # Debug: Print raw response with timing
+            print(f"🔍 RAW TOOL SELECTOR RESPONSE (⏱️ {elapsed_ms:.0f}ms):")
             print(f"   Type: {type(response)}")
             if hasattr(response, 'content'):
                 print(f"   Content: {response.content}")
@@ -522,6 +580,7 @@ class CentralEngine:
         Make LLM call for Entity Extractor.
         Extracts entity names from the user query without guessing search contexts.
         """
+        start_time = time.time()
         try:
             history = self.conversation_history[:-1] if len(self.conversation_history) > 0 else []
             
@@ -538,8 +597,10 @@ class CentralEngine:
             
             response = await client.generate_json_response(prompt, model=model, **llm_params)
             
-            # Debug: Print raw response
-            print(f"🔍 RAW ENTITY EXTRACTOR RESPONSE:")
+            elapsed_ms = (time.time() - start_time) * 1000
+            
+            # Debug: Print raw response with timing
+            print(f"🔍 RAW ENTITY EXTRACTOR RESPONSE (⏱️ {elapsed_ms:.0f}ms):")
             print(f"   Type: {type(response)}")
             if hasattr(response, 'content'):
                 print(f"   Content: {response.content}")
@@ -559,6 +620,117 @@ class CentralEngine:
             
         except Exception as e:
             raise RuntimeError(f"Entity extractor LLM call failed: {str(e)}") from e
+    
+    async def _run_local_classifier(self, user_query: str) -> Optional[Any]:
+        """
+        Run local classifier for comparison logging.
+        Returns ClassificationResult or None if local classifier not available.
+        """
+        if not self.local_classifier:
+            return None
+        
+        try:
+            return await self.local_classifier.classify(user_query)
+        except Exception as e:
+            print(f"⚠️ Local classifier error: {e}")
+            return None
+    
+    async def _log_classifier_comparison(
+        self,
+        user_query: str,
+        llm_tools: ToolSelectorOutput,
+        llm_entities: EntityExtractorOutput,
+        local_result: Any,
+        metadata_callback: Optional[Any] = None
+    ) -> None:
+        """
+        Log comparison between LLM and local classifier results.
+        
+        Emits comparison metadata and prints debug info.
+        """
+        print("\n" + "=" * 70)
+        print("🔬 CLASSIFIER COMPARISON")
+        print("=" * 70)
+        print(f"Query: \"{user_query}\"")
+        print()
+        
+        # Compare tools
+        llm_tool_names = set(t["tool"] for t in llm_tools.tools_needed)
+        local_tool_names = set(t["tool"] for t in local_result.tools_needed)
+        
+        print("📊 TOOL SELECTION:")
+        print(f"   LLM Tools:   {sorted(llm_tool_names) or '(none)'}")
+        print(f"   Local Tools: {sorted(local_tool_names) or '(none)'}")
+        
+        if llm_tool_names == local_tool_names:
+            print("   ✅ MATCH")
+        else:
+            only_llm = llm_tool_names - local_tool_names
+            only_local = local_tool_names - llm_tool_names
+            if only_llm:
+                print(f"   ⚠️ Only in LLM: {sorted(only_llm)}")
+            if only_local:
+                print(f"   ⚠️ Only in Local: {sorted(only_local)}")
+        
+        # Compare intents per tool
+        print("\n🎯 INTENTS:")
+        llm_intents = {t["tool"]: t.get("intention", "?") for t in llm_tools.tools_needed}
+        local_intents = {t["tool"]: t.get("intention", "?") for t in local_result.tools_needed}
+        all_tools = llm_tool_names | local_tool_names
+        for tool in sorted(all_tools):
+            llm_intent = llm_intents.get(tool, "-")
+            local_intent = local_intents.get(tool, "-")
+            match = "✅" if llm_intent == local_intent else "⚠️"
+            print(f"   {tool}: LLM={llm_intent}, Local={local_intent} {match}")
+        
+        # Compare entities
+        print("\n🏷️ ENTITIES:")
+        llm_entity_names = set(e.get("name", "") for e in llm_entities.entities)
+        local_entity_names = set(e.get("name", "") for e in local_result.entities)
+        
+        print(f"   LLM Entities:   {sorted(llm_entity_names) or '(none)'}")
+        print(f"   Local Entities: {sorted(local_entity_names) or '(none)'}")
+        
+        if llm_entity_names == local_entity_names:
+            print("   ✅ MATCH")
+        else:
+            only_llm = llm_entity_names - local_entity_names
+            only_local = local_entity_names - llm_entity_names
+            if only_llm:
+                print(f"   ⚠️ Only in LLM: {sorted(only_llm)}")
+            if only_local:
+                print(f"   ⚠️ Only in Local: {sorted(only_local)}")
+        
+        # Show local classifier confidence scores
+        print("\n📈 LOCAL CONFIDENCE:")
+        for tool, conf in sorted(local_result.tool_confidences.items()):
+            marker = "✓" if conf > self.config.local_classifier_tool_threshold else "✗"
+            print(f"   {tool}: {conf:.2%} {marker}")
+        
+        print(f"\n⏱️ Local inference time: {local_result.inference_time_ms:.1f}ms")
+        print("=" * 70 + "\n")
+        
+        # Emit comparison metadata if callback provided
+        if metadata_callback:
+            await metadata_callback('classifier_comparison', {
+                'query': user_query,
+                'llm': {
+                    'tools': list(llm_tool_names),
+                    'intents': llm_intents,
+                    'entities': list(llm_entity_names)
+                },
+                'local': {
+                    'tools': list(local_tool_names),
+                    'intents': local_intents,
+                    'entities': list(local_entity_names),
+                    'tool_confidences': local_result.tool_confidences,
+                    'inference_time_ms': local_result.inference_time_ms
+                },
+                'matches': {
+                    'tools': llm_tool_names == local_tool_names,
+                    'entities': llm_entity_names == local_entity_names
+                }
+            })
     
     def _section_to_tool(self, section_name: str) -> str:
         """

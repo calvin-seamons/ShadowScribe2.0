@@ -109,6 +109,15 @@ class RAGConfig:
     # Local Model Settings (if using local models)
     local_model_device: str = "cpu"  # or "cuda" if GPU available
     
+    # Local Classifier Settings (Two-Stage Joint Model)
+    use_local_classifier: bool = False  # Use local model instead of LLM for routing
+    local_classifier_model_path: str = "src/classifiers/models/two_stage_joint"
+    local_classifier_srd_cache: str = "src/classifiers/data/srd_cache"
+    local_classifier_device: str = "auto"  # auto, cuda, mps, cpu
+    local_classifier_tool_threshold: float = 0.5  # Confidence threshold for tool selection
+    gazetteer_min_similarity: float = 0.80  # Minimum similarity for gazetteer NER matching
+    comparison_logging: bool = True  # Log both LLM and local classifier results for comparison
+    
     def __post_init__(self):
         """Validate API keys after initialization"""
         # Only require the API key for the providers you're actually using
@@ -161,7 +170,16 @@ class RAGConfig:
             entity_boost_weight=float(os.getenv('RAG_ENTITY_BOOST_WEIGHT', '0.25')),
             context_hint_weight=float(os.getenv('RAG_CONTEXT_HINT_WEIGHT', '0.15')),
             embedding_cache_size=int(os.getenv('RAG_CACHE_SIZE', '1000')),
-            local_model_device=os.getenv('RAG_LOCAL_DEVICE', 'cpu')
+            local_model_device=os.getenv('RAG_LOCAL_DEVICE', 'cpu'),
+            
+            # Local Classifier Settings
+            use_local_classifier=os.getenv('RAG_USE_LOCAL_CLASSIFIER', 'false').lower() == 'true',
+            local_classifier_model_path=os.getenv('RAG_LOCAL_CLASSIFIER_MODEL_PATH', 'src/classifiers/models/two_stage_joint'),
+            local_classifier_srd_cache=os.getenv('RAG_LOCAL_CLASSIFIER_SRD_CACHE', 'src/classifiers/data/srd_cache'),
+            local_classifier_device=os.getenv('RAG_LOCAL_CLASSIFIER_DEVICE', 'auto'),
+            local_classifier_tool_threshold=float(os.getenv('RAG_LOCAL_CLASSIFIER_TOOL_THRESHOLD', '0.5')),
+            gazetteer_min_similarity=float(os.getenv('RAG_GAZETTEER_MIN_SIMILARITY', '0.80')),
+            comparison_logging=os.getenv('RAG_COMPARISON_LOGGING', 'true').lower() == 'true'
         )
     
     @classmethod
