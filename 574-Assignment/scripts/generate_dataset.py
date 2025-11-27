@@ -4,9 +4,14 @@ Dataset Generation Script for 574 Assignment
 Generates synthetic training data for the joint DeBERTa model.
 Outputs train.json, val.json, test.json to 574-assignment/data/generated/
 
+Features:
+- K-expansion: Each template generates K samples with different entity fills
+- API-based gazetteers: Uses cached D&D 5e SRD data (run fetch_srd_data.py first)
+- Deduplication: Avoids identical samples
+
 Run from project root:
     cd 574-assignment
-    uv run python scripts/generate_dataset.py
+    uv run python -m scripts.generate_dataset
 
 Output structure:
 {
@@ -24,16 +29,21 @@ import re
 import os
 from pathlib import Path
 from collections import defaultdict, Counter
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Tuple, Any, Optional, Set
 
 # Import templates and gazetteers
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from config import DATASET_CONFIG
+
 from data.templates.entity_gazetteers import (
     SPELL_NAMES, CLASS_NAMES, RACE_NAMES, CREATURE_NAMES, WEAPON_NAMES,
-    ARMOR_NAMES, EQUIPMENT_NAMES, MAGIC_ITEM_NAMES, ABILITY_NAMES, SKILL_NAMES,
-    CONDITION_NAMES, DAMAGE_TYPES, LOCATION_NAMES, CLASS_FEATURE_NAMES
+    ARMOR_NAMES, EQUIPMENT_NAMES, MAGIC_ITEM_NAMES, SKILL_NAMES,
+    CONDITION_NAMES, DAMAGE_TYPES, LOCATION_NAMES, CLASS_FEATURE_NAMES,
+    ABILITY_NAMES_EXTENDED, FEAT_NAMES, BACKGROUND_NAMES, SUBCLASS_NAMES,
+    MECHANIC_NAMES, CREATURE_ABILITY_NAMES, WEAPON_PROPERTIES, LANGUAGE_NAMES,
+    LEVEL_NAMES, SPELL_LEVEL_NAMES
 )
 from data.templates.character_templates import (
     CHARACTER_BASICS_TEMPLATES, COMBAT_INFO_TEMPLATES, ABILITIES_INFO_TEMPLATES,
@@ -68,92 +78,85 @@ from data.templates.multi_tool_templates import (
 )
 
 # =============================================================================
-# Configuration
+# Configuration (loaded from config.py)
 # =============================================================================
 
-RANDOM_SEED = 42
-TOTAL_SAMPLES = 10000
-TRAIN_RATIO = 0.8
-VAL_RATIO = 0.1
-TEST_RATIO = 0.1
+RANDOM_SEED = DATASET_CONFIG.get('random_seed', 42)
+EXPANSIONS_PER_TEMPLATE = DATASET_CONFIG.get('expansions_per_template', 10)
+DEDUPLICATE = DATASET_CONFIG.get('deduplicate', True)
+
+TRAIN_RATIO = DATASET_CONFIG.get('train_split', 0.8)
+VAL_RATIO = DATASET_CONFIG.get('val_split', 0.1)
+TEST_RATIO = DATASET_CONFIG.get('test_split', 0.1)
 
 # Distribution of tool combinations
-# 70% multi-tool, 30% single-tool
-SINGLE_TOOL_RATIO = 0.30  # 3000 samples
-TWO_TOOL_RATIO = 0.50     # 5000 samples
-THREE_TOOL_RATIO = 0.20   # 2000 samples
+SINGLE_TOOL_RATIO = DATASET_CONFIG.get('one_tool_pct', 0.30)
+TWO_TOOL_RATIO = DATASET_CONFIG.get('two_tool_pct', 0.50)
+THREE_TOOL_RATIO = DATASET_CONFIG.get('three_tool_pct', 0.20)
 
 # =============================================================================
-# Entity Gazetteers Mapping
+# Entity Gazetteers Mapping (now loaded from API cache)
 # =============================================================================
 
 ENTITY_GAZETTEERS = {
+    # Core entity types
     "spell": SPELL_NAMES,
+    "spell1": SPELL_NAMES,
+    "spell2": SPELL_NAMES,
     "class": CLASS_NAMES,
+    "class1": CLASS_NAMES,
+    "class2": CLASS_NAMES,
+    "class_name": CLASS_NAMES,
     "race": RACE_NAMES,
+    "race1": RACE_NAMES,
+    "race2": RACE_NAMES,
     "creature": CREATURE_NAMES,
-    "weapon": WEAPON_NAMES,
-    "armor": ARMOR_NAMES,
+    "creature1": CREATURE_NAMES,
+    "creature2": CREATURE_NAMES,
+    "monster": CREATURE_NAMES,
+    
+    # Items
+    "weapon": WEAPON_NAMES if WEAPON_NAMES else EQUIPMENT_NAMES[:50],
+    "weapon1": WEAPON_NAMES if WEAPON_NAMES else EQUIPMENT_NAMES[:50],
+    "weapon2": WEAPON_NAMES if WEAPON_NAMES else EQUIPMENT_NAMES[:50],
+    "armor": ARMOR_NAMES if ARMOR_NAMES else EQUIPMENT_NAMES[:20],
+    "armor1": ARMOR_NAMES if ARMOR_NAMES else EQUIPMENT_NAMES[:20],
+    "armor2": ARMOR_NAMES if ARMOR_NAMES else EQUIPMENT_NAMES[:20],
     "item": EQUIPMENT_NAMES + MAGIC_ITEM_NAMES,
+    "item1": EQUIPMENT_NAMES + MAGIC_ITEM_NAMES,
+    "item2": EQUIPMENT_NAMES + MAGIC_ITEM_NAMES,
     "magic_item": MAGIC_ITEM_NAMES,
-    "ability": ABILITY_NAMES,
+    "equipment": EQUIPMENT_NAMES,
+    
+    # Character building
+    "ability": ABILITY_NAMES_EXTENDED,
+    "ability1": ABILITY_NAMES_EXTENDED,
+    "ability2": ABILITY_NAMES_EXTENDED,
     "skill": SKILL_NAMES,
+    "skill1": SKILL_NAMES,
+    "skill2": SKILL_NAMES,
     "condition": CONDITION_NAMES,
+    "condition1": CONDITION_NAMES,
+    "condition2": CONDITION_NAMES,
     "damage_type": DAMAGE_TYPES,
-    "feat": [
-        "Alert", "Athlete", "Actor", "Charger", "Crossbow Expert", "Defensive Duelist",
-        "Dual Wielder", "Dungeon Delver", "Durable", "Elemental Adept", "Grappler",
-        "Great Weapon Master", "Healer", "Heavily Armored", "Heavy Armor Master",
-        "Inspiring Leader", "Keen Mind", "Lightly Armored", "Linguist", "Lucky",
-        "Mage Slayer", "Magic Initiate", "Martial Adept", "Medium Armor Master",
-        "Mobile", "Moderately Armored", "Mounted Combatant", "Observant", "Polearm Master",
-        "Resilient", "Ritual Caster", "Savage Attacker", "Sentinel", "Sharpshooter",
-        "Shield Master", "Skilled", "Skulker", "Spell Sniper", "Tavern Brawler",
-        "Tough", "War Caster", "Weapon Master"
-    ],
-    "background": [
-        "Acolyte", "Charlatan", "Criminal", "Entertainer", "Folk Hero", "Guild Artisan",
-        "Hermit", "Noble", "Outlander", "Sage", "Sailor", "Soldier", "Urchin"
-    ],
+    "damage_type1": DAMAGE_TYPES,
+    "damage_type2": DAMAGE_TYPES,
+    "feat": FEAT_NAMES,
+    "background": BACKGROUND_NAMES,
     "location": LOCATION_NAMES,
     "feature": CLASS_FEATURE_NAMES,
-    "level": [str(i) for i in range(1, 21)],
-    "spell_level": ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"],
-    "subclass": [
-        "Champion", "Battle Master", "Eldritch Knight",  # Fighter
-        "Berserker", "Totem Warrior",  # Barbarian
-        "Thief", "Assassin", "Arcane Trickster",  # Rogue
-        "Life Domain", "Light Domain", "War Domain",  # Cleric
-        "School of Evocation", "School of Abjuration", "School of Divination",  # Wizard
-        "Draconic Bloodline", "Wild Magic",  # Sorcerer
-        "The Fiend", "The Archfey", "The Great Old One",  # Warlock
-        "Hunter", "Beast Master",  # Ranger
-        "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",  # Paladin
-        "Circle of the Land", "Circle of the Moon",  # Druid
-        "Way of the Open Hand", "Way of Shadow",  # Monk
-        "College of Lore", "College of Valor",  # Bard
-    ],
-    "plane": [
-        "Astral Plane", "Ethereal Plane", "Feywild", "Shadowfell",
-        "Nine Hells", "Abyss", "Mount Celestia", "Elemental Plane of Fire",
-        "Elemental Plane of Water", "Elemental Plane of Air", "Elemental Plane of Earth",
-        "Material Plane", "Limbo", "Mechanus", "Acheron"
-    ],
-    "mechanic": [
-        "advantage", "disadvantage", "saving throw", "ability check", "attack roll",
-        "damage roll", "concentration", "ritual casting", "opportunity attack",
-        "grappling", "shoving", "cover", "flanking", "surprise", "initiative",
-        "death saving throw", "exhaustion", "inspiration"
-    ],
-    "creature_ability": [
-        "Multiattack", "Legendary Actions", "Lair Actions", "Frightful Presence",
-        "Breath Weapon", "Spellcasting", "Innate Spellcasting", "Pack Tactics",
-        "Keen Senses", "Spider Climb", "Regeneration", "Magic Resistance"
-    ],
-    "weapon_property": [
-        "finesse", "heavy", "light", "loading", "reach", "thrown", "two-handed",
-        "versatile", "ammunition", "special"
-    ],
+    "feature1": CLASS_FEATURE_NAMES,
+    "feature2": CLASS_FEATURE_NAMES,
+    "subclass": SUBCLASS_NAMES,
+    
+    # Misc
+    "level": LEVEL_NAMES,
+    "spell_level": SPELL_LEVEL_NAMES,
+    "plane": LOCATION_NAMES[:20],
+    "mechanic": MECHANIC_NAMES,
+    "creature_ability": CREATURE_ABILITY_NAMES,
+    "weapon_property": WEAPON_PROPERTIES,
+    "language": LANGUAGE_NAMES,
 }
 
 # Slot type to NER tag mapping
@@ -457,60 +460,172 @@ def generate_three_tool_sample() -> Dict:
     }
 
 
-def generate_dataset(total_samples: int, seed: int = 42) -> List[Dict]:
-    """Generate the full dataset with specified distribution."""
-    random.seed(seed)
-
+def expand_template(template_data: Dict, tool: str = None, intent: str = None, k: int = 10) -> List[Dict]:
+    """
+    Generate K samples from a single template with different entity fills.
+    
+    Args:
+        template_data: Template dict with 'template', 'slots', optionally 'tools', 'intents'
+        tool: For single-tool templates, the tool name
+        intent: For single-tool templates, the intent name
+        k: Number of variations to generate
+        
+    Returns:
+        List of K sample dictionaries
+    """
     samples = []
-
-    # Calculate counts
-    single_count = int(total_samples * SINGLE_TOOL_RATIO)
-    two_count = int(total_samples * TWO_TOOL_RATIO)
-    three_count = total_samples - single_count - two_count
-
-    print(f"Generating dataset with {total_samples} samples:")
-    print(f"  Single-tool: {single_count} ({100*SINGLE_TOOL_RATIO:.0f}%)")
-    print(f"  Two-tool: {two_count} ({100*TWO_TOOL_RATIO:.0f}%)")
-    print(f"  Three-tool: {three_count} ({100*THREE_TOOL_RATIO:.0f}%)")
-
-    # Generate single-tool samples (evenly distributed across tools)
-    tools = ["character_data", "session_notes", "rulebook"]
-    for i in range(single_count):
-        tool = tools[i % 3]
-        try:
-            sample = generate_single_tool_sample(tool)
-            samples.append(sample)
-        except Exception as e:
-            print(f"Error generating single-tool sample: {e}")
-
-    print(f"  Generated {len(samples)} single-tool samples")
-
-    # Generate two-tool samples
-    two_start = len(samples)
-    for _ in range(two_count):
-        try:
-            sample = generate_two_tool_sample()
-            samples.append(sample)
-        except Exception as e:
-            print(f"Error generating two-tool sample: {e}")
-
-    print(f"  Generated {len(samples) - two_start} two-tool samples")
-
-    # Generate three-tool samples
-    three_start = len(samples)
-    for _ in range(three_count):
-        try:
-            sample = generate_three_tool_sample()
-            samples.append(sample)
-        except Exception as e:
-            print(f"Error generating three-tool sample: {e}")
-
-    print(f"  Generated {len(samples) - three_start} three-tool samples")
-
-    # Shuffle
-    random.shuffle(samples)
-
+    seen_queries: Set[str] = set()
+    
+    # Determine if this is single-tool or multi-tool template
+    if tool and intent:
+        # Single-tool template
+        tools = [tool]
+        intents = {tool: intent}
+    else:
+        # Multi-tool template (has tools/intents in template_data)
+        tools = template_data["tools"]
+        intents = template_data["intents"]
+    
+    slots = template_data.get("slots", {})
+    
+    # If no slots, only generate 1 sample (no variation possible)
+    if not slots:
+        query, entities = fill_template(template_data["template"], slots)
+        bio_tags = generate_bio_tags(query, entities)
+        return [{
+            "query": query,
+            "tools": tools,
+            "intents": intents,
+            "bio_tags": bio_tags,
+            "entities": entities
+        }]
+    
+    # Generate K variations
+    attempts = 0
+    max_attempts = k * 3  # Allow extra attempts for deduplication
+    
+    while len(samples) < k and attempts < max_attempts:
+        attempts += 1
+        
+        query, entities = fill_template(template_data["template"], slots)
+        
+        # Deduplicate
+        if DEDUPLICATE and query in seen_queries:
+            continue
+        seen_queries.add(query)
+        
+        bio_tags = generate_bio_tags(query, entities)
+        
+        samples.append({
+            "query": query,
+            "tools": tools,
+            "intents": intents,
+            "bio_tags": bio_tags,
+            "entities": entities
+        })
+    
     return samples
+
+
+def generate_dataset_with_expansion(seed: int = 42) -> List[Dict]:
+    """
+    Generate dataset using K-expansion per template.
+    
+    Each template generates K samples with different entity substitutions.
+    Final dataset is split according to tool distribution ratios.
+    """
+    random.seed(seed)
+    
+    all_samples = []
+    seen_queries: Set[str] = set()
+    
+    print(f"Generating dataset with K={EXPANSIONS_PER_TEMPLATE} expansions per template...")
+    
+    # Count templates
+    single_tool_templates = 0
+    two_tool_templates = 0
+    three_tool_templates = 0
+    
+    # Generate from single-tool templates
+    print("\n  Single-tool templates:")
+    for tool_name, templates_dict in [
+        ("character_data", CHARACTER_TEMPLATES),
+        ("session_notes", SESSION_TEMPLATES),
+        ("rulebook", RULEBOOK_TEMPLATES)
+    ]:
+        tool_samples = []
+        for intent_name, template_list in templates_dict.items():
+            for template_data in template_list:
+                single_tool_templates += 1
+                samples = expand_template(
+                    template_data, 
+                    tool=tool_name, 
+                    intent=intent_name,
+                    k=EXPANSIONS_PER_TEMPLATE
+                )
+                # Deduplicate across all samples
+                for s in samples:
+                    if not DEDUPLICATE or s["query"] not in seen_queries:
+                        seen_queries.add(s["query"])
+                        tool_samples.append(s)
+        
+        print(f"    {tool_name}: {len(tool_samples)} samples from templates")
+        all_samples.extend(tool_samples)
+    
+    single_total = len(all_samples)
+    print(f"  → Total single-tool: {single_total} samples")
+    
+    # Generate from two-tool templates
+    print("\n  Two-tool templates:")
+    two_tool_samples = []
+    for template_type_name, template_list in [
+        ("character+rulebook", CHARACTER_RULEBOOK_TEMPLATES),
+        ("character+session", CHARACTER_SESSION_TEMPLATES),
+        ("session+rulebook", SESSION_RULEBOOK_TEMPLATES)
+    ]:
+        type_samples = []
+        for template_data in template_list:
+            two_tool_templates += 1
+            samples = expand_template(template_data, k=EXPANSIONS_PER_TEMPLATE)
+            for s in samples:
+                if not DEDUPLICATE or s["query"] not in seen_queries:
+                    seen_queries.add(s["query"])
+                    type_samples.append(s)
+        print(f"    {template_type_name}: {len(type_samples)} samples")
+        two_tool_samples.extend(type_samples)
+    
+    print(f"  → Total two-tool: {len(two_tool_samples)} samples")
+    all_samples.extend(two_tool_samples)
+    
+    # Generate from three-tool templates
+    print("\n  Three-tool templates:")
+    three_tool_samples = []
+    for template_data in THREE_TOOL_TEMPLATES:
+        three_tool_templates += 1
+        samples = expand_template(template_data, k=EXPANSIONS_PER_TEMPLATE)
+        for s in samples:
+            if not DEDUPLICATE or s["query"] not in seen_queries:
+                seen_queries.add(s["query"])
+                three_tool_samples.append(s)
+    
+    print(f"    three-tool: {len(three_tool_samples)} samples")
+    print(f"  → Total three-tool: {len(three_tool_samples)} samples")
+    all_samples.extend(three_tool_samples)
+    
+    # Summary
+    print(f"\n{'='*60}")
+    print(f"Template counts:")
+    print(f"  Single-tool: {single_tool_templates}")
+    print(f"  Two-tool: {two_tool_templates}")
+    print(f"  Three-tool: {three_tool_templates}")
+    print(f"  TOTAL templates: {single_tool_templates + two_tool_templates + three_tool_templates}")
+    print(f"\nGenerated samples: {len(all_samples)}")
+    print(f"{'='*60}")
+    
+    # Shuffle
+    random.shuffle(all_samples)
+    
+    return all_samples
 
 
 def split_dataset(samples: List[Dict], train_ratio: float, val_ratio: float) -> Tuple[List, List, List]:
@@ -580,10 +695,12 @@ def main():
 
     print("=" * 60)
     print("Dataset Generation for 574 Assignment")
+    print(f"K-expansion: {EXPANSIONS_PER_TEMPLATE} samples per template")
+    print(f"Deduplication: {DEDUPLICATE}")
     print("=" * 60)
 
-    # Generate dataset
-    samples = generate_dataset(TOTAL_SAMPLES, RANDOM_SEED)
+    # Generate dataset using K-expansion
+    samples = generate_dataset_with_expansion(RANDOM_SEED)
 
     # Split
     train, val, test = split_dataset(samples, TRAIN_RATIO, VAL_RATIO)
@@ -621,9 +738,11 @@ def main():
 
     print("\n" + "=" * 60)
     print("Dataset generation complete!")
+    print(f"Total samples: {len(samples)}")
+    print(f"  Train: {len(train)} ({100*len(train)/len(samples):.1f}%)")
+    print(f"  Val: {len(val)} ({100*len(val)/len(samples):.1f}%)")
+    print(f"  Test: {len(test)} ({100*len(test)/len(samples):.1f}%)")
     print(f"Output directory: {output_dir}")
-    print("\nTo use in Google Colab, upload the 'generated' folder to:")
-    print("  Google Drive > My Drive > 574-assignment > data > generated")
     print("=" * 60)
 
 

@@ -1,604 +1,210 @@
 """
 Entity Gazetteers for D&D 5e Query Classification
 
-This module contains comprehensive lists of D&D 5e SRD entities used for:
-1. Template slot filling during synthetic data generation
-2. NER training data annotation
-3. Entity recognition in queries
+This module loads D&D 5e SRD entities from cached API data.
+Run `scripts/fetch_srd_data.py` first to populate the cache.
 
-IMPORTANT: These are GENERIC D&D 5e entities from the SRD.
-Do NOT include campaign-specific entities (custom NPCs, locations, items).
+Provides:
+- Entity name lists (SPELL_NAMES, CREATURE_NAMES, etc.)
+- SLOT_FILLERS: Maps template slot types to entity lists
+- NER_ENTITY_MAPPING: Maps NER tag types to entity lists
+- Helper functions for entity type lookup
 """
 
+import json
+from pathlib import Path
+
+
 # =============================================================================
-# SPELLS - From D&D 5e SRD Spell Descriptions
+# LOAD CACHED SRD DATA
 # =============================================================================
 
-SPELL_NAMES = [
-    # Cantrips
-    "Acid Splash", "Chill Touch", "Dancing Lights", "Druidcraft", "Eldritch Blast",
-    "Fire Bolt", "Guidance", "Light", "Mage Hand", "Mending", "Message",
-    "Minor Illusion", "Poison Spray", "Prestidigitation", "Produce Flame",
-    "Ray of Frost", "Resistance", "Sacred Flame", "Shillelagh", "Shocking Grasp",
-    "Spare the Dying", "Thaumaturgy", "True Strike", "Vicious Mockery",
+CACHE_DIR = Path(__file__).parent.parent / "srd_cache"
 
-    # 1st Level
-    "Alarm", "Animal Friendship", "Armor of Agathys", "Arms of Hadar", "Bane",
-    "Bless", "Burning Hands", "Charm Person", "Color Spray", "Command",
-    "Comprehend Languages", "Create or Destroy Water", "Cure Wounds",
-    "Detect Evil and Good", "Detect Magic", "Detect Poison and Disease",
-    "Disguise Self", "Divine Favor", "Entangle", "Expeditious Retreat",
-    "Faerie Fire", "False Life", "Feather Fall", "Find Familiar", "Fog Cloud",
-    "Goodberry", "Grease", "Guiding Bolt", "Healing Word", "Hellish Rebuke",
-    "Heroism", "Hex", "Hunter's Mark", "Identify", "Illusory Script",
-    "Inflict Wounds", "Jump", "Longstrider", "Mage Armor", "Magic Missile",
-    "Protection from Evil and Good", "Purify Food and Drink", "Ray of Sickness",
-    "Sanctuary", "Shield", "Shield of Faith", "Silent Image", "Sleep",
-    "Speak with Animals", "Tasha's Hideous Laughter", "Thunderwave",
-    "Unseen Servant", "Witch Bolt",
 
-    # 2nd Level
-    "Aid", "Alter Self", "Animal Messenger", "Arcane Lock", "Augury",
-    "Barkskin", "Blindness/Deafness", "Blur", "Branding Smite",
-    "Calm Emotions", "Cloud of Daggers", "Continual Flame", "Crown of Madness",
-    "Darkness", "Darkvision", "Detect Thoughts", "Enhance Ability", "Enthrall",
-    "Find Steed", "Find Traps", "Flame Blade", "Flaming Sphere", "Gentle Repose",
-    "Gust of Wind", "Heat Metal", "Hold Person", "Invisibility", "Knock",
-    "Lesser Restoration", "Levitate", "Locate Animals or Plants", "Locate Object",
-    "Magic Mouth", "Magic Weapon", "Mirror Image", "Misty Step", "Moonbeam",
-    "Pass without Trace", "Phantasmal Force", "Prayer of Healing",
-    "Protection from Poison", "Ray of Enfeeblement", "Rope Trick", "Scorching Ray",
-    "See Invisibility", "Shatter", "Silence", "Spider Climb", "Spike Growth",
-    "Spiritual Weapon", "Suggestion", "Warding Bond", "Web", "Zone of Truth",
+def _load_names(filename: str) -> list[str]:
+    """Load entity names from a cached JSON file."""
+    cache_file = CACHE_DIR / filename
+    if not cache_file.exists():
+        print(f"Warning: Cache file {filename} not found. Run fetch_srd_data.py first.")
+        return []
+    
+    with open(cache_file) as f:
+        data = json.load(f)
+    
+    if "results" in data:
+        return [item["name"] for item in data["results"]]
+    return []
 
-    # 3rd Level
-    "Animate Dead", "Aura of Vitality", "Beacon of Hope", "Bestow Curse",
-    "Blinding Smite", "Blink", "Call Lightning", "Clairvoyance",
-    "Conjure Animals", "Conjure Barrage", "Counterspell", "Create Food and Water",
-    "Crusader's Mantle", "Daylight", "Dispel Magic", "Elemental Weapon",
-    "Fear", "Feign Death", "Fireball", "Fly", "Gaseous Form", "Glyph of Warding",
-    "Haste", "Hunger of Hadar", "Hypnotic Pattern", "Lightning Arrow",
-    "Lightning Bolt", "Magic Circle", "Major Image", "Mass Healing Word",
-    "Meld into Stone", "Nondetection", "Phantom Steed", "Plant Growth",
-    "Protection from Energy", "Remove Curse", "Revivify", "Sending",
-    "Sleet Storm", "Slow", "Speak with Dead", "Speak with Plants",
-    "Spirit Guardians", "Stinking Cloud", "Tongues", "Vampiric Touch",
-    "Water Breathing", "Water Walk", "Wind Wall",
 
-    # 4th Level
-    "Arcane Eye", "Aura of Life", "Aura of Purity", "Banishment", "Blight",
-    "Compulsion", "Confusion", "Conjure Minor Elementals", "Conjure Woodland Beings",
-    "Control Water", "Death Ward", "Dimension Door", "Divination",
-    "Dominate Beast", "Elemental Bane", "Evard's Black Tentacles",
-    "Fabricate", "Fire Shield", "Freedom of Movement", "Giant Insect",
-    "Grasping Vine", "Greater Invisibility", "Guardian of Faith",
-    "Hallucinatory Terrain", "Ice Storm", "Locate Creature", "Phantasmal Killer",
-    "Polymorph", "Staggering Smite", "Stone Shape", "Stoneskin", "Wall of Fire",
+# =============================================================================
+# SPELLS - From D&D 5e SRD API (319 spells)
+# =============================================================================
 
-    # 5th Level
-    "Animate Objects", "Antilife Shell", "Awaken", "Banishing Smite",
-    "Bigby's Hand", "Circle of Power", "Cloudkill", "Commune",
-    "Commune with Nature", "Cone of Cold", "Conjure Elemental", "Conjure Volley",
-    "Contact Other Plane", "Contagion", "Creation", "Destructive Wave",
-    "Dispel Evil and Good", "Dominate Person", "Dream", "Flame Strike",
-    "Geas", "Greater Restoration", "Hallow", "Hold Monster", "Insect Plague",
-    "Legend Lore", "Mass Cure Wounds", "Mislead", "Modify Memory",
-    "Passwall", "Planar Binding", "Raise Dead", "Reincarnate", "Scrying",
-    "Seeming", "Swift Quiver", "Telekinesis", "Telepathic Bond",
-    "Teleportation Circle", "Tree Stride", "Wall of Force", "Wall of Stone",
+SPELL_NAMES = _load_names("spells.json")
 
-    # 6th Level
-    "Arcane Gate", "Blade Barrier", "Chain Lightning", "Circle of Death",
-    "Conjure Fey", "Contingency", "Create Undead", "Disintegrate",
-    "Eyebite", "Find the Path", "Flesh to Stone", "Forbiddance",
-    "Globe of Invulnerability", "Guards and Wards", "Harm", "Heal",
-    "Heroes' Feast", "Magic Jar", "Mass Suggestion", "Move Earth",
-    "Otiluke's Freezing Sphere", "Otto's Irresistible Dance", "Planar Ally",
-    "Programmed Illusion", "Sunbeam", "Transport via Plants",
-    "True Seeing", "Wall of Ice", "Wall of Thorns", "Wind Walk", "Word of Recall",
+# =============================================================================
+# CREATURES/MONSTERS - From D&D 5e SRD API (334 monsters)
+# =============================================================================
 
-    # 7th Level
-    "Conjure Celestial", "Delayed Blast Fireball", "Divine Word", "Etherealness",
-    "Finger of Death", "Fire Storm", "Forcecage", "Mirage Arcane",
-    "Mordenkainen's Magnificent Mansion", "Mordenkainen's Sword", "Plane Shift",
-    "Prismatic Spray", "Project Image", "Regenerate", "Resurrection",
-    "Reverse Gravity", "Sequester", "Simulacrum", "Symbol", "Teleport",
+CREATURE_NAMES = _load_names("monsters.json")
 
-    # 8th Level
-    "Animal Shapes", "Antimagic Field", "Antipathy/Sympathy", "Clone",
-    "Control Weather", "Demiplane", "Dominate Monster", "Earthquake",
-    "Feeblemind", "Glibness", "Holy Aura", "Incendiary Cloud", "Maze",
-    "Mind Blank", "Power Word Stun", "Sunburst", "Telepathy", "Tsunami",
+# =============================================================================
+# EQUIPMENT - From D&D 5e SRD API (237 items)
+# =============================================================================
 
-    # 9th Level
-    "Astral Projection", "Foresight", "Gate", "Imprisonment", "Mass Heal",
-    "Meteor Swarm", "Power Word Kill", "Prismatic Wall", "Shapechange",
-    "Storm of Vengeance", "Time Stop", "True Polymorph", "True Resurrection",
-    "Weird", "Wish",
+EQUIPMENT_NAMES = _load_names("equipment.json")
+
+# =============================================================================
+# MAGIC ITEMS - From D&D 5e SRD API (362 items)
+# =============================================================================
+
+MAGIC_ITEM_NAMES = _load_names("magic-items.json")
+
+# =============================================================================
+# CLASS FEATURES - From D&D 5e SRD API (407 features)
+# =============================================================================
+
+CLASS_FEATURE_NAMES = _load_names("features.json")
+
+# =============================================================================
+# CONDITIONS - From D&D 5e SRD API (15 conditions)
+# =============================================================================
+
+CONDITION_NAMES = _load_names("conditions.json")
+
+# =============================================================================
+# CLASSES - From D&D 5e SRD API (12 classes)
+# =============================================================================
+
+CLASS_NAMES = _load_names("classes.json")
+
+# =============================================================================
+# RACES - From D&D 5e SRD API (9 races)
+# =============================================================================
+
+RACE_NAMES = _load_names("races.json")
+
+# =============================================================================
+# SUBCLASSES - From D&D 5e SRD API (12 subclasses)
+# =============================================================================
+
+SUBCLASS_NAMES = _load_names("subclasses.json")
+
+# =============================================================================
+# TRAITS - From D&D 5e SRD API (38 traits)
+# =============================================================================
+
+TRAIT_NAMES = _load_names("traits.json")
+
+# =============================================================================
+# SKILLS - From D&D 5e SRD API (18 skills)
+# =============================================================================
+
+SKILL_NAMES = _load_names("skills.json")
+
+# =============================================================================
+# ABILITY SCORES - From D&D 5e SRD API (6 abilities)
+# =============================================================================
+
+ABILITY_NAMES = _load_names("ability-scores.json")
+
+# Add common abbreviations
+ABILITY_NAMES_EXTENDED = ABILITY_NAMES + ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
+
+# =============================================================================
+# DAMAGE TYPES - From D&D 5e SRD API (13 damage types)
+# =============================================================================
+
+DAMAGE_TYPES = _load_names("damage-types.json")
+
+# =============================================================================
+# WEAPON PROPERTIES - From D&D 5e SRD API (11 properties)
+# =============================================================================
+
+WEAPON_PROPERTIES = _load_names("weapon-properties.json")
+
+# =============================================================================
+# LANGUAGES - From D&D 5e SRD API (16 languages)
+# =============================================================================
+
+LANGUAGE_NAMES = _load_names("languages.json")
+
+# =============================================================================
+# BACKGROUNDS - From D&D 5e SRD API (limited in SRD)
+# Supplemented with common backgrounds from core rules
+# =============================================================================
+
+_API_BACKGROUNDS = _load_names("backgrounds.json")
+BACKGROUND_NAMES = _API_BACKGROUNDS if len(_API_BACKGROUNDS) > 5 else [
+    "Acolyte", "Charlatan", "Criminal", "Entertainer", "Folk Hero",
+    "Guild Artisan", "Hermit", "Noble", "Outlander", "Sage",
+    "Sailor", "Soldier", "Urchin",
 ]
 
 # =============================================================================
-# CREATURES/MONSTERS - From D&D 5e SRD Monster Manual
+# DERIVED/COMBINED LISTS
 # =============================================================================
 
-CREATURE_NAMES = [
-    # Aberrations
-    "Aboleth", "Chuul", "Cloaker", "Gibbering Mouther", "Otyugh",
+# All items combined (weapons, armor, equipment, magic items)
+ITEM_NAMES = EQUIPMENT_NAMES + MAGIC_ITEM_NAMES
 
-    # Beasts
-    "Ape", "Bat", "Bear", "Boar", "Cat", "Crocodile", "Deer", "Eagle",
-    "Elephant", "Frog", "Giant Ape", "Giant Bat", "Giant Boar", "Giant Crab",
-    "Giant Crocodile", "Giant Eagle", "Giant Elk", "Giant Frog", "Giant Lizard",
-    "Giant Owl", "Giant Rat", "Giant Scorpion", "Giant Spider", "Giant Toad",
-    "Giant Vulture", "Giant Wasp", "Giant Wolf Spider", "Hawk", "Horse",
-    "Hyena", "Lion", "Lizard", "Mammoth", "Mastiff", "Owl", "Panther",
-    "Poisonous Snake", "Polar Bear", "Rat", "Raven", "Rhinoceros",
-    "Saber-Toothed Tiger", "Scorpion", "Shark", "Spider", "Tiger", "Vulture",
-    "Warhorse", "Wolf",
-
-    # Celestials
-    "Couatl", "Deva", "Pegasus", "Planetar", "Solar", "Unicorn",
-
-    # Constructs
-    "Animated Armor", "Clay Golem", "Flesh Golem", "Flying Sword",
-    "Homunculus", "Iron Golem", "Rug of Smothering", "Shield Guardian",
-    "Stone Golem",
-
-    # Dragons
-    "Adult Black Dragon", "Adult Blue Dragon", "Adult Brass Dragon",
-    "Adult Bronze Dragon", "Adult Copper Dragon", "Adult Gold Dragon",
-    "Adult Green Dragon", "Adult Red Dragon", "Adult Silver Dragon",
-    "Adult White Dragon", "Ancient Black Dragon", "Ancient Blue Dragon",
-    "Ancient Brass Dragon", "Ancient Bronze Dragon", "Ancient Copper Dragon",
-    "Ancient Gold Dragon", "Ancient Green Dragon", "Ancient Red Dragon",
-    "Ancient Silver Dragon", "Ancient White Dragon", "Black Dragon Wyrmling",
-    "Blue Dragon Wyrmling", "Brass Dragon Wyrmling", "Bronze Dragon Wyrmling",
-    "Copper Dragon Wyrmling", "Dragon Turtle", "Gold Dragon Wyrmling",
-    "Green Dragon Wyrmling", "Pseudodragon", "Red Dragon Wyrmling",
-    "Silver Dragon Wyrmling", "White Dragon Wyrmling", "Wyvern",
-    "Young Black Dragon", "Young Blue Dragon", "Young Brass Dragon",
-    "Young Bronze Dragon", "Young Copper Dragon", "Young Gold Dragon",
-    "Young Green Dragon", "Young Red Dragon", "Young Silver Dragon",
-    "Young White Dragon",
-
-    # Elementals
-    "Air Elemental", "Azer", "Dust Mephit", "Earth Elemental", "Fire Elemental",
-    "Gargoyle", "Ice Mephit", "Invisible Stalker", "Magma Mephit", "Magmin",
-    "Mud Mephit", "Salamander", "Smoke Mephit", "Steam Mephit", "Water Elemental",
-    "Xorn",
-
-    # Fey
-    "Dryad", "Green Hag", "Night Hag", "Satyr", "Sea Hag", "Sprite",
-
-    # Fiends
-    "Balor", "Barbed Devil", "Bearded Devil", "Bone Devil", "Chain Devil",
-    "Dretch", "Erinyes", "Glabrezu", "Hell Hound", "Hezrou", "Horned Devil",
-    "Ice Devil", "Imp", "Lemure", "Manes", "Marilith", "Nalfeshnee", "Nightmare",
-    "Pit Fiend", "Quasit", "Rakshasa", "Shadow Demon", "Succubus", "Incubus",
-    "Vrock",
-
-    # Giants
-    "Cloud Giant", "Cyclops", "Ettin", "Fire Giant", "Frost Giant",
-    "Hill Giant", "Ogre", "Oni", "Stone Giant", "Storm Giant", "Troll",
-
-    # Humanoids
-    "Acolyte", "Assassin", "Bandit", "Bandit Captain", "Berserker",
-    "Bugbear", "Commoner", "Cultist", "Cult Fanatic", "Druid", "Drow",
-    "Duergar", "Gladiator", "Gnoll", "Goblin", "Guard", "Hobgoblin",
-    "Knight", "Kobold", "Lizardfolk", "Mage", "Merfolk", "Noble", "Orc",
-    "Priest", "Scout", "Spy", "Thug", "Tribal Warrior", "Veteran",
-
-    # Monstrosities
-    "Ankheg", "Basilisk", "Behir", "Bulette", "Carrion Crawler", "Centaur",
-    "Chimera", "Cockatrice", "Darkmantle", "Death Dog", "Displacer Beast",
-    "Doppelganger", "Drider", "Ettercap", "Gorgon", "Grick", "Griffon",
-    "Harpy", "Hippogriff", "Hook Horror", "Hydra", "Kraken", "Lamia",
-    "Manticore", "Medusa", "Merrow", "Mimic", "Minotaur", "Owlbear",
-    "Phase Spider", "Purple Worm", "Remorhaz", "Roc", "Roper", "Rust Monster",
-    "Sahuagin", "Sphinx", "Stirge", "Tarrasque", "Umber Hulk", "Winter Wolf",
-    "Worg", "Yeti",
-
-    # Oozes
-    "Black Pudding", "Gelatinous Cube", "Gray Ooze", "Ochre Jelly",
-
-    # Plants
-    "Awakened Shrub", "Awakened Tree", "Shambling Mound", "Treant",
-
-    # Undead
-    "Banshee", "Ghost", "Ghast", "Ghoul", "Lich", "Mummy", "Mummy Lord",
-    "Shadow", "Skeleton", "Specter", "Vampire", "Vampire Spawn", "Wight",
-    "Will-o'-Wisp", "Wraith", "Zombie",
-]
-
-# =============================================================================
-# ITEMS - Weapons, Armor, Equipment, Magic Items from D&D 5e SRD
-# =============================================================================
-
+# Weapon names (filtered from equipment)
 WEAPON_NAMES = [
-    # Simple Melee
-    "Club", "Dagger", "Greatclub", "Handaxe", "Javelin", "Light Hammer",
-    "Mace", "Quarterstaff", "Sickle", "Spear",
-
-    # Simple Ranged
-    "Crossbow, Light", "Dart", "Shortbow", "Sling",
-
-    # Martial Melee
-    "Battleaxe", "Flail", "Glaive", "Greataxe", "Greatsword", "Halberd",
-    "Lance", "Longsword", "Maul", "Morningstar", "Pike", "Rapier",
-    "Scimitar", "Shortsword", "Trident", "War Pick", "Warhammer", "Whip",
-
-    # Martial Ranged
-    "Blowgun", "Crossbow, Hand", "Crossbow, Heavy", "Longbow", "Net",
+    name for name in EQUIPMENT_NAMES 
+    if any(w in name.lower() for w in [
+        "sword", "axe", "mace", "dagger", "bow", "crossbow", "spear", 
+        "hammer", "club", "staff", "pike", "halberd", "glaive", "trident",
+        "whip", "flail", "morningstar", "rapier", "scimitar", "sling",
+        "javelin", "dart", "net", "lance", "maul", "sickle", "quarterstaff"
+    ])
 ]
 
+# Armor names (filtered from equipment)
 ARMOR_NAMES = [
-    # Light Armor
-    "Padded Armor", "Leather Armor", "Studded Leather Armor",
-
-    # Medium Armor
-    "Hide Armor", "Chain Shirt", "Scale Mail", "Breastplate", "Half Plate",
-
-    # Heavy Armor
-    "Ring Mail", "Chain Mail", "Splint Armor", "Plate Armor",
-
-    # Shields
-    "Shield",
-]
-
-EQUIPMENT_NAMES = [
-    # Adventuring Gear
-    "Backpack", "Bedroll", "Bell", "Blanket", "Block and Tackle", "Book",
-    "Bottle", "Bucket", "Caltrops", "Candle", "Chain", "Chalk", "Chest",
-    "Climber's Kit", "Clothes", "Component Pouch", "Crowbar", "Fishing Tackle",
-    "Flask", "Grappling Hook", "Hammer", "Healer's Kit", "Holy Symbol",
-    "Holy Water", "Hourglass", "Hunting Trap", "Ink", "Ink Pen", "Jug",
-    "Ladder", "Lamp", "Lantern", "Lock", "Magnifying Glass", "Manacles",
-    "Mess Kit", "Mirror", "Oil", "Paper", "Parchment", "Perfume",
-    "Pick", "Piton", "Poison", "Pole", "Pot", "Potion", "Pouch",
-    "Quiver", "Ram", "Rations", "Robes", "Rope", "Sack", "Scale",
-    "Sealing Wax", "Shovel", "Signal Whistle", "Signet Ring", "Soap",
-    "Spellbook", "Spikes", "Spyglass", "Tent", "Tinderbox", "Torch",
-    "Vial", "Waterskin", "Whetstone",
-
-    # Tools
-    "Alchemist's Supplies", "Brewer's Supplies", "Calligrapher's Supplies",
-    "Carpenter's Tools", "Cartographer's Tools", "Cobbler's Tools",
-    "Cook's Utensils", "Disguise Kit", "Forgery Kit", "Gaming Set",
-    "Glassblower's Tools", "Herbalism Kit", "Jeweler's Tools",
-    "Leatherworker's Tools", "Mason's Tools", "Navigator's Tools",
-    "Painter's Supplies", "Poisoner's Kit", "Potter's Tools",
-    "Smith's Tools", "Thieves' Tools", "Tinker's Tools",
-    "Weaver's Tools", "Woodcarver's Tools",
-
-    # Musical Instruments
-    "Bagpipes", "Drum", "Dulcimer", "Flute", "Horn", "Lute", "Lyre",
-    "Pan Flute", "Shawm", "Viol",
-]
-
-MAGIC_ITEM_NAMES = [
-    # Armor
-    "Adamantine Armor", "Armor of Invulnerability", "Armor of Resistance",
-    "Armor of Vulnerability", "Arrow-Catching Shield", "Demon Armor",
-    "Dragon Scale Mail", "Dwarven Plate", "Efreeti Chain", "Elven Chain",
-    "Glamoured Studded Leather", "Mithral Armor", "Plate Armor of Etherealness",
-    "Shield of Missile Attraction", "Spellguard Shield",
-
-    # Potions
-    "Potion of Healing", "Potion of Greater Healing", "Potion of Superior Healing",
-    "Potion of Supreme Healing", "Potion of Animal Friendship", "Potion of Clairvoyance",
-    "Potion of Climbing", "Potion of Diminution", "Potion of Fire Breath",
-    "Potion of Flying", "Potion of Gaseous Form", "Potion of Giant Strength",
-    "Potion of Growth", "Potion of Heroism", "Potion of Invisibility",
-    "Potion of Invulnerability", "Potion of Longevity", "Potion of Mind Reading",
-    "Potion of Poison", "Potion of Resistance", "Potion of Speed",
-    "Potion of Vitality", "Potion of Water Breathing",
-
-    # Rings
-    "Ring of Animal Influence", "Ring of Djinni Summoning", "Ring of Elemental Command",
-    "Ring of Evasion", "Ring of Feather Falling", "Ring of Free Action",
-    "Ring of Invisibility", "Ring of Jumping", "Ring of Mind Shielding",
-    "Ring of Protection", "Ring of Regeneration", "Ring of Resistance",
-    "Ring of Shooting Stars", "Ring of Spell Storing", "Ring of Spell Turning",
-    "Ring of Swimming", "Ring of Telekinesis", "Ring of the Ram",
-    "Ring of Three Wishes", "Ring of Warmth", "Ring of Water Walking",
-    "Ring of X-ray Vision",
-
-    # Rods
-    "Immovable Rod", "Rod of Absorption", "Rod of Alertness",
-    "Rod of Lordly Might", "Rod of Rulership", "Rod of Security",
-
-    # Scrolls
-    "Spell Scroll",
-
-    # Staffs
-    "Staff of Charming", "Staff of Fire", "Staff of Frost", "Staff of Healing",
-    "Staff of Power", "Staff of Striking", "Staff of Swarming Insects",
-    "Staff of the Magi", "Staff of the Python", "Staff of the Woodlands",
-    "Staff of Thunder and Lightning", "Staff of Withering",
-
-    # Wands
-    "Wand of Binding", "Wand of Enemy Detection", "Wand of Fear",
-    "Wand of Fireballs", "Wand of Lightning Bolts", "Wand of Magic Detection",
-    "Wand of Magic Missiles", "Wand of Paralysis", "Wand of Polymorph",
-    "Wand of Secrets", "Wand of the War Mage", "Wand of Web", "Wand of Wonder",
-
-    # Weapons
-    "Berserker Axe", "Dancing Sword", "Defender", "Dragon Slayer",
-    "Dwarven Thrower", "Flame Tongue", "Frost Brand", "Giant Slayer",
-    "Holy Avenger", "Javelin of Lightning", "Luck Blade", "Mace of Disruption",
-    "Mace of Smiting", "Mace of Terror", "Nine Lives Stealer", "Oathbow",
-    "Scimitar of Speed", "Sun Blade", "Sword of Life Stealing",
-    "Sword of Sharpness", "Sword of Wounding", "Trident of Fish Command",
-    "Vicious Weapon", "Vorpal Sword", "Weapon of Warning",
-
-    # Wondrous Items
-    "Amulet of Health", "Amulet of Proof against Detection and Location",
-    "Amulet of the Planes", "Bag of Beans", "Bag of Devouring", "Bag of Holding",
-    "Bag of Tricks", "Bead of Force", "Belt of Dwarvenkind",
-    "Belt of Giant Strength", "Boots of Elvenkind", "Boots of Levitation",
-    "Boots of Speed", "Boots of Striding and Springing", "Boots of the Winterlands",
-    "Bowl of Commanding Water Elementals", "Bracers of Archery",
-    "Bracers of Defense", "Brazier of Commanding Fire Elementals",
-    "Brooch of Shielding", "Broom of Flying", "Candle of Invocation",
-    "Cape of the Mountebank", "Carpet of Flying", "Censer of Controlling Air Elementals",
-    "Chime of Opening", "Circlet of Blasting", "Cloak of Arachnida",
-    "Cloak of Displacement", "Cloak of Elvenkind", "Cloak of Many Fashions",
-    "Cloak of Protection", "Cloak of the Bat", "Cloak of the Manta Ray",
-    "Crystal Ball", "Cube of Force", "Cubic Gate", "Daern's Instant Fortress",
-    "Decanter of Endless Water", "Deck of Illusions", "Deck of Many Things",
-    "Dimensional Shackles", "Dust of Disappearance", "Dust of Dryness",
-    "Dust of Sneezing and Choking", "Efreeti Bottle", "Elemental Gem",
-    "Eyes of Charming", "Eyes of Minute Seeing", "Eyes of the Eagle",
-    "Figurine of Wondrous Power", "Folding Boat", "Gauntlets of Ogre Power",
-    "Gem of Brightness", "Gem of Seeing", "Gloves of Missile Snaring",
-    "Gloves of Swimming and Climbing", "Gloves of Thievery",
-    "Goggles of Night", "Handy Haversack", "Hat of Disguise",
-    "Headband of Intellect", "Helm of Brilliance", "Helm of Comprehending Languages",
-    "Helm of Telepathy", "Helm of Teleportation", "Horn of Blasting",
-    "Horn of Valhalla", "Horseshoes of a Zephyr", "Horseshoes of Speed",
-    "Instant Fortress", "Ioun Stone", "Iron Bands of Binding",
-    "Iron Flask", "Lantern of Revealing", "Mantle of Spell Resistance",
-    "Manual of Bodily Health", "Manual of Gainful Exercise", "Manual of Golems",
-    "Manual of Quickness of Action", "Marvelous Pigments", "Medallion of Thoughts",
-    "Mirror of Life Trapping", "Necklace of Adaptation", "Necklace of Fireballs",
-    "Necklace of Prayer Beads", "Orb of Dragonkind", "Periapt of Health",
-    "Periapt of Proof against Poison", "Periapt of Wound Closure",
-    "Pipes of Haunting", "Pipes of the Sewers", "Portable Hole",
-    "Robe of Eyes", "Robe of Scintillating Colors", "Robe of Stars",
-    "Robe of the Archmagi", "Robe of Useful Items", "Rope of Climbing",
-    "Rope of Entanglement", "Scarab of Protection", "Sending Stones",
-    "Slippers of Spider Climbing", "Sovereign Glue", "Sphere of Annihilation",
-    "Stone of Controlling Earth Elementals", "Stone of Good Luck",
-    "Talisman of Pure Good", "Talisman of the Sphere", "Talisman of Ultimate Evil",
-    "Tome of Clear Thought", "Tome of Leadership and Influence",
-    "Tome of Understanding", "Universal Solvent", "Well of Many Worlds",
-    "Wind Fan", "Winged Boots", "Wings of Flying",
-]
-
-# Combine all items
-ITEM_NAMES = WEAPON_NAMES + ARMOR_NAMES + EQUIPMENT_NAMES + MAGIC_ITEM_NAMES
-
-# =============================================================================
-# CLASS FEATURES - From D&D 5e SRD Class Descriptions
-# =============================================================================
-
-CLASS_FEATURE_NAMES = [
-    # Barbarian
-    "Rage", "Unarmored Defense", "Reckless Attack", "Danger Sense",
-    "Primal Path", "Extra Attack", "Fast Movement", "Feral Instinct",
-    "Brutal Critical", "Relentless Rage", "Persistent Rage", "Indomitable Might",
-    "Primal Champion", "Frenzy", "Mindless Rage", "Intimidating Presence",
-    "Retaliation",
-
-    # Bard
-    "Bardic Inspiration", "Jack of All Trades", "Song of Rest", "Bard College",
-    "Expertise", "Font of Inspiration", "Countercharm", "Magical Secrets",
-    "Superior Inspiration", "Cutting Words", "Additional Magical Secrets",
-    "Peerless Skill",
-
-    # Cleric
-    "Spellcasting", "Divine Domain", "Channel Divinity", "Turn Undead",
-    "Destroy Undead", "Divine Intervention", "Disciple of Life",
-    "Preserve Life", "Blessed Healer", "Divine Strike", "Supreme Healing",
-
-    # Druid
-    "Druidic", "Wild Shape", "Druid Circle", "Timeless Body", "Beast Spells",
-    "Archdruid", "Natural Recovery", "Circle Spells", "Land's Stride",
-    "Nature's Ward", "Nature's Sanctuary",
-
-    # Fighter
-    "Fighting Style", "Second Wind", "Action Surge", "Martial Archetype",
-    "Indomitable", "Improved Critical", "Remarkable Athlete",
-    "Additional Fighting Style", "Superior Critical", "Survivor",
-
-    # Monk
-    "Martial Arts", "Ki", "Unarmored Movement", "Monastic Tradition",
-    "Deflect Missiles", "Slow Fall", "Stunning Strike", "Ki-Empowered Strikes",
-    "Evasion", "Stillness of Mind", "Purity of Body", "Tongue of the Sun and Moon",
-    "Diamond Soul", "Timeless Body", "Empty Body", "Perfect Self",
-    "Flurry of Blows", "Patient Defense", "Step of the Wind",
-    "Open Hand Technique", "Wholeness of Body", "Tranquility", "Quivering Palm",
-
-    # Paladin
-    "Divine Sense", "Lay on Hands", "Divine Smite", "Divine Health",
-    "Sacred Oath", "Aura of Protection", "Aura of Courage", "Improved Divine Smite",
-    "Cleansing Touch", "Channel Divinity", "Aura of Devotion", "Purity of Spirit",
-    "Holy Nimbus",
-
-    # Ranger
-    "Favored Enemy", "Natural Explorer", "Primeval Awareness", "Ranger Archetype",
-    "Land's Stride", "Hide in Plain Sight", "Vanish", "Feral Senses",
-    "Foe Slayer", "Hunter's Prey", "Defensive Tactics", "Multiattack",
-    "Superior Hunter's Defense", "Colossus Slayer", "Giant Killer", "Horde Breaker",
-
-    # Rogue
-    "Sneak Attack", "Thieves' Cant", "Cunning Action", "Roguish Archetype",
-    "Uncanny Dodge", "Reliable Talent", "Blindsense", "Slippery Mind",
-    "Elusive", "Stroke of Luck", "Fast Hands", "Second-Story Work",
-    "Supreme Sneak", "Use Magic Device", "Thief's Reflexes",
-
-    # Sorcerer
-    "Sorcerous Origin", "Font of Magic", "Sorcery Points", "Metamagic",
-    "Sorcerous Restoration", "Draconic Resilience", "Elemental Affinity",
-    "Dragon Wings", "Draconic Presence", "Careful Spell", "Distant Spell",
-    "Empowered Spell", "Extended Spell", "Heightened Spell", "Quickened Spell",
-    "Subtle Spell", "Twinned Spell",
-
-    # Warlock
-    "Otherworldly Patron", "Pact Magic", "Eldritch Invocations", "Pact Boon",
-    "Mystic Arcanum", "Eldritch Master", "Pact of the Chain", "Pact of the Blade",
-    "Pact of the Tome", "Dark One's Blessing", "Dark One's Own Luck",
-    "Fiendish Resilience", "Hurl Through Hell", "Agonizing Blast",
-    "Armor of Shadows", "Devil's Sight", "Eldritch Sight", "Mask of Many Faces",
-    "Repelling Blast", "Thirsting Blade",
-
-    # Wizard
-    "Arcane Recovery", "Arcane Tradition", "Spell Mastery", "Signature Spells",
-    "Evocation Savant", "Sculpt Spells", "Potent Cantrip", "Empowered Evocation",
-    "Overchannel",
+    name for name in EQUIPMENT_NAMES
+    if any(a in name.lower() for a in [
+        "armor", "mail", "plate", "shield", "leather", "hide", "padded",
+        "breastplate", "half plate", "scale", "chain", "ring", "splint"
+    ])
 ]
 
 # =============================================================================
-# RACES AND CLASSES
+# SUPPLEMENTARY LISTS (Not in API or limited)
 # =============================================================================
 
-RACE_NAMES = [
-    "Dragonborn", "Dwarf", "Hill Dwarf", "Mountain Dwarf", "Elf", "High Elf",
-    "Wood Elf", "Dark Elf", "Drow", "Gnome", "Rock Gnome", "Forest Gnome",
-    "Half-Elf", "Half-Orc", "Halfling", "Lightfoot Halfling", "Stout Halfling",
-    "Human", "Tiefling", "Aasimar", "Genasi", "Goliath", "Tabaxi", "Tortle",
-    "Kenku", "Lizardfolk", "Triton", "Firbolg", "Bugbear", "Goblin", "Hobgoblin",
-    "Kobold", "Orc", "Yuan-ti",
-]
-
-CLASS_NAMES = [
-    "Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk",
-    "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard",
-    "Artificer", "Blood Hunter",
-]
-
-SUBCLASS_NAMES = [
-    # Barbarian
-    "Path of the Berserker", "Path of the Totem Warrior", "Path of the Ancestral Guardian",
-    "Path of the Storm Herald", "Path of the Zealot",
-
-    # Bard
-    "College of Lore", "College of Valor", "College of Glamour",
-    "College of Swords", "College of Whispers",
-
-    # Cleric
-    "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain",
-    "Trickery Domain", "War Domain", "Knowledge Domain", "Death Domain",
-    "Forge Domain", "Grave Domain", "Order Domain", "Peace Domain", "Twilight Domain",
-
-    # Druid
-    "Circle of the Land", "Circle of the Moon", "Circle of Dreams",
-    "Circle of the Shepherd", "Circle of Spores", "Circle of Stars", "Circle of Wildfire",
-
-    # Fighter
-    "Champion", "Battle Master", "Eldritch Knight", "Arcane Archer",
-    "Cavalier", "Samurai", "Echo Knight", "Psi Warrior", "Rune Knight",
-
-    # Monk
-    "Way of the Open Hand", "Way of Shadow", "Way of the Four Elements",
-    "Way of the Drunken Master", "Way of the Kensei", "Way of the Sun Soul",
-    "Way of the Long Death", "Way of Mercy", "Way of the Astral Self",
-
-    # Paladin
-    "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",
-    "Oath of Conquest", "Oath of Redemption", "Oath of Glory",
-    "Oath of the Crown", "Oath of the Watchers", "Oathbreaker",
-
-    # Ranger
-    "Hunter", "Beast Master", "Gloom Stalker", "Horizon Walker",
-    "Monster Slayer", "Fey Wanderer", "Swarmkeeper", "Drakewarden",
-
-    # Rogue
-    "Thief", "Assassin", "Arcane Trickster", "Inquisitive", "Mastermind",
-    "Scout", "Swashbuckler", "Phantom", "Soulknife",
-
-    # Sorcerer
-    "Draconic Bloodline", "Wild Magic", "Divine Soul", "Shadow Magic",
-    "Storm Sorcery", "Aberrant Mind", "Clockwork Soul",
-
-    # Warlock
-    "The Archfey", "The Fiend", "The Great Old One", "The Celestial",
-    "The Hexblade", "The Fathomless", "The Genie", "The Undead",
-
-    # Wizard
-    "School of Abjuration", "School of Conjuration", "School of Divination",
-    "School of Enchantment", "School of Evocation", "School of Illusion",
-    "School of Necromancy", "School of Transmutation", "Bladesinging",
-    "War Magic", "Order of Scribes", "Chronurgy Magic", "Graviturgy Magic",
-]
-
-# =============================================================================
-# CONDITIONS
-# =============================================================================
-
-CONDITION_NAMES = [
-    "Blinded", "Charmed", "Deafened", "Exhaustion", "Frightened",
-    "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified",
-    "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious",
-]
-
-# =============================================================================
-# LOCATIONS / PLANES
-# =============================================================================
-
+# Locations/Planes (not in SRD API - keep manual)
 LOCATION_NAMES = [
     # Planes of Existence
     "Material Plane", "Feywild", "Shadowfell", "Ethereal Plane", "Astral Plane",
     "Elemental Plane of Air", "Elemental Plane of Earth", "Elemental Plane of Fire",
-    "Elemental Plane of Water", "Elemental Chaos", "Para-Elemental Planes",
-
+    "Elemental Plane of Water", "Elemental Chaos",
     # Outer Planes
     "Mount Celestia", "Bytopia", "Elysium", "The Beastlands", "Arborea",
     "Ysgard", "Limbo", "Pandemonium", "The Abyss", "Carceri", "Hades",
-    "Gehenna", "Nine Hells", "Acheron", "Mechanus", "Arcadia", "Outlands",
-    "Sigil",
-
+    "Gehenna", "Nine Hells", "Acheron", "Mechanus", "Arcadia", "Outlands", "Sigil",
     # Generic Fantasy Locations
     "Underdark", "Dungeon", "Cave", "Castle", "Tower", "Temple", "Shrine",
     "Tomb", "Crypt", "Forest", "Swamp", "Mountain", "Desert", "Tundra",
     "Ocean", "Island", "City", "Village", "Town", "Fortress", "Ruins",
     "Tavern", "Inn", "Guild Hall", "Arena", "Marketplace", "Harbor",
-    "Library", "Academy", "Monastery", "Cathedral", "Graveyard", "Prison",
 ]
 
-# =============================================================================
-# DAMAGE TYPES
-# =============================================================================
-
-DAMAGE_TYPES = [
-    "Acid", "Bludgeoning", "Cold", "Fire", "Force", "Lightning",
-    "Necrotic", "Piercing", "Poison", "Psychic", "Radiant", "Slashing", "Thunder",
+# Feats (limited in SRD - keep common ones)
+FEAT_NAMES = [
+    "Alert", "Athlete", "Actor", "Charger", "Crossbow Expert",
+    "Defensive Duelist", "Dual Wielder", "Dungeon Delver", "Durable",
+    "Elemental Adept", "Grappler", "Great Weapon Master", "Healer",
+    "Heavily Armored", "Heavy Armor Master", "Inspiring Leader",
+    "Keen Mind", "Lightly Armored", "Linguist", "Lucky", "Mage Slayer",
+    "Magic Initiate", "Martial Adept", "Medium Armor Master", "Mobile",
+    "Moderately Armored", "Mounted Combatant", "Observant", "Polearm Master",
+    "Resilient", "Ritual Caster", "Savage Attacker", "Sentinel",
+    "Sharpshooter", "Shield Master", "Skilled", "Skulker", "Spell Sniper",
+    "Tavern Brawler", "Tough", "War Caster", "Weapon Master",
 ]
 
-# =============================================================================
-# SKILLS
-# =============================================================================
-
-SKILL_NAMES = [
-    "Acrobatics", "Animal Handling", "Arcana", "Athletics", "Deception",
-    "History", "Insight", "Intimidation", "Investigation", "Medicine",
-    "Nature", "Perception", "Performance", "Persuasion", "Religion",
-    "Sleight of Hand", "Stealth", "Survival",
-]
-
-# =============================================================================
-# ABILITY SCORES
-# =============================================================================
-
-ABILITY_NAMES = [
-    "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma",
-    "STR", "DEX", "CON", "INT", "WIS", "CHA",
-]
-
-# =============================================================================
-# COMBAT STATS
-# =============================================================================
-
+# Combat stats (conceptual, not API entities)
 COMBAT_STAT_NAMES = [
     "AC", "Armor Class", "HP", "Hit Points", "Hit Dice",
     "Initiative", "Speed", "Walking Speed", "Flying Speed", "Swimming Speed",
@@ -606,43 +212,97 @@ COMBAT_STAT_NAMES = [
     "Attack Bonus", "Damage Bonus",
 ]
 
+# Levels (for template slots)
+LEVEL_NAMES = [str(i) for i in range(1, 21)]
+SPELL_LEVEL_NAMES = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]
+
+# Mechanics (for rulebook queries)
+MECHANIC_NAMES = [
+    "advantage", "disadvantage", "proficiency", "expertise",
+    "concentration", "ritual", "reaction", "bonus action",
+    "opportunity attack", "grappling", "shoving", "hiding",
+    "cover", "flanking", "inspiration", "death saves",
+    "short rest", "long rest",
+]
+
+# Creature abilities (for monster queries)
+CREATURE_ABILITY_NAMES = [
+    "Multiattack", "Legendary Actions", "Legendary Resistance",
+    "Lair Actions", "Frightful Presence", "Breath Weapon",
+    "Spellcasting", "Innate Spellcasting", "Magic Resistance",
+    "Pack Tactics", "Sneak Attack", "Regeneration",
+]
+
 # =============================================================================
 # SLOT MAPPINGS FOR TEMPLATE FILLING
 # =============================================================================
 
 SLOT_FILLERS = {
+    # Core entity types
     "spell": SPELL_NAMES,
     "spell_name": SPELL_NAMES,
+    "spell1": SPELL_NAMES,
+    "spell2": SPELL_NAMES,
     "creature": CREATURE_NAMES,
     "monster": CREATURE_NAMES,
-    "npc_type": CREATURE_NAMES[:50],  # Use first 50 as generic NPC types
+    "npc_type": CREATURE_NAMES,
+    
+    # Items
     "item": ITEM_NAMES,
     "item_name": ITEM_NAMES,
-    "weapon": WEAPON_NAMES,
-    "armor": ARMOR_NAMES,
+    "item1": ITEM_NAMES,
+    "item2": ITEM_NAMES,
+    "weapon": WEAPON_NAMES if WEAPON_NAMES else EQUIPMENT_NAMES[:50],
+    "armor": ARMOR_NAMES if ARMOR_NAMES else EQUIPMENT_NAMES[:20],
     "magic_item": MAGIC_ITEM_NAMES,
     "equipment": EQUIPMENT_NAMES,
+    
+    # Character building
     "feature": CLASS_FEATURE_NAMES,
     "class_feature": CLASS_FEATURE_NAMES,
+    "feature1": CLASS_FEATURE_NAMES,
+    "feature2": CLASS_FEATURE_NAMES,
     "race": RACE_NAMES,
     "class": CLASS_NAMES,
     "class_name": CLASS_NAMES,
+    "class1": CLASS_NAMES,
+    "class2": CLASS_NAMES,
     "subclass": SUBCLASS_NAMES,
+    "trait": TRAIT_NAMES,
+    "background": BACKGROUND_NAMES,
+    "feat": FEAT_NAMES,
+    
+    # Stats and mechanics
     "condition": CONDITION_NAMES,
-    "location": LOCATION_NAMES,
-    "plane": LOCATION_NAMES[:20],  # Planes only
-    "damage_type": DAMAGE_TYPES,
     "skill": SKILL_NAMES,
-    "ability": ABILITY_NAMES,
-    "stat": COMBAT_STAT_NAMES + ABILITY_NAMES,
+    "skill1": SKILL_NAMES,
+    "skill2": SKILL_NAMES,
+    "ability": ABILITY_NAMES_EXTENDED,
+    "ability1": ABILITY_NAMES_EXTENDED,
+    "ability2": ABILITY_NAMES_EXTENDED,
+    "stat": COMBAT_STAT_NAMES + ABILITY_NAMES_EXTENDED,
     "combat_stat": COMBAT_STAT_NAMES,
+    "damage_type": DAMAGE_TYPES,
+    "damage_type1": DAMAGE_TYPES,
+    "damage_type2": DAMAGE_TYPES,
+    
+    # World building
+    "location": LOCATION_NAMES,
+    "plane": LOCATION_NAMES[:20],
+    "language": LANGUAGE_NAMES,
+    
+    # Misc
+    "level": LEVEL_NAMES,
+    "spell_level": SPELL_LEVEL_NAMES,
+    "mechanic": MECHANIC_NAMES,
+    "creature_ability": CREATURE_ABILITY_NAMES,
+    "weapon_property": WEAPON_PROPERTIES,
 }
 
 # =============================================================================
 # NER ENTITY TYPE MAPPING
 # =============================================================================
 
-# Maps entity type to the lists that contain entities of that type
 NER_ENTITY_MAPPING = {
     "SPELL": SPELL_NAMES,
     "ITEM": ITEM_NAMES,
@@ -652,12 +312,18 @@ NER_ENTITY_MAPPING = {
     "CLASS": CLASS_NAMES + SUBCLASS_NAMES,
     "RACE": RACE_NAMES,
     "CONDITION": CONDITION_NAMES,
+    "SKILL": SKILL_NAMES,
+    "ABILITY": ABILITY_NAMES_EXTENDED,
+    "DAMAGE_TYPE": DAMAGE_TYPES,
+    "FEAT": FEAT_NAMES,
+    "BACKGROUND": BACKGROUND_NAMES,
 }
 
 # All entities combined for gazetteer lookup
 ALL_ENTITIES = (
     SPELL_NAMES + CREATURE_NAMES + ITEM_NAMES + CLASS_FEATURE_NAMES +
-    RACE_NAMES + CLASS_NAMES + SUBCLASS_NAMES + CONDITION_NAMES + LOCATION_NAMES
+    RACE_NAMES + CLASS_NAMES + SUBCLASS_NAMES + CONDITION_NAMES + 
+    LOCATION_NAMES + SKILL_NAMES + FEAT_NAMES
 )
 
 
@@ -680,3 +346,45 @@ def get_slot_values(slot_name: str) -> list[str]:
     Get the list of possible values for a template slot.
     """
     return SLOT_FILLERS.get(slot_name, [])
+
+
+# =============================================================================
+# VALIDATION ON IMPORT
+# =============================================================================
+
+def _validate_cache():
+    """Check if cache is populated."""
+    if not CACHE_DIR.exists():
+        print(f"⚠️  SRD cache not found at {CACHE_DIR}")
+        print("   Run: uv run python -m scripts.fetch_srd_data")
+        return False
+    
+    required = ["spells.json", "monsters.json", "equipment.json"]
+    missing = [f for f in required if not (CACHE_DIR / f).exists()]
+    
+    if missing:
+        print(f"⚠️  Missing cache files: {missing}")
+        print("   Run: uv run python -m scripts.fetch_srd_data")
+        return False
+    
+    return True
+
+
+# Validate on import (warning only, don't fail)
+if not _validate_cache():
+    print("   Gazetteers may be empty or incomplete!")
+else:
+    # Print summary on first import
+    _summary = {
+        "Spells": len(SPELL_NAMES),
+        "Monsters": len(CREATURE_NAMES),
+        "Equipment": len(EQUIPMENT_NAMES),
+        "Magic Items": len(MAGIC_ITEM_NAMES),
+        "Features": len(CLASS_FEATURE_NAMES),
+        "Classes": len(CLASS_NAMES),
+        "Subclasses": len(SUBCLASS_NAMES),
+        "Conditions": len(CONDITION_NAMES),
+        "Skills": len(SKILL_NAMES),
+    }
+    _total = sum(_summary.values())
+    # Uncomment for debug: print(f"✓ Loaded {_total} entities from SRD cache")

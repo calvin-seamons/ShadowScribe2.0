@@ -35,14 +35,24 @@ MODEL_CONFIG = {
 
 # Dataset configuration
 DATASET_CONFIG = {
-    'total_samples': 10000,
-    'two_tool_pct': 0.50,  # 50% of queries need 2 tools
-    'three_tool_pct': 0.20,  # 20% need 3 tools
-    'one_tool_pct': 0.30,  # 30% need 1 tool
+    # K-expansion: generate K samples per template with different entity fills
+    # Templates WITH slots generate K variations; templates WITHOUT slots generate 1
+    'expansions_per_template': 100,  # Each template generates up to K variations
+    
+    # Tool distribution (what % of samples use 1, 2, or 3 tools)
+    'one_tool_pct': 0.30,   # 30% need 1 tool
+    'two_tool_pct': 0.50,   # 50% of queries need 2 tools
+    'three_tool_pct': 0.20, # 20% need 3 tools
+    
+    # Train/val/test splits
     'train_split': 0.80,
     'val_split': 0.10,
     'test_split': 0.10,
+    
     'random_seed': 42,
+    
+    # Deduplication: skip samples that are identical to existing ones
+    'deduplicate': True,
 }
 
 # Tools and their intents
