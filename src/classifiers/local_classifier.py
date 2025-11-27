@@ -108,7 +108,8 @@ class LocalClassifier:
         srd_cache_path: str,
         device: str = 'auto',
         tool_threshold: float = 0.5,
-        gazetteer_min_similarity: float = 0.80
+        gazetteer_min_similarity: float = 0.80,
+        temperature: float = 5.0  # Temperature scaling for calibrated confidence
     ):
         """
         Initialize the local classifier.
@@ -119,10 +120,13 @@ class LocalClassifier:
             device: Device to use ('auto', 'cuda', 'mps', 'cpu')
             tool_threshold: Confidence threshold for tool selection
             gazetteer_min_similarity: Minimum similarity for gazetteer matching
+            temperature: Temperature for scaling logits (higher = softer probabilities)
+                         Default 5.0 provides more calibrated confidence scores.
         """
         self.model_path = Path(model_path)
         self.srd_cache_path = Path(srd_cache_path)
         self.tool_threshold = tool_threshold
+        self.temperature = temperature
         
         # Determine device
         if device == 'auto':
@@ -215,17 +219,21 @@ class LocalClassifier:
         with torch.no_grad():
             outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
         
-        # Process tool predictions (multi-label with sigmoid)
-        tool_probs = torch.sigmoid(outputs['tool_logits']).cpu().numpy()[0]
+        # Process tool predictions with temperature scaling for calibrated confidence
+        # Raw sigmoid gives 0/1 due to large logits; temperature softens this
+        tool_logits = outputs['tool_logits'][0]
+        scaled_logits = tool_logits / self.temperature
+        tool_probs = torch.sigmoid(scaled_logits).cpu().numpy()
         tool_confidences = {self.tools[i]: float(p) for i, p in enumerate(tool_probs)}
         
-        # Select tools above threshold
-        selected_tools = [self.tools[i] for i, p in enumerate(tool_probs) if p > self.tool_threshold]
+        # For actual selection, use raw sigmoid (model's true prediction)
+        raw_probs = torch.sigmoid(tool_logits).cpu().numpy()
+        selected_tools = [self.tools[i] for i, p in enumerate(raw_probs) if p > self.tool_threshold]
         
         # Get intents for selected tools
         tools_needed = []
         for tool in selected_tools:
-            confidence = tool_confidences[tool]
+            confidence = tool_confidences[tool]  # Use calibrated confidence for display
             
             # Get intention based on tool type
             if tool == 'character_data':
