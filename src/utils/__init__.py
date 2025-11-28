@@ -1,10 +1,11 @@
 """
 Utility Module
 
-Character inspection and entity search utilities.
+Character inspection, entity search, and query normalization utilities.
 """
 
 from .character_inspector import CharacterInspector
 from .entity_search_engine import EntitySearchEngine
+from .query_normalization import apply_entity_placeholders
 
-__all__ = ['CharacterInspector', 'EntitySearchEngine']
+__all__ = ['CharacterInspector', 'EntitySearchEngine', 'apply_entity_placeholders']

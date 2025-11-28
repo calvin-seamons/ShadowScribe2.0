@@ -15,7 +15,8 @@
       "Bash(find:*)",
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "mcp__filesystem__directory_tree"
     ],
     "deny": [],
     "ask": []

@@ -15,10 +15,17 @@ Zustand stores                              MySQL 8.0            RAG Routers (Ch
 React components                            Characters              Rulebook, Session Notes)
 ```
 
-**Core RAG Engine**: `src/central_engine.py` uses 2-parallel LLM calls:
-1. Tool & Intention Selector (fast routing with Haiku)
-2. Entity Extractor (extract named entities)
-Then executes appropriate RAG routers and generates streaming responses with Sonnet.
+**Core RAG Engine**: `src/central_engine.py` pipeline:
+1. Gazetteer NER extracts entities from user query
+2. Placeholders applied to normalize query (e.g., "Tell me about {CHARACTER}")
+3. Router selects tools/intentions (configurable via `routing_mode`)
+4. RAG routers execute with entity context
+5. Sonnet generates streaming response
+
+**Routing Mode** (`src/config.py` → `routing_mode`):
+- `"haiku"` (default): Claude Haiku 4.5 API for routing, saves to DB for training data
+- `"local"`: Local DeBERTa classifier, fast, no API calls
+- `"comparison"`: Both run in parallel, Haiku primary, local shown in UI
 
 ## Build, Test & Run Commands
 

@@ -110,15 +110,18 @@ class RAGConfig:
     local_model_device: str = "cpu"  # or "cuda" if GPU available
     
     # Local Classifier Settings (Joint Classifier Model)
-    # When True, uses fast local DeBERTa model for routing instead of LLM API calls
-    use_local_classifier: bool = True  # Default to local model for fast routing
     local_classifier_model_path: str = "574-Assignment/models/joint_classifier"
     local_classifier_srd_cache: str = "src/classifiers/data/srd_cache"
     local_classifier_device: str = "auto"  # auto, cuda, mps, cpu
     local_classifier_tool_threshold: float = 0.5  # Confidence threshold for tool selection
     gazetteer_min_similarity: float = 0.70  # Minimum similarity for gazetteer NER matching (lower = more permissive)
-    # comparison_logging runs BOTH LLM and local classifier - useful for debugging but adds latency
-    comparison_logging: bool = False  # Disable by default for faster responses
+
+    # Routing Mode - Controls which classifier is used for tool/intention routing
+    # Options:
+    #   "haiku"      - Use Claude Haiku 4.5 API for routing (saves to DB for training data)
+    #   "local"      - Use local DeBERTa classifier for routing (fast, no API calls)
+    #   "comparison" - Run BOTH classifiers, Haiku is primary, local shown in UI for comparison
+    routing_mode: str = "comparison"  # Run both for UI comparison
     
     def __post_init__(self):
         """Validate API keys after initialization"""
@@ -197,13 +200,14 @@ class RAGConfig:
             local_model_device=env_or_default('RAG_LOCAL_DEVICE', 'local_model_device'),
             
             # Local Classifier Settings
-            use_local_classifier=env_or_default('RAG_USE_LOCAL_CLASSIFIER', 'use_local_classifier', bool),
             local_classifier_model_path=env_or_default('RAG_LOCAL_CLASSIFIER_MODEL_PATH', 'local_classifier_model_path'),
             local_classifier_srd_cache=env_or_default('RAG_LOCAL_CLASSIFIER_SRD_CACHE', 'local_classifier_srd_cache'),
             local_classifier_device=env_or_default('RAG_LOCAL_CLASSIFIER_DEVICE', 'local_classifier_device'),
             local_classifier_tool_threshold=env_or_default('RAG_LOCAL_CLASSIFIER_TOOL_THRESHOLD', 'local_classifier_tool_threshold', float),
             gazetteer_min_similarity=env_or_default('RAG_GAZETTEER_MIN_SIMILARITY', 'gazetteer_min_similarity', float),
-            comparison_logging=env_or_default('RAG_COMPARISON_LOGGING', 'comparison_logging', bool)
+
+            # Routing Mode
+            routing_mode=env_or_default('RAG_ROUTING_MODE', 'routing_mode')
         )
     
     @classmethod

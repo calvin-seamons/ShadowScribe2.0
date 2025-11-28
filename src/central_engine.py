@@ -29,6 +29,9 @@ from .rag.session_notes.session_types import QueryEngineResult
 # Import EntitySearchEngine for new architecture
 from .utils.entity_search_engine import EntitySearchEngine
 
+# Import query normalization for placeholder substitution
+from .utils.query_normalization import apply_entity_placeholders
+
 # Import tool intentions from single source of truth
 from .rag.tool_intentions import get_fallback_intention
 
@@ -112,32 +115,29 @@ class CentralEngine:
         self.llm_clients = llm_clients
         self.prompt_manager = prompt_manager
         self.config = get_config()
-        
-        # Use local classifier for routing based on config
-        self.use_local_routing = self.config.use_local_classifier
-        
+
         # Store data sources for entity resolution
         self.character = character
         self.rulebook_storage = rulebook_storage
         self.campaign_session_notes = campaign_session_notes
-        
+
         # Initialize EntitySearchEngine
         self.entity_search_engine = entity_search_engine or EntitySearchEngine()
-        
+
         # Initialize Gazetteer-based entity extractor (replaces LLM entity extraction)
         self.entity_extractor = self._init_entity_extractor()
-        
+
         # Initialize query routers with required storage instances
         self.character_router = CharacterQueryRouter(character) if character else None
         self.rulebook_router = RulebookQueryRouter(rulebook_storage) if rulebook_storage else None
         self.session_notes_router = SessionNotesQueryRouter(campaign_session_notes) if campaign_session_notes else None
-        
+
         # Conversation history tracking
         self.conversation_history: List[Dict[str, str]] = []
-        
-        # Initialize local classifier if enabled in config
+
+        # Initialize local classifier if needed (for "local" or "comparison" routing modes)
         self.local_classifier = None
-        if self.config.use_local_classifier or self.config.comparison_logging:
+        if self.config.routing_mode in ("local", "comparison"):
             self._init_local_classifier()
     
     def _init_entity_extractor(self) -> Optional[GazetteerEntityExtractor]:
@@ -321,77 +321,100 @@ class CentralEngine:
             str: Chunks of the final response as they are generated
         """
         print(f"🔧 DEBUG: Processing query (streaming): '{user_query}'")
-        
+
         # Track timing for performance metrics
         start_time = time.time()
         timing = {}
-        
+
         # Add user query to conversation history
         self.add_conversation_turn("user", user_query)
-        
-        # Step 1: Route using either LLM or local classifier
-        if self.use_local_routing:
-            print("🔧 DEBUG: Step 1 - LOCAL CLASSIFIER routing + Gazetteer entity extraction")
-        else:
-            print("🔧 DEBUG: Step 1 - Tool selector LLM + Gazetteer entity extraction")
+
+        # ===== NEW PIPELINE: Entity extraction FIRST, then normalize, then route =====
+
+        # Step 1a: Extract entities using Gazetteer (fast, synchronous)
+        print("🔧 DEBUG: Step 1a - Gazetteer entity extraction")
         step1_start = time.time()
-        
-        # Extract entities using Gazetteer (fast, synchronous)
         entity_extractor_output = self._extract_entities_gazetteer(user_query)
-        
-        # Use local classifier for routing if enabled
-        if self.use_local_routing and self.local_classifier:
-            # Run local classifier directly for routing
-            local_result = await self._run_local_classifier(user_query)
-            if local_result:
-                tool_selector_output = ToolSelectorOutput(tools_needed=local_result.tools_needed)
-                print(f"🧠 LOCAL ROUTING (⏱️ {local_result.inference_time_ms:.1f}ms):")
-                for tool in local_result.tools_needed:
-                    conf = tool.get('confidence', 0)
-                    print(f"   - {tool['tool']}: {tool['intention']} ({conf:.1%})")
-            else:
-                print("⚠️ Local classifier failed, falling back to LLM routing")
-                tool_selector_output = await self._call_tool_selector(user_query, character_name)
-            local_classifier_result = None  # No comparison needed
-        else:
-            # Build list of async tasks for LLM routing
-            tasks = [
-                self._call_tool_selector(user_query, character_name)
-            ]
-            
-            # Add local classifier task if enabled for comparison
-            run_local_comparison = self.config.comparison_logging and self.local_classifier is not None
-            if run_local_comparison:
-                tasks.append(self._run_local_classifier(user_query))
-            
-            # Run all tasks in parallel
-            results = await asyncio.gather(*tasks)
-            
-            tool_selector_output = results[0]
-            local_classifier_result = results[1] if run_local_comparison else None
-            
-            # Log comparison if enabled
-            if run_local_comparison and local_classifier_result:
-                await self._log_classifier_comparison(
-                    user_query, tool_selector_output, entity_extractor_output, 
-                    local_classifier_result, metadata_callback
-                )
-        
-        timing['routing_and_entities'] = (time.time() - step1_start) * 1000  # Convert to ms
-        
-        print(f"🔧 DEBUG: Tool selector returned {len(tool_selector_output.tools_needed)} tools")
+
         print(f"🔧 DEBUG: Gazetteer extracted {len(entity_extractor_output.entities)} entities")
         for e in entity_extractor_output.entities[:5]:  # Show first 5
             print(f"   - {e.get('name')} ({e.get('type')}, conf={e.get('confidence', 1.0):.2f})")
-        
-        # Emit routing metadata with a COPY of tools_needed
-        # We copy here because Step 4.5 will mutate the list with entity-based fallbacks,
-        # but for feedback/training we want to capture only what the classifier predicted
+
+        # Step 1b: Apply placeholders to create normalized query for routing
+        print("🔧 DEBUG: Step 1b - Applying entity placeholders")
+        normalized_query = apply_entity_placeholders(
+            user_query,
+            character_name,
+            entity_extractor_output.entities
+        )
+        print(f"🔧 DEBUG: Normalized query: '{normalized_query}'")
+
+        # Step 1c: Run classifier(s) based on routing_mode config
+        routing_mode = self.config.routing_mode
+        print(f"🔧 DEBUG: Step 1c - Routing mode: {routing_mode}")
+
+        local_classifier_result = None
+        tool_selector_output = None
+
+        if routing_mode == "local":
+            # Local classifier only - fast, no API calls
+            print("🧠 LOCAL CLASSIFIER ROUTING:")
+            if self.local_classifier:
+                local_classifier_result = await self._run_local_classifier(normalized_query)
+                if local_classifier_result:
+                    tool_selector_output = ToolSelectorOutput(tools_needed=local_classifier_result.tools_needed)
+                    print(f"   ⏱️ {local_classifier_result.inference_time_ms:.1f}ms")
+                    for tool in local_classifier_result.tools_needed:
+                        conf = tool.get('confidence', 0)
+                        print(f"   - {tool['tool']}: {tool['intention']} ({conf:.1%})")
+                else:
+                    print("   ⚠️ Local classifier failed, falling back to Haiku")
+                    tool_selector_output = await self._call_tool_selector(normalized_query, character_name)
+            else:
+                print("   ⚠️ Local classifier not available, falling back to Haiku")
+                tool_selector_output = await self._call_tool_selector(normalized_query, character_name)
+
+        elif routing_mode == "comparison":
+            # Run BOTH classifiers in parallel - Haiku is primary, local for UI comparison
+            print("🔧 DEBUG: Running Haiku + Local classifier in parallel")
+            tasks = [self._call_tool_selector(normalized_query, character_name)]
+            if self.local_classifier:
+                tasks.append(self._run_local_classifier(normalized_query))
+
+            results = await asyncio.gather(*tasks)
+            tool_selector_output = results[0]
+            local_classifier_result = results[1] if len(results) > 1 else None
+
+            print(f"🤖 HAIKU ROUTING (PRIMARY):")
+            for tool in tool_selector_output.tools_needed:
+                conf = tool.get('confidence', 0)
+                print(f"   - {tool['tool']}: {tool['intention']} ({conf:.1%})")
+
+            if local_classifier_result:
+                print(f"🧠 LOCAL CLASSIFIER (COMPARISON, ⏱️ {local_classifier_result.inference_time_ms:.1f}ms):")
+                for tool in local_classifier_result.tools_needed:
+                    conf = tool.get('confidence', 0)
+                    print(f"   - {tool['tool']}: {tool['intention']} ({conf:.1%})")
+
+        else:  # "haiku" (default)
+            # Haiku only - for collecting training data
+            print("🤖 HAIKU ROUTING:")
+            tool_selector_output = await self._call_tool_selector(normalized_query, character_name)
+            for tool in tool_selector_output.tools_needed:
+                conf = tool.get('confidence', 0)
+                print(f"   - {tool['tool']}: {tool['intention']} ({conf:.1%})")
+
+        timing['routing_and_entities'] = (time.time() - step1_start) * 1000  # Convert to ms
+
+        # Emit routing metadata
         if metadata_callback:
-            await metadata_callback('routing_metadata', {
+            # Determine classifier backend based on what was actually used for routing
+            classifier_backend = 'local' if routing_mode == 'local' else 'llm'
+
+            routing_metadata = {
                 'tools_needed': [dict(t) for t in tool_selector_output.tools_needed],
-                'classifier_backend': 'local' if self.use_local_routing else 'llm',
-                # Include entity extraction for feedback/training (with text, type, etc.)
+                'classifier_backend': classifier_backend,
+                'normalized_query': normalized_query,  # The placeholder-ized query
                 'extracted_entities': [
                     {
                         'name': e.get('name', ''),
@@ -401,7 +424,14 @@ class CentralEngine:
                     }
                     for e in (entity_extractor_output.entities or [])
                 ]
-            })
+            }
+
+            # Include local classifier results for UI comparison (only in comparison mode)
+            if local_classifier_result and routing_mode == "comparison":
+                routing_metadata['local_tools_needed'] = [dict(t) for t in local_classifier_result.tools_needed]
+                routing_metadata['local_inference_time_ms'] = local_classifier_result.inference_time_ms
+
+            await metadata_callback('routing_metadata', routing_metadata)
         
         # Step 2: Derive selected tools from tool selector output
         selected_tools = [t["tool"] for t in tool_selector_output.tools_needed]

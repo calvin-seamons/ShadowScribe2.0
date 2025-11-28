@@ -29,13 +29,16 @@ class ChatService:
     automatically includes character names, party members, NPCs,
     and other entities from the selected campaign's session notes.
     
-    Routing behavior is controlled by config.use_local_classifier.
+    Routing behavior is controlled by config.routing_mode:
+    - "haiku": Use Claude Haiku API for routing
+    - "local": Use local DeBERTa classifier
+    - "comparison": Run both classifiers for comparison
     """
     
     def __init__(self):
         """Initialize chat service with CentralEngine.
         
-        Routing mode is determined by config.use_local_classifier.
+        Routing mode is determined by config.routing_mode.
         """
         self._engines: Dict[str, CentralEngine] = {}
         self._rulebook_storage = None
@@ -121,7 +124,7 @@ class ChatService:
             context_assembler = ContextAssembler()
             prompt_manager = CentralPromptManager(context_assembler)
             
-            # Create engine - routing mode determined by config.use_local_classifier
+            # Create engine - routing mode determined by config.routing_mode
             engine = CentralEngine.create_from_config(
                 prompt_manager,
                 character=character,
@@ -131,9 +134,15 @@ class ChatService:
             
             from src.config import get_config
             config = get_config()
-            routing_mode = "LOCAL MODEL" if config.use_local_classifier else "LLM"
+            # Map routing_mode to display label
+            routing_labels = {
+                "local": "LOCAL MODEL",
+                "haiku": "HAIKU LLM",
+                "comparison": "COMPARISON (Haiku + Local)"
+            }
+            routing_label = routing_labels.get(config.routing_mode, config.routing_mode.upper())
             print(f"[ChatService] Created engine for {character_name} in {campaign_id}")
-            print(f"[ChatService] Routing: {routing_mode}, Entity extraction: GAZETTEER NER")
+            print(f"[ChatService] Routing: {routing_label}, Entity extraction: GAZETTEER NER")
             
             self._engines[engine_key] = engine
             return engine
