@@ -850,71 +850,21 @@ def _export_feedback(args, compose: list):
     import json
     from pathlib import Path
     
-    enable_placeholders = not args.no_placeholders
     unexported_only = not args.all
     corrections_only = args.corrections
     
     # Build export command that runs inside the container
-    # Using string concatenation to avoid .format() escaping issues with braces
     python_code = """
 import asyncio
 import json
-import re
 import sys
 sys.path.insert(0, "/app")
 
 from api.database.connection import AsyncSessionLocal, init_db
 from api.database.repositories.feedback_repo import FeedbackRepository
 
-ENABLE_PLACEHOLDERS = """ + str(enable_placeholders) + """
 UNEXPORTED_ONLY = """ + str(unexported_only) + """
 CORRECTIONS_ONLY = """ + str(corrections_only) + """
-
-def apply_placeholders(query, character_name, entities):
-    replacements = []
-    
-    if character_name:
-        replacements.append((character_name, '{CHARACTER}'))
-        # Also add first name/nicknames if they appear in the query
-        # e.g., "Duskryn Nightwarden" -> match "Duskryn" and "Dusk"
-        parts = character_name.split()
-        if len(parts) > 0:
-            first_name = parts[0]
-            if first_name != character_name:
-                replacements.append((first_name, '{CHARACTER}'))
-            # Common 4-char nickname pattern
-            if len(first_name) > 4:
-                nick = first_name[:4]
-                replacements.append((nick, '{CHARACTER}'))
-    
-    if entities:
-        for entity in entities:
-            entity_type = entity.get('type', '')
-            # Use 'text' if available, fallback to 'name' for legacy records
-            entity_text = entity.get('text', '') or entity.get('name', '')
-            
-            if not entity_text:
-                continue
-            
-            placeholder = None
-            if entity_type == 'CHARACTER':
-                placeholder = '{CHARACTER}'
-            elif entity_type == 'PARTY_MEMBER':
-                placeholder = '{PARTY_MEMBER}'
-            elif entity_type == 'NPC':
-                placeholder = '{NPC}'
-            
-            if placeholder:
-                replacements.append((entity_text, placeholder))
-    
-    replacements.sort(key=lambda x: len(x[0]), reverse=True)
-    
-    result = query
-    for original_text, placeholder in replacements:
-        pattern = re.compile(re.escape(original_text), re.IGNORECASE)
-        result = pattern.sub(placeholder, result)
-    
-    return result
 
 async def main():
     await init_db()
@@ -935,14 +885,10 @@ async def main():
             record_ids.append(r.id)
             tools = r.corrected_tools if r.corrected_tools else r.predicted_tools
             
-            if ENABLE_PLACEHOLDERS:
-                query = apply_placeholders(r.user_query, r.character_name, r.predicted_entities or [])
-            else:
-                query = r.user_query
-            
+            # user_query already has placeholders applied at storage time
             for tool_info in tools:
                 examples.append({
-                    'query': query,
+                    'query': r.user_query,
                     'tool': tool_info['tool'],
                     'intent': tool_info['intention'],
                     'is_correction': r.corrected_tools is not None
@@ -989,10 +935,6 @@ asyncio.run(main())
         print(f"   - From {len(record_ids)} feedback records")
         print(f"   - Corrections: {corrections_count}")
         print(f"   - Confirmed correct: {confirmed_count}")
-        if enable_placeholders:
-            print(f"   - Placeholders: {Colors.GREEN}enabled{Colors.RESET}")
-        else:
-            print(f"   - Placeholders: {Colors.YELLOW}disabled{Colors.RESET}")
         
         # Mark as exported (unless --no-mark)
         if not args.no_mark and record_ids:
@@ -1030,12 +972,13 @@ asyncio.run(main())
 
 
 def _reprocess_feedback_entities(args, compose: list):
-    """Re-extract entities for existing feedback records to fix placeholder data."""
+    """Re-extract entities and apply placeholders to existing feedback records."""
     
     # This script runs inside the container where all dependencies are available
     python_code = """
 import asyncio
 import json
+import re
 import sys
 sys.path.insert(0, "/app")
 
@@ -1049,6 +992,50 @@ from api.database.feedback_models import RoutingFeedback
 from src.classifiers.gazetteer_ner import GazetteerEntityExtractor
 from src.rag.character.character_manager import CharacterManager
 from src.rag.session_notes.session_notes_storage import SessionNotesStorage
+
+
+def apply_placeholders(query, character_name, entities):
+    \"\"\"Apply placeholder substitution to query.\"\"\"
+    replacements = []
+    
+    if character_name:
+        replacements.append((character_name, '{CHARACTER}'))
+        parts = character_name.split()
+        if len(parts) > 0:
+            first_name = parts[0]
+            if first_name != character_name:
+                replacements.append((first_name, '{CHARACTER}'))
+            if len(first_name) > 4:
+                replacements.append((first_name[:4], '{CHARACTER}'))
+    
+    if entities:
+        for entity in entities:
+            entity_type = entity.get('type', '')
+            entity_text = entity.get('text', '') or entity.get('name', '')
+            
+            if not entity_text:
+                continue
+            
+            placeholder = None
+            if entity_type == 'CHARACTER':
+                placeholder = '{CHARACTER}'
+            elif entity_type == 'PARTY_MEMBER':
+                placeholder = '{PARTY_MEMBER}'
+            elif entity_type == 'NPC':
+                placeholder = '{NPC}'
+            
+            if placeholder:
+                replacements.append((entity_text, placeholder))
+    
+    replacements.sort(key=lambda x: len(x[0]), reverse=True)
+    
+    result = query
+    for original_text, placeholder in replacements:
+        pattern = re.compile(re.escape(original_text), re.IGNORECASE)
+        result = pattern.sub(placeholder, result)
+    
+    return result
+
 
 async def main():
     await init_db()
@@ -1088,8 +1075,10 @@ async def main():
         
         updated = 0
         for r in records:
+            original_query = r.user_query
+            
             # Re-extract entities from the query
-            raw_entities = extractor.extract_simple(r.user_query)
+            raw_entities = extractor.extract_simple(original_query)
             
             # Convert to storage format
             new_entities = [
@@ -1102,27 +1091,34 @@ async def main():
                 for e in raw_entities
             ]
             
-            # Update the record
+            # Apply placeholder substitution to the query
+            new_query = apply_placeholders(original_query, r.character_name, new_entities)
+            
+            # Update the record with both new entities and placeholdered query
             await db.execute(
                 update(RoutingFeedback)
                 .where(RoutingFeedback.id == r.id)
-                .values(predicted_entities=new_entities)
+                .values(
+                    predicted_entities=new_entities,
+                    user_query=new_query
+                )
             )
             updated += 1
             
             # Show progress
-            query_preview = r.user_query[:50] + "..." if len(r.user_query) > 50 else r.user_query
+            query_preview = new_query[:60] + "..." if len(new_query) > 60 else new_query
             entity_preview = [f"{e['text']}:{e['type']}" for e in new_entities[:3]]
             print(f"  [{updated}/{len(records)}] {query_preview}")
-            print(f"      -> {entity_preview if entity_preview else '(no entities)'}")
+            if entity_preview:
+                print(f"      entities: {entity_preview}")
         
         await db.commit()
-        print(f"\\n✅ Done! Updated {updated} records.")
+        print(f"\\n✅ Done! Updated {updated} records with entities and placeholders.")
 
 asyncio.run(main())
 """
     
-    log("Re-processing entity extraction for all feedback records...", "info")
+    log("Re-processing entity extraction and applying placeholders...", "info")
     print()
     
     try:
@@ -1131,9 +1127,9 @@ asyncio.run(main())
             capture_output=False,  # Show progress in real-time
             check=True
         )
-        log("Entity re-processing complete!", "success")
+        log("Reprocessing complete!", "success")
     except subprocess.CalledProcessError as e:
-        log("Failed to reprocess entities", "error")
+        log("Failed to reprocess", "error")
         sys.exit(1)
 
 
@@ -1219,10 +1215,9 @@ Examples:
     feedback_parser.add_argument("--export", type=str, metavar="FILE", help="Export to JSONL file")
     feedback_parser.add_argument("--all", action="store_true", help="Include already-exported records")
     feedback_parser.add_argument("--no-mark", action="store_true", help="Don't mark records as exported")
-    feedback_parser.add_argument("--no-placeholders", action="store_true", help="Don't replace names with placeholder tokens")
     feedback_parser.add_argument("--table", action="store_true", help="Compact table format")
     feedback_parser.add_argument("--web", action="store_true", help="Open in browser (HTML view)")
-    feedback_parser.add_argument("--reprocess", action="store_true", help="Re-extract entities for all records")
+    feedback_parser.add_argument("--reprocess", action="store_true", help="Re-extract entities and apply placeholders to all records")
     feedback_parser.set_defaults(func=cmd_feedback)
     
     args = parser.parse_args()
