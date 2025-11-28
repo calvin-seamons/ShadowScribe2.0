@@ -109,10 +109,10 @@ class RAGConfig:
     # Local Model Settings (if using local models)
     local_model_device: str = "cpu"  # or "cuda" if GPU available
     
-    # Local Classifier Settings (Two-Stage Joint Model)
+    # Local Classifier Settings (Joint Classifier Model)
     use_local_classifier: bool = False  # Use local model instead of LLM for routing
-    local_classifier_model_path: str = "src/classifiers/models/two_stage_joint"
-    local_classifier_srd_cache: str = "src/classifiers/data/srd_cache"
+    local_classifier_model_path: str = "574-Assignment/models/joint_classifier"
+    local_classifier_srd_cache: str = "574-Assignment/data/srd_cache"
     local_classifier_device: str = "auto"  # auto, cuda, mps, cpu
     local_classifier_tool_threshold: float = 0.5  # Confidence threshold for tool selection
     gazetteer_min_similarity: float = 0.80  # Minimum similarity for gazetteer NER matching
@@ -174,8 +174,8 @@ class RAGConfig:
             
             # Local Classifier Settings
             use_local_classifier=os.getenv('RAG_USE_LOCAL_CLASSIFIER', 'false').lower() == 'true',
-            local_classifier_model_path=os.getenv('RAG_LOCAL_CLASSIFIER_MODEL_PATH', 'src/classifiers/models/two_stage_joint'),
-            local_classifier_srd_cache=os.getenv('RAG_LOCAL_CLASSIFIER_SRD_CACHE', 'src/classifiers/data/srd_cache'),
+            local_classifier_model_path=os.getenv('RAG_LOCAL_CLASSIFIER_MODEL_PATH', '574-Assignment/models/joint_classifier'),
+            local_classifier_srd_cache=os.getenv('RAG_LOCAL_CLASSIFIER_SRD_CACHE', '574-Assignment/data/srd_cache'),
             local_classifier_device=os.getenv('RAG_LOCAL_CLASSIFIER_DEVICE', 'auto'),
             local_classifier_tool_threshold=float(os.getenv('RAG_LOCAL_CLASSIFIER_TOOL_THRESHOLD', '0.5')),
             gazetteer_min_similarity=float(os.getenv('RAG_GAZETTEER_MIN_SIMILARITY', '0.80')),

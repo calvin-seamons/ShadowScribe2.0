@@ -2,7 +2,7 @@
 Central Engine & Query Processing Pipeline
 
 Main orchestrator that makes LLM calls and coordinates the entire query processing pipeline.
-Uses 2 parallel LLM calls (tool selector + entity extractor) to determine query routing.
+Uses LLM call for tool selection + Gazetteer-based entity extraction.
 Optionally runs local classifier in parallel for comparison logging.
 """
 
@@ -28,6 +28,9 @@ from .rag.session_notes.session_types import QueryEngineResult
 
 # Import EntitySearchEngine for new architecture
 from .utils.entity_search_engine import EntitySearchEngine
+
+# Import Gazetteer-based entity extraction
+from .classifiers.gazetteer_ner import GazetteerEntityExtractor, Entity
 
 
 # ===== ROUTER OUTPUT DATACLASSES =====
@@ -67,6 +70,9 @@ class CentralEngine:
         # Initialize EntitySearchEngine
         self.entity_search_engine = entity_search_engine or EntitySearchEngine()
         
+        # Initialize Gazetteer-based entity extractor (replaces LLM entity extraction)
+        self.entity_extractor = self._init_entity_extractor()
+        
         # Initialize query routers with required storage instances
         self.character_router = CharacterQueryRouter(character) if character else None
         self.rulebook_router = RulebookQueryRouter(rulebook_storage) if rulebook_storage else None
@@ -79,6 +85,42 @@ class CentralEngine:
         self.local_classifier = None
         if self.config.comparison_logging or self.config.use_local_classifier:
             self._init_local_classifier()
+    
+    def _init_entity_extractor(self) -> Optional[GazetteerEntityExtractor]:
+        """Initialize the Gazetteer-based entity extractor with all available data sources."""
+        try:
+            project_root = Path(__file__).parent.parent
+            srd_cache_path = project_root / self.config.local_classifier_srd_cache
+            
+            if not srd_cache_path.exists():
+                print(f"[CentralEngine] SRD cache not found at {srd_cache_path}")
+                return None
+            
+            extractor = GazetteerEntityExtractor(
+                cache_path=srd_cache_path,
+                min_similarity=self.config.gazetteer_min_similarity
+            )
+            
+            # Add character and session note context
+            entity_counts = extractor.add_character_context(
+                character=self.character,
+                session_storage=self.campaign_session_notes
+            )
+            
+            print(f"[CentralEngine] Gazetteer entity extractor initialized: {extractor.get_entity_count()}")
+            return extractor
+            
+        except Exception as e:
+            print(f"[CentralEngine] Failed to initialize entity extractor: {e}")
+            return None
+    
+    def reload_entity_context(self) -> None:
+        """Reload dynamic entities in the gazetteer when character/session data changes."""
+        if self.entity_extractor:
+            self.entity_extractor.reload_context(
+                character=self.character,
+                session_storage=self.campaign_session_notes
+            )
     
     def _init_local_classifier(self) -> None:
         """Initialize the local classifier for comparison logging."""
@@ -93,9 +135,9 @@ class CentralEngine:
             if model_path.exists():
                 self.local_classifier = LocalClassifier(
                     model_path=str(model_path),
-                    srd_cache_path=str(srd_cache_path),
+                    srd_cache_path=str(srd_cache_path) if srd_cache_path.exists() else None,
                     device=self.config.local_classifier_device,
-                    tool_threshold=self.config.local_classifier_tool_threshold,
+                    use_gazetteer=srd_cache_path.exists(),
                     gazetteer_min_similarity=self.config.gazetteer_min_similarity
                 )
                 print("[CentralEngine] Local classifier initialized for comparison logging")
@@ -136,7 +178,7 @@ class CentralEngine:
     async def process_query(self, user_query: str, character_name: str) -> str:
         """
         Main processing pipeline:
-        1. Make 2 parallel LLM calls: tool selector + entity extractor
+        1. Call tool selector LLM + extract entities via Gazetteer (fast, parallel)
         2. Resolve entities using EntitySearchEngine with selected tools
         3. Distribute entities to appropriate RAG tools
         4. Execute needed query routers in parallel
@@ -144,15 +186,22 @@ class CentralEngine:
         """
         print(f"🔧 DEBUG: Processing query: '{user_query}'")
         
-        # Step 1: Make 2 parallel LLM calls
-        print("🔧 DEBUG: Step 1 - Making parallel LLM calls (tool selector + entity extractor)")
-        tool_selector_output, entity_extractor_output = await asyncio.gather(
-            self._call_tool_selector(user_query, character_name),
-            self._call_entity_extractor(user_query)
-        )
+        # Step 1: Tool selector LLM call + Gazetteer entity extraction (in parallel)
+        print("🔧 DEBUG: Step 1 - Tool selector LLM + Gazetteer entity extraction")
+        
+        # Run LLM call async, gazetteer is fast and runs sync
+        tool_selector_task = self._call_tool_selector(user_query, character_name)
+        
+        # Extract entities using Gazetteer (fast, <1ms typically)
+        entity_extractor_output = self._extract_entities_gazetteer(user_query)
+        
+        # Wait for tool selector
+        tool_selector_output = await tool_selector_task
         
         print(f"🔧 DEBUG: Tool selector returned {len(tool_selector_output.tools_needed)} tools")
-        print(f"🔧 DEBUG: Entity extractor returned {len(entity_extractor_output.entities)} entities")
+        print(f"🔧 DEBUG: Gazetteer extracted {len(entity_extractor_output.entities)} entities")
+        for e in entity_extractor_output.entities[:5]:  # Show first 5
+            print(f"   - {e.get('name')} ({e.get('type')}, conf={e.get('confidence', 1.0):.2f})")
         
         # Step 2: Derive selected tools from tool selector output
         selected_tools = [t["tool"] for t in tool_selector_output.tools_needed]
@@ -265,13 +314,15 @@ class CentralEngine:
         self.add_conversation_turn("user", user_query)
         
         # Step 1: Make parallel LLM calls + local classifier (if enabled)
-        print("🔧 DEBUG: Step 1 - Making parallel LLM calls (tool selector + entity extractor)")
+        print("🔧 DEBUG: Step 1 - Tool selector LLM + Gazetteer entity extraction")
         step1_start = time.time()
+        
+        # Extract entities using Gazetteer (fast, synchronous)
+        entity_extractor_output = self._extract_entities_gazetteer(user_query)
         
         # Build list of async tasks
         tasks = [
-            self._call_tool_selector(user_query, character_name),
-            self._call_entity_extractor(user_query)
+            self._call_tool_selector(user_query, character_name)
         ]
         
         # Add local classifier task if enabled for comparison
@@ -283,8 +334,7 @@ class CentralEngine:
         results = await asyncio.gather(*tasks)
         
         tool_selector_output = results[0]
-        entity_extractor_output = results[1]
-        local_classifier_result = results[2] if run_local_comparison else None
+        local_classifier_result = results[1] if run_local_comparison else None
         
         timing['routing_and_entities'] = (time.time() - step1_start) * 1000  # Convert to ms
         
@@ -296,7 +346,9 @@ class CentralEngine:
             )
         
         print(f"🔧 DEBUG: Tool selector returned {len(tool_selector_output.tools_needed)} tools")
-        print(f"🔧 DEBUG: Entity extractor returned {len(entity_extractor_output.entities)} entities")
+        print(f"🔧 DEBUG: Gazetteer extracted {len(entity_extractor_output.entities)} entities")
+        for e in entity_extractor_output.entities[:5]:  # Show first 5
+            print(f"   - {e.get('name')} ({e.get('type')}, conf={e.get('confidence', 1.0):.2f})")
         
         # Emit routing metadata
         if metadata_callback:
@@ -575,65 +627,173 @@ class CentralEngine:
         except Exception as e:
             raise RuntimeError(f"Tool selector LLM call failed: {str(e)}") from e
     
-    async def _call_entity_extractor(self, user_query: str) -> EntityExtractorOutput:
+    def _extract_entities_gazetteer(self, user_query: str) -> EntityExtractorOutput:
         """
-        Make LLM call for Entity Extractor.
-        Extracts entity names from the user query without guessing search contexts.
+        Extract entities using the Gazetteer-based NER system.
+        
+        This is the primary entity extraction method, replacing the LLM call.
+        Uses fuzzy matching against:
+        - SRD entities (spells, monsters, items, conditions, etc.)
+        - Character name and aliases
+        - Party member names from session notes
+        - NPC names from session notes
+        - Locations, items, factions from session notes
+        
+        Returns EntityExtractorOutput compatible with the existing pipeline.
         """
+        if not self.entity_extractor:
+            print("⚠️ Gazetteer entity extractor not available")
+            return EntityExtractorOutput(entities=[])
+        
         start_time = time.time()
-        try:
-            history = self.conversation_history[:-1] if len(self.conversation_history) > 0 else []
-            
-            prompt = self.prompt_manager.get_entity_extraction_prompt(user_query, conversation_history=history)
-            
-            provider = self.config.router_llm_provider
-            client = self.llm_clients.get(provider) or self.llm_clients.get("openai") or self.llm_clients.get("anthropic")
-            
-            if not client:
-                raise RuntimeError("No suitable LLM client available for entity extractor")
-            
-            model = self.config.openai_router_model if provider == "openai" else self.config.anthropic_router_model if provider == "anthropic" else None
-            llm_params = self.config.get_router_llm_params(model)
-            
-            response = await client.generate_json_response(prompt, model=model, **llm_params)
-            
-            elapsed_ms = (time.time() - start_time) * 1000
-            
-            # Debug: Print raw response with timing
-            print(f"🔍 RAW ENTITY EXTRACTOR RESPONSE (⏱️ {elapsed_ms:.0f}ms):")
-            print(f"   Type: {type(response)}")
-            if hasattr(response, 'content'):
-                print(f"   Content: {response.content}")
-            elif isinstance(response, dict):
-                print(f"   Dict: {response}")
-            else:
-                print(f"   Value: {response}")
-            
-            repair_result = JSONRepair.repair_entity_extractor_response(response)
-            
-            if repair_result.was_repaired:
-                print(f"🔧 JSON REPAIR: Entity extractor response was repaired")
-                for detail in repair_result.repair_details:
-                    print(f"   • {detail}")
-            
-            return EntityExtractorOutput(entities=repair_result.data.get("entities", []))
-            
-        except Exception as e:
-            raise RuntimeError(f"Entity extractor LLM call failed: {str(e)}") from e
+        
+        # Extract entities using gazetteer
+        raw_entities = self.entity_extractor.extract_simple(user_query)
+        
+        # Convert to format expected by EntitySearchEngine (needs 'name' field)
+        entities = []
+        for e in raw_entities:
+            entities.append({
+                'name': e['canonical'],  # Use canonical name for lookups
+                'text': e['text'],       # Original text from query
+                'type': e['type'],       # Entity type (SPELL, CHARACTER, NPC, etc.)
+                'confidence': e['confidence'],
+                'is_dynamic': e.get('is_dynamic', False)  # Whether from SRD or session data
+            })
+        
+        elapsed_ms = (time.time() - start_time) * 1000
+        print(f"🔍 GAZETTEER ENTITY EXTRACTION (⏱️ {elapsed_ms:.1f}ms): {len(entities)} entities found")
+        
+        return EntityExtractorOutput(entities=entities)
     
     async def _run_local_classifier(self, user_query: str) -> Optional[Any]:
         """
         Run local classifier for comparison logging.
         Returns ClassificationResult or None if local classifier not available.
+        
+        Passes character name and known names for placeholder normalization.
+        The model was trained on {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholders.
         """
         if not self.local_classifier:
             return None
         
         try:
-            return await self.local_classifier.classify(user_query)
+            # Extract character name and aliases
+            character_name = None
+            character_aliases = []
+            if self.character and hasattr(self.character, 'character_base'):
+                character_name = self.character.character_base.name
+                # Extract first name as an alias
+                if character_name and ' ' in character_name:
+                    first_name = character_name.split()[0]
+                    character_aliases.append(first_name)
+                    # Common nickname patterns (first 4 chars if name is long enough)
+                    if len(first_name) > 4:
+                        character_aliases.append(first_name[:4])
+            
+            # Extract party members from session notes entities
+            party_members = self._extract_party_members()
+            
+            # Extract known NPCs from session notes entities
+            known_npcs = self._extract_known_npcs()
+            
+            # Get classification result
+            result = await self.local_classifier.classify(
+                user_query,
+                character_name=character_name,
+                character_aliases=character_aliases,
+                conversation_history=self.conversation_history,
+                party_members=party_members,
+                known_npcs=known_npcs
+            )
+            
+            # Use gazetteer entities for comparison (same as main pipeline)
+            if result and self.entity_extractor:
+                gazetteer_output = self._extract_entities_gazetteer(user_query)
+                result.entities = gazetteer_output.entities
+            
+            return result
         except Exception as e:
             print(f"⚠️ Local classifier error: {e}")
+            import traceback
+            traceback.print_exc()
             return None
+    
+    def _extract_party_members(self) -> List[str]:
+        """Extract party member names from session notes storage.
+        
+        Uses the entities stored in campaign session notes, filtering by
+        'player_character' entity type. Returns names and aliases.
+        """
+        party_members = []
+        if not self.campaign_session_notes:
+            return party_members
+        
+        # Check for entities in the campaign storage
+        if hasattr(self.campaign_session_notes, 'entities') and self.campaign_session_notes.entities:
+            for entity_id, entity in self.campaign_session_notes.entities.items():
+                # Get entity type
+                entity_type = None
+                if hasattr(entity, 'entity_type'):
+                    entity_type = str(entity.entity_type.value) if hasattr(entity.entity_type, 'value') else str(entity.entity_type)
+                elif isinstance(entity, dict) and 'entity_type' in entity:
+                    entity_type = entity['entity_type']
+                
+                # Only include player characters (party members)
+                if entity_type and 'player_character' in entity_type.lower():
+                    # Get name
+                    name = entity.name if hasattr(entity, 'name') else entity.get('name', '')
+                    if name:
+                        party_members.append(name)
+                    
+                    # Get aliases
+                    aliases = []
+                    if hasattr(entity, 'aliases'):
+                        aliases = entity.aliases
+                    elif isinstance(entity, dict) and 'aliases' in entity:
+                        aliases = entity['aliases']
+                    
+                    party_members.extend([a for a in aliases if a])
+        
+        return list(set(party_members))  # Remove duplicates
+    
+    def _extract_known_npcs(self) -> List[str]:
+        """Extract known NPC names from session notes storage.
+        
+        Uses the entities stored in campaign session notes, filtering by
+        'non_player_character' or 'npc' entity type. Returns names and aliases.
+        """
+        known_npcs = []
+        if not self.campaign_session_notes:
+            return known_npcs
+        
+        # Check for entities in the campaign storage
+        if hasattr(self.campaign_session_notes, 'entities') and self.campaign_session_notes.entities:
+            for entity_id, entity in self.campaign_session_notes.entities.items():
+                # Get entity type
+                entity_type = None
+                if hasattr(entity, 'entity_type'):
+                    entity_type = str(entity.entity_type.value) if hasattr(entity.entity_type, 'value') else str(entity.entity_type)
+                elif isinstance(entity, dict) and 'entity_type' in entity:
+                    entity_type = entity['entity_type']
+                
+                # Only include NPCs
+                if entity_type and ('non_player_character' in entity_type.lower() or 'npc' in entity_type.lower()):
+                    # Get name
+                    name = entity.name if hasattr(entity, 'name') else entity.get('name', '')
+                    if name:
+                        known_npcs.append(name)
+                    
+                    # Get aliases
+                    aliases = []
+                    if hasattr(entity, 'aliases'):
+                        aliases = entity.aliases
+                    elif isinstance(entity, dict) and 'aliases' in entity:
+                        aliases = entity['aliases']
+                    
+                    known_npcs.extend([a for a in aliases if a])
+        
+        return list(set(known_npcs))  # Remove duplicates
     
     async def _log_classifier_comparison(
         self,

@@ -4,17 +4,29 @@ Improve the Two-Stage Joint Model with confidence calibration, data augmentation
 
 ### Steps
 
-1. **Create augmentation module** at [`574-Assignment/data/augmentation.py`](574-Assignment/data/augmentation.py) with typo injection, case/contraction variations, and name placeholder pools (`{CHARACTER}`, `{PARTY_MEMBER}`, `{NPC}`).
+1. **Create augmentation module** at [`574-Assignment/data/augmentation.py`](574-Assignment/data/augmentation.py) with typo injection, case/contraction variations. **Placeholders (`{CHARACTER}`, `{PARTY_MEMBER}`, `{NPC}`) are preserved as literal tokens in all training data** — never filled with actual names during augmentation.
 
-2. **Add placeholder templates** to [`574-Assignment/data/templates/character_templates.py`](574-Assignment/data/templates/character_templates.py) and [`574-Assignment/data/templates/session_templates.py`](574-Assignment/data/templates/session_templates.py) with `{CHARACTER}`, `{PARTY_MEMBER}`, `{NPC}` patterns.
+2. **Add placeholder templates** to all template files with `{CHARACTER}`, `{PARTY_MEMBER}`, `{NPC}` patterns:
+   - [`574-Assignment/data/templates/character_templates.py`](574-Assignment/data/templates/character_templates.py)
+   - [`574-Assignment/data/templates/session_templates.py`](574-Assignment/data/templates/session_templates.py)
+   - [`574-Assignment/data/templates/rulebook_templates.py`](574-Assignment/data/templates/rulebook_templates.py)
 
-3. **Update dataset generator** [`574-Assignment/scripts/generate_dataset.py`](574-Assignment/scripts/generate_dataset.py) to apply augmentations and remove NER label generation.
+3. **Update dataset generator** [`574-Assignment/scripts/generate_dataset.py`](574-Assignment/scripts/generate_dataset.py) to apply augmentations (typos, case, contractions) while **keeping all placeholders as literal `{CHARACTER}`, `{PARTY_MEMBER}`, `{NPC}` tokens**. Remove NER label generation. The model learns to classify based on query structure with placeholder tokens intact.
 
 4. **Create consolidated training notebook** [`574-Assignment/notebooks/model_training.ipynb`](574-Assignment/notebooks/model_training.ipynb) with: simplified model (no NER head), Focal Loss + label smoothing, temperature scaling calibration.
 
 5. **Delete old notebooks** — remove [`574-Assignment/notebooks/02_joint_models_training.ipynb`](574-Assignment/notebooks/02_joint_models_training.ipynb) and [`574-Assignment/notebooks/03_evaluation.ipynb`](574-Assignment/notebooks/03_evaluation.ipynb).
 
-6. **Update LocalClassifier inference** in [`src/classifiers/local_classifier.py`](src/classifiers/local_classifier.py) to add `_normalize_names()` method that replaces known character/party/NPC names with placeholder tokens before model inference.
+6. **Update LocalClassifier inference** in [`src/classifiers/local_classifier.py`](src/classifiers/local_classifier.py) to add `_normalize_names()` method that replaces known character/party/NPC names with placeholder tokens before model inference. This aligns runtime queries with the placeholder-based training data.
+
+### Training vs Inference Flow
+
+```
+TRAINING: Templates with {CHARACTER} → Augment (typos/case) → Keep placeholders → Train model
+INFERENCE: "What level is Duskryn?" → _normalize_names() → "What level is {CHARACTER}?" → Classify
+```
+
+The model never sees actual names during training — it learns purely from query structure with placeholder tokens. At inference, names are normalized to placeholders so the model sees the same pattern it was trained on.
 
 7. **Add Query Resolver using Llama-3.2-1B-Instruct**:
    - Create [`src/classifiers/query_resolver.py`](src/classifiers/query_resolver.py) with `QueryResolver` class

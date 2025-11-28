@@ -52,6 +52,17 @@ CHARACTER_STATUS_TEMPLATES = [
     {"template": "Did I rest last session?", "slots": {}},
     {"template": "Am I at full health?", "slots": {}},
     {"template": "What's my current hit die situation?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What's {CHARACTER}'s current HP?", "slots": {}},
+    {"template": "Is {CHARACTER} still conscious after that fight?", "slots": {}},
+    {"template": "Where did we leave {CHARACTER} at the end of the session?", "slots": {}},
+    {"template": "What conditions is {PARTY_MEMBER} suffering from?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} get hurt in that last encounter?", "slots": {}},
+    {"template": "Is {PARTY_MEMBER} still cursed?", "slots": {}},
+    {"template": "How many hit points is {CHARACTER} missing?", "slots": {}},
+    {"template": "What happened to {PARTY_MEMBER} during the ambush?", "slots": {}},
+    {"template": "Does {CHARACTER} have any exhaustion levels?", "slots": {}},
+    {"template": "Is {PARTY_MEMBER} at full health or do they need healing?", "slots": {}},
 ]
 
 # =============================================================================
@@ -79,6 +90,17 @@ EVENT_SEQUENCE_TEMPLATES = [
     {"template": "Give me the highlights in order", "slots": {}},
     {"template": "What was the order of encounters?", "slots": {}},
     {"template": "How did the session progress?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What did {CHARACTER} do during the last session?", "slots": {}},
+    {"template": "When did {PARTY_MEMBER} join up with us?", "slots": {}},
+    {"template": "At what point did we encounter {NPC}?", "slots": {}},
+    {"template": "What was {CHARACTER} doing while the rest of us fought?", "slots": {}},
+    {"template": "Walk me through {PARTY_MEMBER}'s actions last session", "slots": {}},
+    {"template": "When did {NPC} first appear in the timeline?", "slots": {}},
+    {"template": "What happened right after {CHARACTER} cast that spell?", "slots": {}},
+    {"template": "How did the session end for {PARTY_MEMBER}?", "slots": {}},
+    {"template": "What was {NPC} doing during the climax?", "slots": {}},
+    {"template": "Summarize what happened between {CHARACTER} and {NPC}", "slots": {}},
 ]
 
 # =============================================================================
@@ -106,6 +128,17 @@ NPC_INFO_TEMPLATES = [
     {"template": "Did any NPCs lie to us?", "slots": {}},
     {"template": "Who did we negotiate with?", "slots": {}},
     {"template": "What NPCs owe us favors?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What did {NPC} tell us about the dungeon?", "slots": {}},
+    {"template": "How did {NPC} react when we mentioned the treasure?", "slots": {}},
+    {"template": "Is {NPC} trustworthy or should we be suspicious?", "slots": {}},
+    {"template": "What deal did {CHARACTER} make with {NPC}?", "slots": {}},
+    {"template": "Did {NPC} give us any useful information?", "slots": {}},
+    {"template": "What does {NPC} want from us?", "slots": {}},
+    {"template": "How did {PARTY_MEMBER}'s conversation with {NPC} go?", "slots": {}},
+    {"template": "Where can we find {NPC} again?", "slots": {}},
+    {"template": "What's {NPC}'s relationship with the villain?", "slots": {}},
+    {"template": "Did {NPC} seem to recognize {CHARACTER}?", "slots": {}},
 ]
 
 # =============================================================================
@@ -133,6 +166,17 @@ LOCATION_DETAILS_TEMPLATES = [
     {"template": "Was the location trapped?", "slots": {}},
     {"template": "What environmental hazards were there?", "slots": {}},
     {"template": "What secrets did the {location} hold?", "slots": {"location": "location"}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "Where did {CHARACTER} scout ahead to?", "slots": {}},
+    {"template": "What did {PARTY_MEMBER} discover in the back room?", "slots": {}},
+    {"template": "Where did {NPC} lead us?", "slots": {}},
+    {"template": "What part of the dungeon did {CHARACTER} explore alone?", "slots": {}},
+    {"template": "Where was {NPC}'s hideout located?", "slots": {}},
+    {"template": "What did {PARTY_MEMBER} find when they investigated that area?", "slots": {}},
+    {"template": "Where did we agree to meet {NPC}?", "slots": {}},
+    {"template": "What room did {CHARACTER} get separated in?", "slots": {}},
+    {"template": "Where is {NPC}'s shop located in the city?", "slots": {}},
+    {"template": "What secret passage did {PARTY_MEMBER} find?", "slots": {}},
 ]
 
 # =============================================================================
@@ -160,6 +204,17 @@ ITEM_TRACKING_TEMPLATES = [
     {"template": "What ammunition did we expend?", "slots": {}},
     {"template": "Did anyone attune to the {item}?", "slots": {"item": "item"}},
     {"template": "What happened to our supplies?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What did {CHARACTER} pick up from the treasure hoard?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} use any potions during the fight?", "slots": {}},
+    {"template": "What did {NPC} give us as a reward?", "slots": {}},
+    {"template": "Who is currently holding the magic sword - {CHARACTER} or {PARTY_MEMBER}?", "slots": {}},
+    {"template": "What did we trade to {NPC}?", "slots": {}},
+    {"template": "Did {CHARACTER} attune to any new magic items?", "slots": {}},
+    {"template": "What did {PARTY_MEMBER} buy from the merchant?", "slots": {}},
+    {"template": "What items did {NPC} steal from us?", "slots": {}},
+    {"template": "Did {CHARACTER} give anything to {NPC}?", "slots": {}},
+    {"template": "What scrolls did {PARTY_MEMBER} use in the last battle?", "slots": {}},
 ]
 
 # =============================================================================
@@ -187,6 +242,17 @@ COMBAT_RECAP_TEMPLATES = [
     {"template": "Did we get ambushed?", "slots": {}},
     {"template": "What legendary actions did the {creature} use?", "slots": {"creature": "creature"}},
     {"template": "How did the combat end?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "How many enemies did {CHARACTER} take down?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} get knocked unconscious during the fight?", "slots": {}},
+    {"template": "What was {CHARACTER}'s role in the battle?", "slots": {}},
+    {"template": "How much damage did {PARTY_MEMBER} deal to the boss?", "slots": {}},
+    {"template": "Who did {CHARACTER} focus their attacks on?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} land any critical hits?", "slots": {}},
+    {"template": "What happened when {CHARACTER} charged into combat?", "slots": {}},
+    {"template": "How did {PARTY_MEMBER} save the party during the ambush?", "slots": {}},
+    {"template": "What tactics did {CHARACTER} and {PARTY_MEMBER} use together?", "slots": {}},
+    {"template": "Did {NPC} help us or fight against us?", "slots": {}},
 ]
 
 # =============================================================================
@@ -214,6 +280,17 @@ SPELL_ABILITY_USAGE_TEMPLATES = [
     {"template": "Did anyone counterspell?", "slots": {}},
     {"template": "What ritual spells were cast?", "slots": {}},
     {"template": "What cantrips were used?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What spells did {CHARACTER} cast during the battle?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} use their Channel Divinity?", "slots": {}},
+    {"template": "How many spell slots does {CHARACTER} have left?", "slots": {}},
+    {"template": "What was that awesome spell {PARTY_MEMBER} used?", "slots": {}},
+    {"template": "Did {CHARACTER} maintain concentration on their spell?", "slots": {}},
+    {"template": "What racial ability did {PARTY_MEMBER} activate?", "slots": {}},
+    {"template": "Did {CHARACTER} use {spell} on the boss?", "slots": {"spell": "spell"}},
+    {"template": "How effective was {PARTY_MEMBER}'s Fireball?", "slots": {}},
+    {"template": "What class features did {CHARACTER} burn through?", "slots": {}},
+    {"template": "Did {NPC} cast any magic during the encounter?", "slots": {}},
 ]
 
 # =============================================================================
@@ -241,6 +318,17 @@ CHARACTER_DECISIONS_TEMPLATES = [
     {"template": "What sacrifices did we make?", "slots": {}},
     {"template": "Who did we choose to help?", "slots": {}},
     {"template": "What did we refuse to do?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "Why did {CHARACTER} decide to spare the prisoner?", "slots": {}},
+    {"template": "What promise did {PARTY_MEMBER} make to {NPC}?", "slots": {}},
+    {"template": "What was {CHARACTER}'s reasoning for taking that risk?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} agree with the party's decision?", "slots": {}},
+    {"template": "What deal did we strike with {NPC}?", "slots": {}},
+    {"template": "Why did {CHARACTER} refuse to help {NPC}?", "slots": {}},
+    {"template": "What moral dilemma did {PARTY_MEMBER} face?", "slots": {}},
+    {"template": "How did {CHARACTER}'s choice affect our relationship with {NPC}?", "slots": {}},
+    {"template": "What did {PARTY_MEMBER} sacrifice for the mission?", "slots": {}},
+    {"template": "Why did {CHARACTER} lie to {NPC}?", "slots": {}},
 ]
 
 # =============================================================================
@@ -268,6 +356,17 @@ PARTY_DYNAMICS_TEMPLATES = [
     {"template": "Did anyone leave or join the party?", "slots": {}},
     {"template": "What trust issues emerged?", "slots": {}},
     {"template": "How well did we coordinate?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "Did {CHARACTER} and {PARTY_MEMBER} have any conflict?", "slots": {}},
+    {"template": "How is {CHARACTER}'s relationship with {PARTY_MEMBER} developing?", "slots": {}},
+    {"template": "What secret did {PARTY_MEMBER} reveal to the group?", "slots": {}},
+    {"template": "Did {CHARACTER} trust {PARTY_MEMBER} with the plan?", "slots": {}},
+    {"template": "What bonding moment happened between {CHARACTER} and {PARTY_MEMBER}?", "slots": {}},
+    {"template": "Why did {CHARACTER} and {PARTY_MEMBER} argue?", "slots": {}},
+    {"template": "How did {PARTY_MEMBER} save {CHARACTER} in that fight?", "slots": {}},
+    {"template": "Is there tension between {CHARACTER} and {PARTY_MEMBER}?", "slots": {}},
+    {"template": "What did {CHARACTER} confide in {PARTY_MEMBER}?", "slots": {}},
+    {"template": "How did {PARTY_MEMBER} react to {CHARACTER}'s decision?", "slots": {}},
 ]
 
 # =============================================================================
@@ -295,6 +394,17 @@ QUEST_TRACKING_TEMPLATES = [
     {"template": "Did we turn in any quests?", "slots": {}},
     {"template": "What bounties did we complete?", "slots": {}},
     {"template": "What contracts did we fulfill?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What quest did {NPC} give us?", "slots": {}},
+    {"template": "Did we report back to {NPC} about the quest?", "slots": {}},
+    {"template": "What's {CHARACTER}'s personal quest status?", "slots": {}},
+    {"template": "How does {NPC}'s request connect to our main quest?", "slots": {}},
+    {"template": "What did {NPC} promise us as a reward?", "slots": {}},
+    {"template": "What objective did {PARTY_MEMBER} complete for their backstory?", "slots": {}},
+    {"template": "Did we accept the bounty from {NPC}?", "slots": {}},
+    {"template": "What's the deadline for {NPC}'s quest?", "slots": {}},
+    {"template": "How does {CHARACTER}'s goal align with the party quest?", "slots": {}},
+    {"template": "What did {NPC} reveal about our main objective?", "slots": {}},
 ]
 
 # =============================================================================
@@ -322,6 +432,17 @@ PUZZLE_SOLUTIONS_TEMPLATES = [
     {"template": "Were there any hint inscriptions?", "slots": {}},
     {"template": "What mechanism did the puzzle control?", "slots": {}},
     {"template": "Did we brute force any puzzles?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "How did {CHARACTER} figure out the riddle?", "slots": {}},
+    {"template": "What clue did {PARTY_MEMBER} notice that helped solve it?", "slots": {}},
+    {"template": "Did {CHARACTER} disarm the trap successfully?", "slots": {}},
+    {"template": "What puzzle hint did {NPC} give us?", "slots": {}},
+    {"template": "How did {PARTY_MEMBER}'s backstory knowledge help with the puzzle?", "slots": {}},
+    {"template": "What role did {CHARACTER} play in solving the puzzle?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} trigger any traps?", "slots": {}},
+    {"template": "What pattern did {CHARACTER} recognize?", "slots": {}},
+    {"template": "How did {NPC}'s journal help us solve the riddle?", "slots": {}},
+    {"template": "What happened when {PARTY_MEMBER} pulled the wrong lever?", "slots": {}},
 ]
 
 # =============================================================================
@@ -349,6 +470,17 @@ LOOT_REWARDS_TEMPLATES = [
     {"template": "What treasure hoard did we find?", "slots": {}},
     {"template": "Did we find any spell scrolls?", "slots": {}},
     {"template": "What was hidden in the chest?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What magic item did {CHARACTER} claim from the loot?", "slots": {}},
+    {"template": "How much gold did {PARTY_MEMBER} get from the split?", "slots": {}},
+    {"template": "What did {NPC} pay us for completing the job?", "slots": {}},
+    {"template": "Did {CHARACTER} and {PARTY_MEMBER} argue over the loot?", "slots": {}},
+    {"template": "What special reward did {NPC} give to {CHARACTER}?", "slots": {}},
+    {"template": "How did {PARTY_MEMBER} react to their share of treasure?", "slots": {}},
+    {"template": "What did {CHARACTER} loot from the boss's body?", "slots": {}},
+    {"template": "Did {NPC} try to shortchange us on the reward?", "slots": {}},
+    {"template": "What gems did {PARTY_MEMBER} find in the hidden compartment?", "slots": {}},
+    {"template": "What non-monetary favor did {NPC} offer instead of gold?", "slots": {}},
 ]
 
 # =============================================================================
@@ -376,6 +508,17 @@ DEATH_REVIVAL_TEMPLATES = [
     {"template": "Did we lose any NPCs?", "slots": {}},
     {"template": "How did the party react to the death?", "slots": {}},
     {"template": "What happened while unconscious?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "Did {CHARACTER} die during the battle?", "slots": {}},
+    {"template": "How many times did {PARTY_MEMBER} go unconscious?", "slots": {}},
+    {"template": "Who stabilized {CHARACTER} after they went down?", "slots": {}},
+    {"template": "What were {PARTY_MEMBER}'s death saving throws?", "slots": {}},
+    {"template": "Did we resurrect {CHARACTER}?", "slots": {}},
+    {"template": "How did {PARTY_MEMBER} save {CHARACTER} from dying?", "slots": {}},
+    {"template": "What killed {CHARACTER} in that encounter?", "slots": {}},
+    {"template": "Can {NPC} help us bring {PARTY_MEMBER} back?", "slots": {}},
+    {"template": "What was {CHARACTER}'s last moment before falling?", "slots": {}},
+    {"template": "How much did {NPC} charge to resurrect {PARTY_MEMBER}?", "slots": {}},
 ]
 
 # =============================================================================
@@ -403,6 +546,17 @@ DIVINE_RELIGIOUS_TEMPLATES = [
     {"template": "What religious ceremonies occurred?", "slots": {}},
     {"template": "Did anyone have a crisis of faith?", "slots": {}},
     {"template": "What sacred texts did we find?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "Did {CHARACTER} receive a vision from their deity?", "slots": {}},
+    {"template": "What prayer did {PARTY_MEMBER} make at the temple?", "slots": {}},
+    {"template": "How did {CHARACTER}'s god respond to their actions?", "slots": {}},
+    {"template": "What did the priest {NPC} tell us about the prophecy?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} have a crisis of faith?", "slots": {}},
+    {"template": "What blessing did {NPC} bestow on {CHARACTER}?", "slots": {}},
+    {"template": "How did {CHARACTER}'s oath affect their decision?", "slots": {}},
+    {"template": "What did {PARTY_MEMBER}'s patron demand of them?", "slots": {}},
+    {"template": "Did {NPC} at the temple offer us sanctuary?", "slots": {}},
+    {"template": "What religious artifact did {CHARACTER} find?", "slots": {}},
 ]
 
 # =============================================================================
@@ -430,6 +584,17 @@ MEMORY_VISION_TEMPLATES = [
     {"template": "How did the vision guide us?", "slots": {}},
     {"template": "What trauma was revealed?", "slots": {}},
     {"template": "Did we have shared dreams?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What vision did {CHARACTER} experience?", "slots": {}},
+    {"template": "What did {PARTY_MEMBER}'s dream reveal?", "slots": {}},
+    {"template": "What memory surfaced for {CHARACTER} during the ritual?", "slots": {}},
+    {"template": "What premonition did {NPC} share with us?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} see anything when they touched the artifact?", "slots": {}},
+    {"template": "What flashback from {CHARACTER}'s past was triggered?", "slots": {}},
+    {"template": "What did {NPC}'s prophecy say about {CHARACTER}?", "slots": {}},
+    {"template": "What telepathic message did {PARTY_MEMBER} receive?", "slots": {}},
+    {"template": "What did {CHARACTER} see when they used Divination?", "slots": {}},
+    {"template": "What omen did {NPC} warn {PARTY_MEMBER} about?", "slots": {}},
 ]
 
 # =============================================================================
@@ -457,6 +622,17 @@ RULES_MECHANICS_TEMPLATES = [
     {"template": "How did concentration work?", "slots": {}},
     {"template": "What ability check was contested?", "slots": {}},
     {"template": "How did opportunity attacks work?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "How did the DM rule on {CHARACTER}'s ability?", "slots": {}},
+    {"template": "What mechanical interaction did {PARTY_MEMBER}'s spell have?", "slots": {}},
+    {"template": "What DC did {CHARACTER} face on that saving throw?", "slots": {}},
+    {"template": "Did {PARTY_MEMBER} get advantage on that attack?", "slots": {}},
+    {"template": "How did {CHARACTER}'s feature interact with the environment?", "slots": {}},
+    {"template": "What ruling benefited {PARTY_MEMBER} during combat?", "slots": {}},
+    {"template": "Did {CHARACTER} break concentration on their spell?", "slots": {}},
+    {"template": "What homebrew rule did the DM use for {PARTY_MEMBER}'s action?", "slots": {}},
+    {"template": "How was {CHARACTER}'s grapple attempt resolved?", "slots": {}},
+    {"template": "What skill check did {PARTY_MEMBER} have to make?", "slots": {}},
 ]
 
 # =============================================================================
@@ -484,6 +660,17 @@ HUMOR_MOMENTS_TEMPLATES = [
     {"template": "Did anyone break character laughing?", "slots": {}},
     {"template": "What NPC interactions were hilarious?", "slots": {}},
     {"template": "What creative solutions were unexpectedly funny?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What hilarious thing did {CHARACTER} say?", "slots": {}},
+    {"template": "What was {PARTY_MEMBER}'s epic fail moment?", "slots": {}},
+    {"template": "What funny quote did {CHARACTER} deliver?", "slots": {}},
+    {"template": "Did {NPC} say anything that made everyone laugh?", "slots": {}},
+    {"template": "What silly decision did {PARTY_MEMBER} make?", "slots": {}},
+    {"template": "What absurd thing did {CHARACTER} attempt?", "slots": {}},
+    {"template": "How badly did {PARTY_MEMBER} roll on that check?", "slots": {}},
+    {"template": "What running joke involves {CHARACTER}?", "slots": {}},
+    {"template": "What pun did {PARTY_MEMBER} make during combat?", "slots": {}},
+    {"template": "What was the funniest interaction between {CHARACTER} and {NPC}?", "slots": {}},
 ]
 
 # =============================================================================
@@ -511,6 +698,17 @@ UNRESOLVED_MYSTERIES_TEMPLATES = [
     {"template": "What patterns are we missing?", "slots": {}},
     {"template": "What's behind the locked door?", "slots": {}},
     {"template": "What rumors need investigation?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What is {NPC} hiding from us?", "slots": {}},
+    {"template": "What mystery about {CHARACTER}'s backstory came up?", "slots": {}},
+    {"template": "Why did {NPC} react so strangely to {PARTY_MEMBER}?", "slots": {}},
+    {"template": "What did {NPC} mean by that cryptic warning?", "slots": {}},
+    {"template": "What is the connection between {CHARACTER} and {NPC}?", "slots": {}},
+    {"template": "What secret is {PARTY_MEMBER} keeping from the group?", "slots": {}},
+    {"template": "What did {NPC} do when we weren't watching?", "slots": {}},
+    {"template": "What unexplained item did {CHARACTER} find?", "slots": {}},
+    {"template": "Why did {NPC} suddenly disappear?", "slots": {}},
+    {"template": "What does {PARTY_MEMBER}'s vision mean?", "slots": {}},
 ]
 
 # =============================================================================
@@ -538,6 +736,17 @@ FUTURE_IMPLICATIONS_TEMPLATES = [
     {"template": "What long-term consequences did we trigger?", "slots": {}},
     {"template": "What revenge plots are brewing?", "slots": {}},
     {"template": "What opportunities did we create?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "What consequences will {CHARACTER} face for their actions?", "slots": {}},
+    {"template": "Will {NPC} seek revenge on us?", "slots": {}},
+    {"template": "What obligation does {CHARACTER} now have to {NPC}?", "slots": {}},
+    {"template": "How will {PARTY_MEMBER}'s decision affect the group later?", "slots": {}},
+    {"template": "What deadline did {NPC} give us?", "slots": {}},
+    {"template": "Will {CHARACTER}'s reputation change affect how {NPC} treats us?", "slots": {}},
+    {"template": "What threat is growing because of {PARTY_MEMBER}'s choice?", "slots": {}},
+    {"template": "When might {NPC} call in the favor we owe them?", "slots": {}},
+    {"template": "What political fallout will {CHARACTER}'s actions cause?", "slots": {}},
+    {"template": "What should {PARTY_MEMBER} prepare for next session?", "slots": {}},
 ]
 
 # =============================================================================
@@ -565,6 +774,17 @@ CROSS_SESSION_TEMPLATES = [
     {"template": "What old allies came back?", "slots": {}},
     {"template": "How is the main plot advancing?", "slots": {}},
     {"template": "What seeds planted earlier are blooming?", "slots": {}},
+    # {CHARACTER}, {PARTY_MEMBER}, {NPC} placeholder templates
+    {"template": "How did {CHARACTER}'s backstory connect to this session?", "slots": {}},
+    {"template": "Did we see {NPC} from a previous session?", "slots": {}},
+    {"template": "What callback to {CHARACTER}'s earlier decision happened?", "slots": {}},
+    {"template": "How has {PARTY_MEMBER}'s character arc developed since we started?", "slots": {}},
+    {"template": "Did {NPC} remember what we did to them before?", "slots": {}},
+    {"template": "What old enemy of {CHARACTER} resurfaced?", "slots": {}},
+    {"template": "How did {PARTY_MEMBER}'s promise from earlier sessions come up?", "slots": {}},
+    {"template": "What connection does {NPC} have to {CHARACTER}'s past?", "slots": {}},
+    {"template": "What item {PARTY_MEMBER} picked up sessions ago finally mattered?", "slots": {}},
+    {"template": "How did {CHARACTER}'s relationship with {NPC} develop over multiple sessions?", "slots": {}},
 ]
 
 # =============================================================================

@@ -1,13 +1,14 @@
 """
 Dataset Generation Script for 574 Assignment
 
-Generates synthetic training data for the joint DeBERTa model.
+Generates synthetic training data for the joint classification model.
 Outputs train.json, val.json, test.json to 574-assignment/data/generated/
 
 Features:
 - K-expansion: Each template generates K samples with different entity fills
-- API-based gazetteers: Uses cached D&D 5e SRD data (run fetch_srd_data.py first)
-- Deduplication: Avoids identical samples
+- Augmentation: Typos, case variations, contractions applied to queries
+- Placeholder preservation: {CHARACTER}, {PARTY_MEMBER}, {NPC} remain as literal tokens
+- NO NER: Entity extraction handled by gazetteer at inference time
 
 Run from project root:
     cd 574-assignment
@@ -15,27 +16,27 @@ Run from project root:
 
 Output structure:
 {
-    "query": "What's my AC and how does Shield work?",
-    "tools": ["character_data", "rulebook"],
-    "intents": {"character_data": "combat_info", "rulebook": "spell_details"},
-    "bio_tags": ["O", "O", "O", "O", "O", "O", "B-SPELL", "O"],
-    "entities": [{"text": "Shield", "type": "SPELL", "start": 6, "end": 7}]
+    "text": "What level is {CHARACTER}?",
+    "tool": "character_data",
+    "intent": "character_basics"
 }
 """
 
 import json
 import random
 import re
-import os
 from pathlib import Path
-from collections import defaultdict, Counter
-from typing import Dict, List, Tuple, Any, Optional, Set
+from collections import defaultdict
+from typing import Dict, List, Tuple, Any, Set
 
 # Import templates and gazetteers
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import DATASET_CONFIG
+
+# Import augmentation module
+from data.augmentation import augment_query, AugmentationConfig
 
 from data.templates.entity_gazetteers import (
     SPELL_NAMES, CLASS_NAMES, RACE_NAMES, CREATURE_NAMES, WEAPON_NAMES,
@@ -83,19 +84,21 @@ from data.templates.multi_tool_templates import (
 
 RANDOM_SEED = DATASET_CONFIG.get('random_seed', 42)
 EXPANSIONS_PER_TEMPLATE = DATASET_CONFIG.get('expansions_per_template', 10)
+AUGMENTATIONS_PER_SAMPLE = DATASET_CONFIG.get('augmentations_per_sample', 3)
 DEDUPLICATE = DATASET_CONFIG.get('deduplicate', True)
 
 TRAIN_RATIO = DATASET_CONFIG.get('train_split', 0.8)
 VAL_RATIO = DATASET_CONFIG.get('val_split', 0.1)
 TEST_RATIO = DATASET_CONFIG.get('test_split', 0.1)
 
-# Distribution of tool combinations
-SINGLE_TOOL_RATIO = DATASET_CONFIG.get('one_tool_pct', 0.30)
-TWO_TOOL_RATIO = DATASET_CONFIG.get('two_tool_pct', 0.50)
-THREE_TOOL_RATIO = DATASET_CONFIG.get('three_tool_pct', 0.20)
+# =============================================================================
+# Placeholder tokens that are preserved as literal text (NOT filled from gazetteer)
+# =============================================================================
+
+PRESERVED_PLACEHOLDERS = {"{CHARACTER}", "{PARTY_MEMBER}", "{NPC}"}
 
 # =============================================================================
-# Entity Gazetteers Mapping (now loaded from API cache)
+# Entity Gazetteers Mapping (for D&D entity slots only)
 # =============================================================================
 
 ENTITY_GAZETTEERS = {
@@ -142,57 +145,27 @@ ENTITY_GAZETTEERS = {
     "damage_type1": DAMAGE_TYPES,
     "damage_type2": DAMAGE_TYPES,
     "feat": FEAT_NAMES,
+    "feat2": FEAT_NAMES,
     "background": BACKGROUND_NAMES,
     "location": LOCATION_NAMES,
     "feature": CLASS_FEATURE_NAMES,
     "feature1": CLASS_FEATURE_NAMES,
     "feature2": CLASS_FEATURE_NAMES,
     "subclass": SUBCLASS_NAMES,
+    "subclass1": SUBCLASS_NAMES,
+    "subclass2": SUBCLASS_NAMES,
     
     # Misc
     "level": LEVEL_NAMES,
     "spell_level": SPELL_LEVEL_NAMES,
     "plane": LOCATION_NAMES[:20],
+    "plane1": LOCATION_NAMES[:20],
+    "plane2": LOCATION_NAMES[:20],
     "mechanic": MECHANIC_NAMES,
     "creature_ability": CREATURE_ABILITY_NAMES,
     "weapon_property": WEAPON_PROPERTIES,
+    "property": WEAPON_PROPERTIES,
     "language": LANGUAGE_NAMES,
-}
-
-# Slot type to NER tag mapping
-SLOT_TO_NER_TAG = {
-    "spell": "SPELL",
-    "spell1": "SPELL",
-    "spell2": "SPELL",
-    "class": "CLASS",
-    "class1": "CLASS",
-    "class2": "CLASS",
-    "class_name": "CLASS",
-    "race": "RACE",
-    "race1": "RACE",
-    "race2": "RACE",
-    "creature": "CREATURE",
-    "creature1": "CREATURE",
-    "creature2": "CREATURE",
-    "weapon": "ITEM",
-    "weapon1": "ITEM",
-    "weapon2": "ITEM",
-    "armor": "ITEM",
-    "armor1": "ITEM",
-    "armor2": "ITEM",
-    "item": "ITEM",
-    "magic_item": "ITEM",
-    "ability": "ABILITY",
-    "skill": "SKILL",
-    "condition": "CONDITION",
-    "condition1": "CONDITION",
-    "condition2": "CONDITION",
-    "damage_type": "DAMAGE_TYPE",
-    "feat": "FEAT",
-    "background": "BACKGROUND",
-    "location": "LOCATION",
-    "feature": "CLASS",  # Class features tagged as CLASS
-    "level": "O",  # Levels are not entities
 }
 
 # =============================================================================
@@ -272,279 +245,196 @@ RULEBOOK_TEMPLATES = {
 # Slot Filling Functions
 # =============================================================================
 
+def is_preserved_placeholder(slot_pattern: str) -> bool:
+    """Check if a slot pattern is a preserved placeholder (not to be filled)."""
+    return slot_pattern in PRESERVED_PLACEHOLDERS
+
+
 def get_slot_value(slot_type: str) -> str:
     """Get a random value for a slot type."""
     # Handle numbered slots (e.g., spell1, spell2)
     base_type = re.sub(r'\d+$', '', slot_type)
 
     if base_type in ENTITY_GAZETTEERS:
-        return random.choice(ENTITY_GAZETTEERS[base_type])
-    elif slot_type == "class_name":
+        gazetteer = ENTITY_GAZETTEERS[base_type]
+        if gazetteer:
+            return random.choice(gazetteer)
+    
+    if slot_type == "class_name":
         return random.choice(ENTITY_GAZETTEERS["class"])
-    else:
-        print(f"Warning: Unknown slot type '{slot_type}'")
-        return f"[{slot_type}]"
+    
+    # Unknown slot type - return placeholder
+    print(f"Warning: Unknown slot type '{slot_type}'")
+    return f"[{slot_type}]"
 
 
-def fill_template(template: str, slots: Dict[str, str]) -> Tuple[str, List[Dict]]:
+def fill_template(template: str, slots: Dict[str, str]) -> str:
     """
     Fill a template with random entity values.
-    Returns the filled query and list of entity spans.
+    Preserved placeholders ({CHARACTER}, {PARTY_MEMBER}, {NPC}) remain as literal text.
+    Returns the filled query string.
     """
     filled = template
-    entities = []
-
-    # Sort slots by position in template (reverse) to maintain positions
-    slot_positions = []
-    for slot_name, slot_type in slots.items():
-        pattern = "{" + slot_name + "}"
-        match = re.search(re.escape(pattern), filled)
-        if match:
-            slot_positions.append((match.start(), slot_name, slot_type))
-
-    # Sort by position (descending) to fill from end to start
-    slot_positions.sort(key=lambda x: x[0], reverse=True)
-
-    for pos, slot_name, slot_type in slot_positions:
-        value = get_slot_value(slot_type)
-        pattern = "{" + slot_name + "}"
-
-        # Find position before replacement
-        match = re.search(re.escape(pattern), filled)
-        if match:
-            start_char = match.start()
-            filled = filled[:start_char] + value + filled[match.end():]
-
-            # Get NER tag for this entity
-            ner_tag = SLOT_TO_NER_TAG.get(slot_type, SLOT_TO_NER_TAG.get(slot_name, "O"))
-
-            if ner_tag != "O":
-                entities.append({
-                    "text": value,
-                    "type": ner_tag,
-                    "start_char": start_char,
-                })
-
-    # Calculate word-level positions for entities
-    words = filled.split()
     
-    for entity in entities:
-        entity_text = entity["text"]
-        entity_start_char = entity["start_char"]
-        
-        # Find word positions by character offset
-        char_pos = 0
-        entity["start"] = -1
-        entity["end"] = -1
-        
-        for i, word in enumerate(words):
-            word_start = char_pos
-            word_end = char_pos + len(word)
-            
-            # Check if this word is at or after the entity start position
-            if entity["start"] == -1 and word_start <= entity_start_char < word_end + 1:
-                entity["start"] = i
-            
-            char_pos = word_end + 1  # +1 for space
-        
-        # If we found the start, calculate end based on entity word count
-        if entity["start"] != -1:
-            entity_words = entity_text.split()
-            entity["end"] = min(entity["start"] + len(entity_words), len(words))
-        else:
-            # Fallback: search for the entity text directly in words
-            entity_words = entity_text.split()
-            for i in range(len(words) - len(entity_words) + 1):
-                # Check if consecutive words match the entity
-                potential_match = " ".join(words[i:i + len(entity_words)])
-                if potential_match.lower() == entity_text.lower() or potential_match == entity_text:
-                    entity["start"] = i
-                    entity["end"] = i + len(entity_words)
-                    break
-        
-        del entity["start_char"]
+    # First, find all placeholders in the template
+    placeholder_pattern = r'\{([^}]+)\}'
+    matches = list(re.finditer(placeholder_pattern, filled))
     
-    # Filter out entities with invalid spans
-    valid_entities = [e for e in entities if e["start"] >= 0 and e["end"] > e["start"]]
+    # Process from end to start to maintain positions
+    for match in reversed(matches):
+        placeholder = match.group(0)  # e.g., "{CHARACTER}" or "{spell}"
+        slot_name = match.group(1)    # e.g., "CHARACTER" or "spell"
+        
+        # Check if this is a preserved placeholder
+        if placeholder in PRESERVED_PLACEHOLDERS:
+            # Keep as-is - don't replace
+            continue
+        
+        # Check if we have a slot type for this
+        slot_type = slots.get(slot_name)
+        if slot_type:
+            value = get_slot_value(slot_type)
+            filled = filled[:match.start()] + value + filled[match.end():]
+        elif slot_name.lower() in ENTITY_GAZETTEERS:
+            # Try lowercase version
+            value = get_slot_value(slot_name.lower())
+            filled = filled[:match.start()] + value + filled[match.end():]
+        # If no slot type found, leave as-is (will be caught in validation)
     
-    return filled, valid_entities
+    return filled
 
 
-def generate_bio_tags(query: str, entities: List[Dict]) -> List[str]:
-    """Generate BIO tags for a query given entity spans."""
-    words = query.split()
-    tags = ["O"] * len(words)
-
-    for entity in entities:
-        if entity["start"] >= 0 and entity["end"] > entity["start"]:
-            for i in range(entity["start"], min(entity["end"], len(words))):
-                if i == entity["start"]:
-                    tags[i] = f"B-{entity['type']}"
-                else:
-                    tags[i] = f"I-{entity['type']}"
-
-    return tags
-
-
-# =============================================================================
-# Sample Generation Functions
-# =============================================================================
-
-def generate_single_tool_sample(tool: str) -> Dict:
-    """Generate a single-tool query sample."""
-    if tool == "character_data":
-        templates = CHARACTER_TEMPLATES
-    elif tool == "session_notes":
-        templates = SESSION_TEMPLATES
-    elif tool == "rulebook":
-        templates = RULEBOOK_TEMPLATES
-    else:
-        raise ValueError(f"Unknown tool: {tool}")
-
-    # Pick random intent and template
-    intent = random.choice(list(templates.keys()))
-    template_list = templates[intent]
-    template_data = random.choice(template_list)
-
-    # Fill template
-    query, entities = fill_template(template_data["template"], template_data.get("slots", {}))
-    bio_tags = generate_bio_tags(query, entities)
-
-    return {
-        "query": query,
-        "tools": [tool],
-        "intents": {tool: intent},
-        "bio_tags": bio_tags,
-        "entities": entities
-    }
-
-
-def generate_two_tool_sample() -> Dict:
-    """Generate a 2-tool query sample from multi-tool templates."""
-    # Randomly pick a 2-tool template type
-    template_type = random.choice([
-        CHARACTER_RULEBOOK_TEMPLATES,
-        CHARACTER_SESSION_TEMPLATES,
-        SESSION_RULEBOOK_TEMPLATES
-    ])
-
-    template_data = random.choice(template_type)
-
-    # Fill template
-    query, entities = fill_template(template_data["template"], template_data.get("slots", {}))
-    bio_tags = generate_bio_tags(query, entities)
-
-    return {
-        "query": query,
-        "tools": template_data["tools"],
-        "intents": template_data["intents"],
-        "bio_tags": bio_tags,
-        "entities": entities
-    }
-
-
-def generate_three_tool_sample() -> Dict:
-    """Generate a 3-tool query sample."""
-    template_data = random.choice(THREE_TOOL_TEMPLATES)
-
-    # Fill template
-    query, entities = fill_template(template_data["template"], template_data.get("slots", {}))
-    bio_tags = generate_bio_tags(query, entities)
-
-    return {
-        "query": query,
-        "tools": template_data["tools"],
-        "intents": template_data["intents"],
-        "bio_tags": bio_tags,
-        "entities": entities
-    }
-
-
-def expand_template(template_data: Dict, tool: str = None, intent: str = None, k: int = 10) -> List[Dict]:
+def expand_template_with_augmentation(
+    template_data: Dict,
+    tool: str = None,
+    intent: str = None,
+    k_expansions: int = 10,
+    n_augmentations: int = 3
+) -> List[Dict]:
     """
-    Generate K samples from a single template with different entity fills.
+    Generate samples from a single template with entity fills and augmentations.
+    
+    For each template:
+    1. Generate K variations with different entity fills
+    2. For each variation, generate N augmented versions (typos, case changes)
+    
+    Total samples = K * (1 + N) per template (original + N augmentations)
     
     Args:
         template_data: Template dict with 'template', 'slots', optionally 'tools', 'intents'
         tool: For single-tool templates, the tool name
         intent: For single-tool templates, the intent name
-        k: Number of variations to generate
+        k_expansions: Number of entity-fill variations
+        n_augmentations: Number of augmented versions per variation
         
     Returns:
-        List of K sample dictionaries
+        List of sample dictionaries with 'text', 'tool', 'intent'
     """
     samples = []
-    seen_queries: Set[str] = set()
+    seen_texts: Set[str] = set()
     
-    # Determine if this is single-tool or multi-tool template
+    # Determine tools and intents
     if tool and intent:
-        # Single-tool template
         tools = [tool]
         intents = {tool: intent}
     else:
-        # Multi-tool template (has tools/intents in template_data)
         tools = template_data["tools"]
         intents = template_data["intents"]
     
     slots = template_data.get("slots", {})
+    template_str = template_data["template"]
     
-    # If no slots, only generate 1 sample (no variation possible)
-    if not slots:
-        query, entities = fill_template(template_data["template"], slots)
-        bio_tags = generate_bio_tags(query, entities)
-        return [{
-            "query": query,
-            "tools": tools,
-            "intents": intents,
-            "bio_tags": bio_tags,
-            "entities": entities
-        }]
+    # Check if template has fillable slots (excluding preserved placeholders)
+    has_fillable_slots = bool(slots) or bool(
+        set(re.findall(r'\{([^}]+)\}', template_str)) - 
+        {p.strip('{}') for p in PRESERVED_PLACEHOLDERS}
+    )
     
-    # Generate K variations
+    # Determine expansion count
+    actual_k = k_expansions if has_fillable_slots else 1
+    
+    # Configure augmentation
+    aug_config = AugmentationConfig(
+        typo_probability=0.15,
+        case_variation_probability=0.30,
+        contraction_probability=0.20,
+        num_variants=1,  # We generate one variant at a time
+        include_original=False,  # We handle original separately
+    )
+    
     attempts = 0
-    max_attempts = k * 3  # Allow extra attempts for deduplication
+    max_attempts = actual_k * 5
     
-    while len(samples) < k and attempts < max_attempts:
+    while len([s for s in samples if s.get("_is_original", False)]) < actual_k and attempts < max_attempts:
         attempts += 1
         
-        query, entities = fill_template(template_data["template"], slots)
+        # Generate base query with entity fills
+        query = fill_template(template_str, slots)
         
-        # Deduplicate
-        if DEDUPLICATE and query in seen_queries:
+        # Skip if duplicate
+        if DEDUPLICATE and query.lower() in seen_texts:
             continue
-        seen_queries.add(query)
+        seen_texts.add(query.lower())
         
-        bio_tags = generate_bio_tags(query, entities)
+        # Add original (unaugmented) sample
+        for t in tools:
+            sample = {
+                "text": query,
+                "tool": t,
+                "intent": intents[t],
+                "_is_original": True,
+            }
+            samples.append(sample)
         
-        samples.append({
-            "query": query,
-            "tools": tools,
-            "intents": intents,
-            "bio_tags": bio_tags,
-            "entities": entities
-        })
+        # Generate augmented versions
+        for _ in range(n_augmentations):
+            augmented_list = augment_query(query, aug_config)
+            
+            # augment_query returns a list; get the variant if any
+            if not augmented_list:
+                continue
+            augmented = augmented_list[0]
+            
+            # Skip if same as original or duplicate
+            if augmented.lower() == query.lower():
+                continue
+            if DEDUPLICATE and augmented.lower() in seen_texts:
+                continue
+            seen_texts.add(augmented.lower())
+            
+            for t in tools:
+                sample = {
+                    "text": augmented,
+                    "tool": t,
+                    "intent": intents[t],
+                    "_is_original": False,
+                }
+                samples.append(sample)
+    
+    # Remove internal tracking field
+    for s in samples:
+        s.pop("_is_original", None)
     
     return samples
 
 
 def generate_dataset_with_expansion(seed: int = 42) -> List[Dict]:
     """
-    Generate dataset using K-expansion per template.
+    Generate dataset using K-expansion per template with augmentation.
     
-    Each template generates K samples with different entity substitutions.
-    Final dataset is split according to tool distribution ratios.
+    Each template generates K samples with different entity substitutions,
+    and each sample gets N augmented variations.
     """
     random.seed(seed)
     
     all_samples = []
-    seen_queries: Set[str] = set()
+    seen_texts: Set[str] = set()
     
-    print(f"Generating dataset with K={EXPANSIONS_PER_TEMPLATE} expansions per template...")
+    print(f"Generating dataset with K={EXPANSIONS_PER_TEMPLATE} expansions, "
+          f"A={AUGMENTATIONS_PER_SAMPLE} augmentations per sample...")
     
     # Count templates
-    single_tool_templates = 0
-    two_tool_templates = 0
-    three_tool_templates = 0
+    template_counts = {"single": 0, "two": 0, "three": 0}
     
     # Generate from single-tool templates
     print("\n  Single-tool templates:")
@@ -556,20 +446,21 @@ def generate_dataset_with_expansion(seed: int = 42) -> List[Dict]:
         tool_samples = []
         for intent_name, template_list in templates_dict.items():
             for template_data in template_list:
-                single_tool_templates += 1
-                samples = expand_template(
-                    template_data, 
-                    tool=tool_name, 
+                template_counts["single"] += 1
+                samples = expand_template_with_augmentation(
+                    template_data,
+                    tool=tool_name,
                     intent=intent_name,
-                    k=EXPANSIONS_PER_TEMPLATE
+                    k_expansions=EXPANSIONS_PER_TEMPLATE,
+                    n_augmentations=AUGMENTATIONS_PER_SAMPLE,
                 )
                 # Deduplicate across all samples
                 for s in samples:
-                    if not DEDUPLICATE or s["query"] not in seen_queries:
-                        seen_queries.add(s["query"])
+                    if not DEDUPLICATE or s["text"].lower() not in seen_texts:
+                        seen_texts.add(s["text"].lower())
                         tool_samples.append(s)
         
-        print(f"    {tool_name}: {len(tool_samples)} samples from templates")
+        print(f"    {tool_name}: {len(tool_samples)} samples")
         all_samples.extend(tool_samples)
     
     single_total = len(all_samples)
@@ -585,11 +476,15 @@ def generate_dataset_with_expansion(seed: int = 42) -> List[Dict]:
     ]:
         type_samples = []
         for template_data in template_list:
-            two_tool_templates += 1
-            samples = expand_template(template_data, k=EXPANSIONS_PER_TEMPLATE)
+            template_counts["two"] += 1
+            samples = expand_template_with_augmentation(
+                template_data,
+                k_expansions=EXPANSIONS_PER_TEMPLATE,
+                n_augmentations=AUGMENTATIONS_PER_SAMPLE,
+            )
             for s in samples:
-                if not DEDUPLICATE or s["query"] not in seen_queries:
-                    seen_queries.add(s["query"])
+                if not DEDUPLICATE or s["text"].lower() not in seen_texts:
+                    seen_texts.add(s["text"].lower())
                     type_samples.append(s)
         print(f"    {template_type_name}: {len(type_samples)} samples")
         two_tool_samples.extend(type_samples)
@@ -601,11 +496,15 @@ def generate_dataset_with_expansion(seed: int = 42) -> List[Dict]:
     print("\n  Three-tool templates:")
     three_tool_samples = []
     for template_data in THREE_TOOL_TEMPLATES:
-        three_tool_templates += 1
-        samples = expand_template(template_data, k=EXPANSIONS_PER_TEMPLATE)
+        template_counts["three"] += 1
+        samples = expand_template_with_augmentation(
+            template_data,
+            k_expansions=EXPANSIONS_PER_TEMPLATE,
+            n_augmentations=AUGMENTATIONS_PER_SAMPLE,
+        )
         for s in samples:
-            if not DEDUPLICATE or s["query"] not in seen_queries:
-                seen_queries.add(s["query"])
+            if not DEDUPLICATE or s["text"].lower() not in seen_texts:
+                seen_texts.add(s["text"].lower())
                 three_tool_samples.append(s)
     
     print(f"    three-tool: {len(three_tool_samples)} samples")
@@ -615,10 +514,10 @@ def generate_dataset_with_expansion(seed: int = 42) -> List[Dict]:
     # Summary
     print(f"\n{'='*60}")
     print(f"Template counts:")
-    print(f"  Single-tool: {single_tool_templates}")
-    print(f"  Two-tool: {two_tool_templates}")
-    print(f"  Three-tool: {three_tool_templates}")
-    print(f"  TOTAL templates: {single_tool_templates + two_tool_templates + three_tool_templates}")
+    print(f"  Single-tool: {template_counts['single']}")
+    print(f"  Two-tool: {template_counts['two']}")
+    print(f"  Three-tool: {template_counts['three']}")
+    print(f"  TOTAL templates: {sum(template_counts.values())}")
     print(f"\nGenerated samples: {len(all_samples)}")
     print(f"{'='*60}")
     
@@ -638,34 +537,27 @@ def split_dataset(samples: List[Dict], train_ratio: float, val_ratio: float) -> 
 
 
 def analyze_dataset(samples: List[Dict], name: str) -> Dict[str, Any]:
-    """Print dataset statistics and return them for class weight calculation."""
+    """Print dataset statistics and return them for label mapping."""
     print(f"\n{name} Statistics:")
     print(f"  Total samples: {len(samples)}")
 
     # Tool distribution
     tool_counts = defaultdict(int)
-    num_tools = defaultdict(int)
-    intent_counts = defaultdict(lambda: defaultdict(int))  # per-tool intent counts
-    entity_type_counts = defaultdict(int)
-    bio_tag_counts = defaultdict(int)
-
+    intent_counts = defaultdict(lambda: defaultdict(int))
+    
+    # Track placeholder usage
+    placeholder_counts = defaultdict(int)
+    
     for s in samples:
-        for tool in s["tools"]:
-            tool_counts[tool] += 1
-        num_tools[len(s["tools"])] += 1
+        tool_counts[s["tool"]] += 1
+        intent_counts[s["tool"]][s["intent"]] += 1
         
-        # Track intents per tool
-        for tool, intent in s["intents"].items():
-            intent_counts[tool][intent] += 1
-            
-        for entity in s["entities"]:
-            entity_type_counts[entity["type"]] += 1
-            
-        for tag in s["bio_tags"]:
-            bio_tag_counts[tag] += 1
+        # Count placeholders in text
+        for placeholder in PRESERVED_PLACEHOLDERS:
+            if placeholder in s["text"]:
+                placeholder_counts[placeholder] += 1
 
     print(f"  Tools: {dict(tool_counts)}")
-    print(f"  Num tools per query: {dict(num_tools)}")
     
     # Print per-tool intent distribution
     print(f"  Intent distribution by tool:")
@@ -674,105 +566,23 @@ def analyze_dataset(samples: List[Dict], name: str) -> Dict[str, Any]:
             top_intents = sorted(intent_counts[tool].items(), key=lambda x: -x[1])[:3]
             print(f"    {tool}: {dict(top_intents)} ...")
     
-    print(f"  Entity types: {dict(entity_type_counts)}")
-    print(f"  BIO tag distribution (top 5): {dict(sorted(bio_tag_counts.items(), key=lambda x: -x[1])[:5])}")
+    print(f"  Placeholder usage: {dict(placeholder_counts)}")
     
     return {
         "tool_counts": dict(tool_counts),
         "intent_counts": {k: dict(v) for k, v in intent_counts.items()},
-        "entity_type_counts": dict(entity_type_counts),
-        "bio_tag_counts": dict(bio_tag_counts)
+        "placeholder_counts": dict(placeholder_counts),
     }
 
 
-def main():
-    """Main entry point."""
-    # Setup paths
-    script_dir = Path(__file__).parent
-    project_dir = script_dir.parent
-    output_dir = project_dir / "data" / "generated"
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    print("=" * 60)
-    print("Dataset Generation for 574 Assignment")
-    print(f"K-expansion: {EXPANSIONS_PER_TEMPLATE} samples per template")
-    print(f"Deduplication: {DEDUPLICATE}")
-    print("=" * 60)
-
-    # Generate dataset using K-expansion
-    samples = generate_dataset_with_expansion(RANDOM_SEED)
-
-    # Split
-    train, val, test = split_dataset(samples, TRAIN_RATIO, VAL_RATIO)
-
-    # Analyze and get statistics for class weights
-    train_stats = analyze_dataset(train, "Train")
-    val_stats = analyze_dataset(val, "Validation")
-    test_stats = analyze_dataset(test, "Test")
-
-    # Save datasets
-    print("\nSaving datasets...")
-
-    with open(output_dir / "train.json", "w") as f:
-        json.dump(train, f, indent=2)
-    print(f"  Saved {len(train)} samples to {output_dir / 'train.json'}")
-
-    with open(output_dir / "val.json", "w") as f:
-        json.dump(val, f, indent=2)
-    print(f"  Saved {len(val)} samples to {output_dir / 'val.json'}")
-
-    with open(output_dir / "test.json", "w") as f:
-        json.dump(test, f, indent=2)
-    print(f"  Saved {len(test)} samples to {output_dir / 'test.json'}")
-
-    # Build comprehensive label mappings
-    label_mappings = build_label_mappings(train_stats)
-
-    with open(output_dir / "label_mappings.json", "w") as f:
-        json.dump(label_mappings, f, indent=2)
-    print(f"  Saved label mappings to {output_dir / 'label_mappings.json'}")
-
-    # Validate dataset
-    print("\nValidating dataset...")
-    validate_dataset(train + val + test, label_mappings)
-
-    print("\n" + "=" * 60)
-    print("Dataset generation complete!")
-    print(f"Total samples: {len(samples)}")
-    print(f"  Train: {len(train)} ({100*len(train)/len(samples):.1f}%)")
-    print(f"  Val: {len(val)} ({100*len(val)/len(samples):.1f}%)")
-    print(f"  Test: {len(test)} ({100*len(test)/len(samples):.1f}%)")
-    print(f"Output directory: {output_dir}")
-    print("=" * 60)
-
-
 def build_label_mappings(train_stats: Dict[str, Any]) -> Dict[str, Any]:
-    """Build comprehensive label mappings including per-tool intent indices and class weights."""
+    """Build label mappings for tool and intent classification."""
     
     # Tool mappings
     tool_to_idx = {"character_data": 0, "session_notes": 1, "rulebook": 2}
     idx_to_tool = {v: k for k, v in tool_to_idx.items()}
     
-    # BIO tag mappings
-    tag_to_idx = {
-        "O": 0,
-        "B-SPELL": 1, "I-SPELL": 2,
-        "B-CLASS": 3, "I-CLASS": 4,
-        "B-RACE": 5, "I-RACE": 6,
-        "B-CREATURE": 7, "I-CREATURE": 8,
-        "B-ITEM": 9, "I-ITEM": 10,
-        "B-LOCATION": 11, "I-LOCATION": 12,
-        "B-ABILITY": 13, "I-ABILITY": 14,
-        "B-SKILL": 15, "I-SKILL": 16,
-        "B-CONDITION": 17, "I-CONDITION": 18,
-        "B-DAMAGE_TYPE": 19, "I-DAMAGE_TYPE": 20,
-        "B-FEAT": 21, "I-FEAT": 22,
-        "B-BACKGROUND": 23, "I-BACKGROUND": 24,
-    }
-    idx_to_tag = {v: k for k, v in tag_to_idx.items()}
-    
-    # Per-tool intent mappings (THIS IS THE KEY CHANGE)
-    # Each tool has its own intent indices starting from 0
+    # Per-tool intent mappings
     character_intents = list(CHARACTER_TEMPLATES.keys())
     session_intents = list(SESSION_TEMPLATES.keys())
     rulebook_intents = list(RULEBOOK_TEMPLATES.keys())
@@ -807,21 +617,16 @@ def build_label_mappings(train_stats: Dict[str, Any]) -> Dict[str, Any]:
     # Calculate class weights for imbalanced intents
     intent_weights = calculate_intent_weights(train_stats["intent_counts"])
     
-    # Calculate NER tag weights
-    ner_weights = calculate_ner_weights(train_stats["bio_tag_counts"], tag_to_idx)
-    
     return {
         # Core mappings
         "tool_to_idx": tool_to_idx,
         "idx_to_tool": idx_to_tool,
-        "tag_to_idx": tag_to_idx,
-        "idx_to_tag": idx_to_tag,
         
-        # Per-tool intent mappings (for Stage 2 gated prediction)
+        # Per-tool intent mappings
         "intent_to_idx_per_tool": intent_to_idx_per_tool,
         "idx_to_intent_per_tool": idx_to_intent_per_tool,
         
-        # Intent counts per tool (for model architecture)
+        # Intent counts per tool
         "num_intents_per_tool": {
             "character_data": len(character_intents),
             "session_notes": len(session_intents),
@@ -834,11 +639,12 @@ def build_label_mappings(train_stats: Dict[str, Any]) -> Dict[str, Any]:
         
         # Class weights for handling imbalance
         "intent_weights_per_tool": intent_weights,
-        "ner_tag_weights": ner_weights,
+        
+        # Preserved placeholders for name normalization at inference
+        "preserved_placeholders": list(PRESERVED_PLACEHOLDERS),
         
         # Metadata
         "num_tools": len(tool_to_idx),
-        "num_ner_tags": len(tag_to_idx),
         "total_intents": len(all_intents),
     }
 
@@ -854,7 +660,7 @@ def calculate_intent_weights(intent_counts: Dict[str, Dict[str, int]]) -> Dict[s
         total = sum(counts.values())
         num_classes = len(counts)
         
-        # Inverse frequency weighting: weight = total / (num_classes * count)
+        # Inverse frequency weighting
         tool_weights = {}
         for intent, count in counts.items():
             weight = total / (num_classes * count) if count > 0 else 1.0
@@ -865,59 +671,44 @@ def calculate_intent_weights(intent_counts: Dict[str, Dict[str, int]]) -> Dict[s
     return weights
 
 
-def calculate_ner_weights(bio_tag_counts: Dict[str, int], tag_to_idx: Dict[str, int]) -> Dict[str, float]:
-    """Calculate class weights for NER tags (O tag is usually dominant)."""
-    total = sum(bio_tag_counts.values())
-    num_tags = len(tag_to_idx)
-    
-    weights = {}
-    for tag in tag_to_idx.keys():
-        count = bio_tag_counts.get(tag, 1)  # Avoid division by zero
-        weight = total / (num_tags * count) if count > 0 else 1.0
-        # Cap the weight to avoid extreme values for rare tags
-        weights[tag] = round(min(weight, 10.0), 4)
-    
-    return weights
-
-
 def validate_dataset(samples: List[Dict], label_mappings: Dict) -> bool:
     """Validate that all samples have correct structure and valid labels."""
     errors = []
     
     valid_tools = set(label_mappings["tool_to_idx"].keys())
-    valid_tags = set(label_mappings["tag_to_idx"].keys())
     
     for i, sample in enumerate(samples):
-        # Check tools
-        for tool in sample["tools"]:
-            if tool not in valid_tools:
-                errors.append(f"Sample {i}: Invalid tool '{tool}'")
+        # Check required fields
+        if "text" not in sample:
+            errors.append(f"Sample {i}: Missing 'text' field")
+            continue
+        if "tool" not in sample:
+            errors.append(f"Sample {i}: Missing 'tool' field")
+            continue
+        if "intent" not in sample:
+            errors.append(f"Sample {i}: Missing 'intent' field")
+            continue
         
-        # Check intents map to correct tools
-        for tool, intent in sample["intents"].items():
-            if tool not in valid_tools:
-                errors.append(f"Sample {i}: Intent for invalid tool '{tool}'")
-            elif intent not in label_mappings["intent_to_idx_per_tool"].get(tool, {}):
-                errors.append(f"Sample {i}: Invalid intent '{intent}' for tool '{tool}'")
+        # Check tool validity
+        if sample["tool"] not in valid_tools:
+            errors.append(f"Sample {i}: Invalid tool '{sample['tool']}'")
         
-        # Check BIO tags
-        for tag in sample["bio_tags"]:
-            if tag not in valid_tags:
-                errors.append(f"Sample {i}: Invalid BIO tag '{tag}'")
+        # Check intent validity
+        tool = sample["tool"]
+        intent = sample["intent"]
+        if intent not in label_mappings["intent_to_idx_per_tool"].get(tool, {}):
+            errors.append(f"Sample {i}: Invalid intent '{intent}' for tool '{tool}'")
         
-        # Check entity spans align with BIO tags
-        words = sample["query"].split()
-        if len(words) != len(sample["bio_tags"]):
-            errors.append(f"Sample {i}: Word count ({len(words)}) != tag count ({len(sample['bio_tags'])})")
-        
-        # Check entity positions
-        for entity in sample["entities"]:
-            if entity["start"] < 0 or entity["end"] > len(words):
-                errors.append(f"Sample {i}: Entity '{entity['text']}' has invalid span [{entity['start']}, {entity['end']})")
+        # Check for unfilled placeholders (except preserved ones)
+        unfilled = re.findall(r'\{([^}]+)\}', sample["text"])
+        for slot in unfilled:
+            placeholder = "{" + slot + "}"
+            if placeholder not in PRESERVED_PLACEHOLDERS:
+                errors.append(f"Sample {i}: Unfilled slot '{placeholder}' in '{sample['text'][:50]}...'")
     
     if errors:
         print(f"  Found {len(errors)} validation errors:")
-        for error in errors[:10]:  # Show first 10
+        for error in errors[:10]:
             print(f"    - {error}")
         if len(errors) > 10:
             print(f"    ... and {len(errors) - 10} more")
@@ -927,5 +718,74 @@ def validate_dataset(samples: List[Dict], label_mappings: Dict) -> bool:
         return True
 
 
+def main():
+    """Main entry point."""
+    # Setup paths
+    script_dir = Path(__file__).parent
+    project_dir = script_dir.parent
+    output_dir = project_dir / "data" / "generated"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    print("=" * 60)
+    print("Dataset Generation for 574 Assignment")
+    print(f"K-expansion: {EXPANSIONS_PER_TEMPLATE} samples per template")
+    print(f"Augmentations: {AUGMENTATIONS_PER_SAMPLE} per sample")
+    print(f"Deduplication: {DEDUPLICATE}")
+    print(f"Preserved placeholders: {PRESERVED_PLACEHOLDERS}")
+    print("=" * 60)
+
+    # Generate dataset
+    samples = generate_dataset_with_expansion(RANDOM_SEED)
+
+    # Split
+    train, val, test = split_dataset(samples, TRAIN_RATIO, VAL_RATIO)
+
+    # Analyze
+    train_stats = analyze_dataset(train, "Train")
+    val_stats = analyze_dataset(val, "Validation")
+    test_stats = analyze_dataset(test, "Test")
+
+    # Build label mappings
+    label_mappings = build_label_mappings(train_stats)
+
+    # Validate
+    print("\nValidating dataset...")
+    all_valid = validate_dataset(train + val + test, label_mappings)
+
+    # Save datasets
+    print("\nSaving datasets...")
+
+    with open(output_dir / "train.json", "w") as f:
+        json.dump(train, f, indent=2)
+    print(f"  Saved {len(train)} samples to {output_dir / 'train.json'}")
+
+    with open(output_dir / "val.json", "w") as f:
+        json.dump(val, f, indent=2)
+    print(f"  Saved {len(val)} samples to {output_dir / 'val.json'}")
+
+    with open(output_dir / "test.json", "w") as f:
+        json.dump(test, f, indent=2)
+    print(f"  Saved {len(test)} samples to {output_dir / 'test.json'}")
+
+    with open(output_dir / "label_mappings.json", "w") as f:
+        json.dump(label_mappings, f, indent=2)
+    print(f"  Saved label mappings to {output_dir / 'label_mappings.json'}")
+
+    print("\n" + "=" * 60)
+    print("Dataset generation complete!")
+    print(f"Total samples: {len(samples)}")
+    print(f"  Train: {len(train)} ({100*len(train)/len(samples):.1f}%)")
+    print(f"  Val: {len(val)} ({100*len(val)/len(samples):.1f}%)")
+    print(f"  Test: {len(test)} ({100*len(test)/len(samples):.1f}%)")
+    print(f"Output directory: {output_dir}")
+    print("=" * 60)
+
+    if not all_valid:
+        print("\n⚠️  WARNING: Some validation errors detected. Review output above.")
+        return 1
+    
+    return 0
+
+
 if __name__ == "__main__":
-    main()
+    exit(main())

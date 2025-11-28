@@ -37,12 +37,10 @@ MODEL_CONFIG = {
 DATASET_CONFIG = {
     # K-expansion: generate K samples per template with different entity fills
     # Templates WITH slots generate K variations; templates WITHOUT slots generate 1
-    'expansions_per_template': 100,  # Each template generates up to K variations
+    'expansions_per_template': 10,  # Each template generates up to K variations
     
-    # Tool distribution (what % of samples use 1, 2, or 3 tools)
-    'one_tool_pct': 0.30,   # 30% need 1 tool
-    'two_tool_pct': 0.50,   # 50% of queries need 2 tools
-    'three_tool_pct': 0.20, # 20% need 3 tools
+    # Augmentations: typos, case changes, contractions per sample
+    'augmentations_per_sample': 3,  # Generate N augmented versions per sample
     
     # Train/val/test splits
     'train_split': 0.80,

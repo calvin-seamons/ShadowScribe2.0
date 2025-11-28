@@ -44,6 +44,17 @@ CHARACTER_BASICS_TEMPLATES = [
     # Additional templates
     {"template": "What's my character's weight?", "slots": {}},
     {"template": "What are my character's defining physical features?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "What is {CHARACTER}'s race?", "slots": {}},
+    {"template": "What class is {CHARACTER}?", "slots": {}},
+    {"template": "What level is {CHARACTER}?", "slots": {}},
+    {"template": "What is {CHARACTER}'s alignment?", "slots": {}},
+    {"template": "What are {CHARACTER}'s ability scores?", "slots": {}},
+    {"template": "What's {CHARACTER}'s {ability} score?", "slots": {"ability": "ability"}},
+    {"template": "Tell me about {CHARACTER}'s physical appearance", "slots": {}},
+    {"template": "How old is {CHARACTER}?", "slots": {}},
+    {"template": "What's {CHARACTER}'s proficiency bonus?", "slots": {}},
+    {"template": "Is {CHARACTER} a {class_name}?", "slots": {"class_name": "class"}},
 ]
 
 # =============================================================================
@@ -78,6 +89,17 @@ COMBAT_INFO_TEMPLATES = [
     {"template": "What bonus actions do I have?", "slots": {}},
     {"template": "What reactions can I use?", "slots": {}},
     {"template": "How many attacks can I make per turn?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "What is {CHARACTER}'s AC?", "slots": {}},
+    {"template": "What's {CHARACTER}'s armor class?", "slots": {}},
+    {"template": "How many hit points does {CHARACTER} have?", "slots": {}},
+    {"template": "What's {CHARACTER}'s HP?", "slots": {}},
+    {"template": "What's {CHARACTER}'s max HP?", "slots": {}},
+    {"template": "What's {CHARACTER}'s initiative bonus?", "slots": {}},
+    {"template": "What is {CHARACTER}'s speed?", "slots": {}},
+    {"template": "What attacks can {CHARACTER} make?", "slots": {}},
+    {"template": "What's {CHARACTER}'s {ability} saving throw?", "slots": {"ability": "ability"}},
+    {"template": "Is {CHARACTER} resistant to {damage_type} damage?", "slots": {"damage_type": "damage_type"}},
 ]
 
 # =============================================================================
@@ -111,6 +133,17 @@ ABILITIES_INFO_TEMPLATES = [
     # Additional templates
     {"template": "Do I have expertise in any skills?", "slots": {}},
     {"template": "What's my passive investigation?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "What skill proficiencies does {CHARACTER} have?", "slots": {}},
+    {"template": "What tools is {CHARACTER} proficient with?", "slots": {}},
+    {"template": "Is {CHARACTER} proficient in {skill}?", "slots": {"skill": "skill"}},
+    {"template": "What's {CHARACTER}'s {skill} bonus?", "slots": {"skill": "skill"}},
+    {"template": "What languages can {CHARACTER} speak?", "slots": {}},
+    {"template": "Does {CHARACTER} have darkvision?", "slots": {}},
+    {"template": "What's {CHARACTER}'s passive perception?", "slots": {}},
+    {"template": "What class features does {CHARACTER} have?", "slots": {}},
+    {"template": "What feats does {CHARACTER} have?", "slots": {}},
+    {"template": "How does {CHARACTER}'s {feature} work?", "slots": {"feature": "feature"}},
 ]
 
 # =============================================================================
@@ -146,6 +179,17 @@ INVENTORY_INFO_TEMPLATES = [
     # Additional templates
     {"template": "What consumables do I have?", "slots": {}},
     {"template": "Do I have any potions?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "What's in {CHARACTER}'s inventory?", "slots": {}},
+    {"template": "What equipment does {CHARACTER} have?", "slots": {}},
+    {"template": "What's in {CHARACTER}'s backpack?", "slots": {}},
+    {"template": "What is {CHARACTER} carrying?", "slots": {}},
+    {"template": "What weapons is {CHARACTER} carrying?", "slots": {}},
+    {"template": "What armor is {CHARACTER} wearing?", "slots": {}},
+    {"template": "Does {CHARACTER} have a {weapon}?", "slots": {"weapon": "weapon"}},
+    {"template": "What magic items does {CHARACTER} have?", "slots": {}},
+    {"template": "How much gold does {CHARACTER} have?", "slots": {}},
+    {"template": "Is {CHARACTER} encumbered?", "slots": {}},
 ]
 
 # =============================================================================
@@ -183,6 +227,17 @@ MAGIC_INFO_TEMPLATES = [
     # Additional templates
     {"template": "What concentration spells do I have prepared?", "slots": {}},
     {"template": "How many spells can I prepare?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "What spells can {CHARACTER} cast?", "slots": {}},
+    {"template": "What spells does {CHARACTER} know?", "slots": {}},
+    {"template": "What spells does {CHARACTER} have prepared?", "slots": {}},
+    {"template": "How many spell slots does {CHARACTER} have?", "slots": {}},
+    {"template": "What cantrips does {CHARACTER} know?", "slots": {}},
+    {"template": "Does {CHARACTER} know {spell}?", "slots": {"spell": "spell"}},
+    {"template": "What's {CHARACTER}'s spell save DC?", "slots": {}},
+    {"template": "What's {CHARACTER}'s spell attack bonus?", "slots": {}},
+    {"template": "Can {CHARACTER} cast {spell}?", "slots": {"spell": "spell"}},
+    {"template": "What ritual spells does {CHARACTER} have?", "slots": {}},
 ]
 
 # =============================================================================
@@ -218,6 +273,17 @@ STORY_INFO_TEMPLATES = [
     {"template": "What secrets does my character have?", "slots": {}},
     {"template": "What fears does my character have?", "slots": {}},
     {"template": "What's my character's greatest regret?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "What's {CHARACTER}'s backstory?", "slots": {}},
+    {"template": "Tell me about {CHARACTER}'s background", "slots": {}},
+    {"template": "What's {CHARACTER}'s history?", "slots": {}},
+    {"template": "Where did {CHARACTER} come from?", "slots": {}},
+    {"template": "What are {CHARACTER}'s personality traits?", "slots": {}},
+    {"template": "What are {CHARACTER}'s ideals?", "slots": {}},
+    {"template": "What are {CHARACTER}'s bonds?", "slots": {}},
+    {"template": "What are {CHARACTER}'s flaws?", "slots": {}},
+    {"template": "What motivates {CHARACTER}?", "slots": {}},
+    {"template": "Why is {CHARACTER} adventuring?", "slots": {}},
 ]
 
 # =============================================================================
@@ -253,6 +319,17 @@ SOCIAL_INFO_TEMPLATES = [
     {"template": "What's my reputation in the area?", "slots": {}},
     {"template": "Do I have any romantic interests?", "slots": {}},
     {"template": "Who is my character's closest friend?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "Who are {CHARACTER}'s allies?", "slots": {}},
+    {"template": "Who are {CHARACTER}'s friends?", "slots": {}},
+    {"template": "Tell me about {CHARACTER}'s companions", "slots": {}},
+    {"template": "Who are {CHARACTER}'s enemies?", "slots": {}},
+    {"template": "Does {CHARACTER} have any rivals?", "slots": {}},
+    {"template": "What organizations is {CHARACTER} part of?", "slots": {}},
+    {"template": "What factions is {CHARACTER} affiliated with?", "slots": {}},
+    {"template": "Who trained {CHARACTER}?", "slots": {}},
+    {"template": "Does {CHARACTER} have any family?", "slots": {}},
+    {"template": "What's {CHARACTER}'s reputation?", "slots": {}},
 ]
 
 # =============================================================================
@@ -290,6 +367,17 @@ PROGRESS_INFO_TEMPLATES = [
     {"template": "What rewards am I expecting?", "slots": {}},
     {"template": "What deadlines do I have for my quests?", "slots": {}},
     {"template": "What's the priority of my current objectives?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "What are {CHARACTER}'s current objectives?", "slots": {}},
+    {"template": "What quests is {CHARACTER} on?", "slots": {}},
+    {"template": "What should {CHARACTER} be doing?", "slots": {}},
+    {"template": "What quests has {CHARACTER} completed?", "slots": {}},
+    {"template": "What has {CHARACTER} accomplished?", "slots": {}},
+    {"template": "What active contracts does {CHARACTER} have?", "slots": {}},
+    {"template": "What are {CHARACTER}'s long-term goals?", "slots": {}},
+    {"template": "How has {CHARACTER} grown?", "slots": {}},
+    {"template": "What milestones has {CHARACTER} achieved?", "slots": {}},
+    {"template": "How close is {CHARACTER} to leveling up?", "slots": {}},
 ]
 
 # =============================================================================
@@ -318,6 +406,17 @@ FULL_CHARACTER_TEMPLATES = [
     {"template": "Read me my whole character sheet", "slots": {}},
     {"template": "Dump all character information", "slots": {}},
     {"template": "Let me see my complete character data", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "Give me {CHARACTER}'s complete character sheet", "slots": {}},
+    {"template": "Tell me everything about {CHARACTER}", "slots": {}},
+    {"template": "Export all of {CHARACTER}'s data", "slots": {}},
+    {"template": "Show me {CHARACTER}'s full character information", "slots": {}},
+    {"template": "What's all the information you have about {CHARACTER}?", "slots": {}},
+    {"template": "Give me a full breakdown of {CHARACTER}", "slots": {}},
+    {"template": "I need all of {CHARACTER}'s details", "slots": {}},
+    {"template": "Print {CHARACTER}'s entire character sheet", "slots": {}},
+    {"template": "Show me everything about {CHARACTER}", "slots": {}},
+    {"template": "Pull up {CHARACTER}'s entire character", "slots": {}},
 ]
 
 # =============================================================================
@@ -346,6 +445,17 @@ CHARACTER_SUMMARY_TEMPLATES = [
     {"template": "Just the important bits about my character", "slots": {}},
     {"template": "What defines my character?", "slots": {}},
     {"template": "Sum up my character quickly", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "Give me a quick summary of {CHARACTER}", "slots": {}},
+    {"template": "What are the most important things about {CHARACTER}?", "slots": {}},
+    {"template": "Summarize {CHARACTER}'s key stats", "slots": {}},
+    {"template": "Quick overview of {CHARACTER}", "slots": {}},
+    {"template": "What's the elevator pitch for {CHARACTER}?", "slots": {}},
+    {"template": "Brief description of {CHARACTER}", "slots": {}},
+    {"template": "Give me the highlights of {CHARACTER}", "slots": {}},
+    {"template": "TL;DR {CHARACTER}", "slots": {}},
+    {"template": "What's essential to know about {CHARACTER}?", "slots": {}},
+    {"template": "Sum up {CHARACTER} quickly", "slots": {}},
 ]
 
 # =============================================================================

@@ -3,14 +3,24 @@ Gazetteer-based Entity Extractor using Fuzzy Matching.
 
 Uses fuzzy string matching against known D&D 5e SRD entities for reliable
 entity extraction in a closed domain.
+
+Supports dynamic entity sources:
+- SRD entities (spells, monsters, items, etc.)
+- Character name and aliases
+- Party member names
+- Session notes NPCs, locations, items
 """
 
 import json
 import re
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional, Set
+from typing import List, Dict, Tuple, Optional, Set, Any, TYPE_CHECKING
 from dataclasses import dataclass
 from difflib import SequenceMatcher
+
+if TYPE_CHECKING:
+    from src.rag.character.character_types import Character
+    from src.rag.session_notes.campaign_session_notes_storage import CampaignSessionNotesStorage
 
 # Use try/except for sklearn as it may not be installed
 try:
@@ -53,6 +63,10 @@ class GazetteerEntityExtractor:
     Uses a two-phase approach:
     1. Exact substring matching (fast, high precision)
     2. Fuzzy matching for misspellings (slower, catches typos)
+    
+    Supports dynamic entity sources:
+    - SRD entities loaded at init
+    - Character/party/NPC entities added via add_character_context()
     """
     
     # Mapping from SRD cache file to entity type
@@ -71,6 +85,16 @@ class GazetteerEntityExtractor:
         'traits': 'FEAT',
         'backgrounds': 'BACKGROUND',
         'ability-scores': 'ABILITY',
+    }
+    
+    # Dynamic entity types (not from SRD files)
+    DYNAMIC_ENTITY_TYPES = {
+        'CHARACTER',       # The player's character
+        'PARTY_MEMBER',    # Other party members from session notes  
+        'NPC',             # Non-player characters from session notes
+        'LOCATION',        # Locations from session notes
+        'SESSION_ITEM',    # Named items from session notes
+        'FACTION',         # Factions/organizations from session notes
     }
     
     # D&D-specific common words that aren't entity names
@@ -137,6 +161,184 @@ class GazetteerEntityExtractor:
                     self.gazetteers[name.lower()] = (name, entity_type)
         
         print(f"[GazetteerNER] Loaded {len(self.gazetteers)} entities from gazetteers")
+    
+    def add_entities(
+        self, 
+        names: List[str], 
+        entity_type: str,
+        aliases: Optional[Dict[str, List[str]]] = None
+    ) -> int:
+        """
+        Add entities dynamically at runtime.
+        
+        Args:
+            names: List of canonical entity names to add
+            entity_type: The entity type (CHARACTER, NPC, PARTY_MEMBER, etc.)
+            aliases: Optional mapping of canonical_name -> list of aliases
+            
+        Returns:
+            Number of entities added
+        """
+        added = 0
+        for name in names:
+            if not name or not name.strip():
+                continue
+            canonical = name.strip()
+            self.gazetteers[canonical.lower()] = (canonical, entity_type)
+            added += 1
+            
+            # Add any aliases for this entity
+            if aliases and canonical in aliases:
+                for alias in aliases[canonical]:
+                    if alias and alias.strip():
+                        self.gazetteers[alias.strip().lower()] = (canonical, entity_type)
+                        added += 1
+        
+        return added
+    
+    def add_character_context(
+        self,
+        character: Optional["Character"] = None,
+        session_storage: Optional["CampaignSessionNotesStorage"] = None
+    ) -> Dict[str, int]:
+        """
+        Add character and session context to the gazetteer.
+        
+        This populates the gazetteer with:
+        - The player's character name (CHARACTER type)
+        - Party member names from session notes (PARTY_MEMBER type)
+        - NPC names from session notes (NPC type)
+        - Locations from session notes (LOCATION type)
+        - Named items from session notes (SESSION_ITEM type)
+        - Factions from session notes (FACTION type)
+        
+        Args:
+            character: The Character object (optional)
+            session_storage: The session notes storage (optional)
+            
+        Returns:
+            Dict with counts of each entity type added
+        """
+        counts: Dict[str, int] = {}
+        
+        # Add character name and aliases
+        if character and character.character_base:
+            char_name = character.character_base.name
+            # Get first name as an alias
+            first_name = char_name.split()[0] if char_name else None
+            aliases = {}
+            if first_name and first_name.lower() != char_name.lower():
+                aliases[char_name] = [first_name]
+            counts['CHARACTER'] = self.add_entities([char_name], 'CHARACTER', aliases)
+        
+        # Add entities from session notes
+        if session_storage:
+            # Map session note entity types to our gazetteer types
+            session_type_mapping = {
+                'player_character': 'PARTY_MEMBER',
+                'non_player_character': 'NPC',
+                'location': 'LOCATION',
+                'item': 'SESSION_ITEM',
+                'faction': 'FACTION',
+                'organization': 'FACTION',
+            }
+            
+            # Gather all entities from session storage
+            # CampaignSessionNotesStorage has a flat entities dict at the top level
+            entity_groups: Dict[str, List[str]] = {k: [] for k in session_type_mapping}
+            alias_groups: Dict[str, Dict[str, List[str]]] = {k: {} for k in session_type_mapping}
+            
+            # Iterate over the flat entities dictionary
+            if hasattr(session_storage, 'entities') and session_storage.entities:
+                for entity_id, entity in session_storage.entities.items():
+                    # Get entity type as string
+                    entity_type_raw = None
+                    if hasattr(entity, 'entity_type'):
+                        et = entity.entity_type
+                        entity_type_raw = et.value if hasattr(et, 'value') else str(et)
+                    elif isinstance(entity, dict) and 'entity_type' in entity:
+                        entity_type_raw = entity['entity_type']
+                    
+                    if not entity_type_raw:
+                        continue
+                    
+                    # Normalize to our mapping keys
+                    entity_type_key = entity_type_raw.lower().replace(' ', '_')
+                    if entity_type_key not in session_type_mapping:
+                        continue
+                    
+                    # Get entity name
+                    entity_name = entity.name if hasattr(entity, 'name') else (
+                        entity.get('name', '') if isinstance(entity, dict) else str(entity)
+                    )
+                    if not entity_name:
+                        continue
+                    
+                    entity_groups[entity_type_key].append(entity_name)
+                    
+                    # Get aliases if available
+                    aliases_list = []
+                    if hasattr(entity, 'aliases') and entity.aliases:
+                        aliases_list = entity.aliases
+                    elif isinstance(entity, dict) and 'aliases' in entity:
+                        aliases_list = entity['aliases']
+                    
+                    if aliases_list:
+                        alias_groups[entity_type_key][entity_name] = aliases_list
+            
+            # Add to gazetteer
+            for session_type, gazetteer_type in session_type_mapping.items():
+                names = list(set(entity_groups.get(session_type, [])))  # Dedupe
+                if names:
+                    counts[gazetteer_type] = self.add_entities(
+                        names, 
+                        gazetteer_type,
+                        alias_groups.get(session_type, {})
+                    )
+        
+        print(f"[GazetteerNER] Added dynamic entities: {counts}")
+        return counts
+    
+    def clear_dynamic_entities(self) -> int:
+        """
+        Remove all dynamically added entities (keeps SRD entities).
+        
+        Returns:
+            Number of entities removed
+        """
+        removed = 0
+        to_remove = []
+        
+        for key, (canonical, entity_type) in self.gazetteers.items():
+            if entity_type in self.DYNAMIC_ENTITY_TYPES:
+                to_remove.append(key)
+        
+        for key in to_remove:
+            del self.gazetteers[key]
+            removed += 1
+        
+        print(f"[GazetteerNER] Cleared {removed} dynamic entities")
+        return removed
+    
+    def reload_context(
+        self,
+        character: Optional["Character"] = None,
+        session_storage: Optional["CampaignSessionNotesStorage"] = None
+    ) -> Dict[str, int]:
+        """
+        Clear dynamic entities and reload from character/session data.
+        
+        Use this when character or session data has changed.
+        
+        Args:
+            character: The Character object (optional)
+            session_storage: The session notes storage (optional)
+            
+        Returns:
+            Dict with counts of each entity type added
+        """
+        self.clear_dynamic_entities()
+        return self.add_character_context(character, session_storage)
     
     def _similarity(self, s1: str, s2: str) -> float:
         """Calculate similarity between two strings."""
@@ -302,12 +504,13 @@ class GazetteerEntityExtractor:
         
         return entities
     
-    def extract_simple(self, text: str) -> List[Dict[str, str]]:
+    def extract_simple(self, text: str) -> List[Dict[str, Any]]:
         """
         Simple extraction returning just text and type.
         
         Returns:
-            List of dicts with 'text', 'type', 'canonical', and 'confidence' keys
+            List of dicts with 'text', 'type', 'canonical', 'confidence', 
+            and 'is_dynamic' keys
         """
         entities = self.extract(text)
         return [
@@ -315,7 +518,15 @@ class GazetteerEntityExtractor:
                 'text': e.text,
                 'type': e.type,
                 'canonical': e.canonical,
-                'confidence': e.confidence
+                'confidence': e.confidence,
+                'is_dynamic': e.type in self.DYNAMIC_ENTITY_TYPES
             }
             for e in entities
         ]
+    
+    def get_entity_count(self) -> Dict[str, int]:
+        """Get count of entities by type."""
+        counts: Dict[str, int] = {}
+        for _, (_, entity_type) in self.gazetteers.items():
+            counts[entity_type] = counts.get(entity_type, 0) + 1
+        return counts

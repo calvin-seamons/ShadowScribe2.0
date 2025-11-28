@@ -197,6 +197,13 @@ CALCULATE_VALUES_TEMPLATES = [
     {"template": "How much does falling damage do?", "slots": {}},
     {"template": "What's the DC for a {spell} spell?", "slots": {"spell": "spell"}},
     {"template": "How is push/pull distance calculated?", "slots": {}},
+    {"template": "How much damage does {CHARACTER}'s attack do?", "slots": {}},
+    {"template": "What's {CHARACTER}'s AC with this armor?", "slots": {}},
+    {"template": "How much can {CHARACTER} carry?", "slots": {}},
+    {"template": "How far can {CHARACTER} jump?", "slots": {}},
+    {"template": "What's {CHARACTER}'s spell attack bonus?", "slots": {}},
+    {"template": "How much healing would {CHARACTER} receive from this spell?", "slots": {}},
+    {"template": "What's the DC for {CHARACTER}'s grapple?", "slots": {}},
 ]
 
 # =============================================================================
@@ -251,6 +258,12 @@ CLASS_SPELL_ACCESS_TEMPLATES = [
     {"template": "Best {class_name} ritual spells?", "slots": {"class_name": "class"}},
     {"template": "What domain spells does {subclass} get?", "slots": {"subclass": "subclass"}},
     {"template": "Can {class_name}s prepare {spell}?", "slots": {"class_name": "class", "spell": "spell"}},
+    {"template": "What spells can {CHARACTER} learn?", "slots": {}},
+    {"template": "What cantrips can {CHARACTER} choose?", "slots": {}},
+    {"template": "Is {spell} available to {CHARACTER}?", "slots": {"spell": "spell"}},
+    {"template": "Can {CHARACTER} learn {spell} from a scroll?", "slots": {"spell": "spell"}},
+    {"template": "What spells should {CHARACTER} prepare?", "slots": {}},
+    {"template": "What level spells can {CHARACTER} cast?", "slots": {}},
 ]
 
 # =============================================================================
@@ -359,6 +372,17 @@ MULTICLASS_RULES_TEMPLATES = [
     {"template": "Can paladins and warlocks multiclass well?", "slots": {}},
     {"template": "What happens to my spells known when I multiclass?", "slots": {}},
     {"template": "How does channel divinity work for multiclass?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "Can {CHARACTER} multiclass into {class_name}?", "slots": {"class_name": "class"}},
+    {"template": "Does {CHARACTER} meet the requirements to multiclass?", "slots": {}},
+    {"template": "How would multiclassing affect {CHARACTER}'s spell slots?", "slots": {}},
+    {"template": "What proficiencies would {CHARACTER} gain from a multiclass dip?", "slots": {}},
+    {"template": "Should {CHARACTER} take a level in {class_name}?", "slots": {"class_name": "class"}},
+    {"template": "How would multiclassing work for {CHARACTER}?", "slots": {}},
+    {"template": "What's {CHARACTER}'s caster level if they multiclass?", "slots": {}},
+    {"template": "Would {CHARACTER} lose any features by multiclassing?", "slots": {}},
+    {"template": "What stats does {CHARACTER} need to multiclass?", "slots": {}},
+    {"template": "How would Extra Attack work if {CHARACTER} multiclasses?", "slots": {}},
 ]
 
 # =============================================================================
@@ -521,6 +545,17 @@ PREREQUISITE_CHECK_TEMPLATES = [
     {"template": "What level do I get {feature}?", "slots": {"feature": "feature"}},
     {"template": "Requirements for the {subclass} subclass?", "slots": {"subclass": "subclass"}},
     {"template": "Do I meet the requirements for {feat}?", "slots": {"feat": "feat"}},
+    # {CHARACTER} placeholder templates
+    {"template": "Can {CHARACTER} take {feat}?", "slots": {"feat": "feat"}},
+    {"template": "Does {CHARACTER} meet the prerequisites for {feat}?", "slots": {"feat": "feat"}},
+    {"template": "Can {CHARACTER} cast {spell} at their level?", "slots": {"spell": "spell"}},
+    {"template": "Does {CHARACTER} have the stats to multiclass?", "slots": {}},
+    {"template": "Can {CHARACTER} attune to {magic_item}?", "slots": {"magic_item": "magic_item"}},
+    {"template": "Does {CHARACTER} qualify for {feat}?", "slots": {"feat": "feat"}},
+    {"template": "Can {CHARACTER} use {item}?", "slots": {"item": "item"}},
+    {"template": "What level does {CHARACTER} need to be to learn {spell}?", "slots": {"spell": "spell"}},
+    {"template": "Does {CHARACTER} have the proficiency for {weapon}?", "slots": {"weapon": "weapon"}},
+    {"template": "Can {CHARACTER} access the {subclass} subclass?", "slots": {"subclass": "subclass"}},
 ]
 
 # =============================================================================
@@ -575,6 +610,17 @@ TACTICAL_USAGE_TEMPLATES = [
     {"template": "When to use burst vs sustained damage?", "slots": {}},
     {"template": "Best combos with {spell}?", "slots": {"spell": "spell"}},
     {"template": "How do I handle being outnumbered?", "slots": {}},
+    # {CHARACTER} placeholder templates
+    {"template": "When should {CHARACTER} use their Action Surge?", "slots": {}},
+    {"template": "What's the best opening move for {CHARACTER}?", "slots": {}},
+    {"template": "How should {CHARACTER} position in this fight?", "slots": {}},
+    {"template": "Should {CHARACTER} concentrate on this spell or that one?", "slots": {}},
+    {"template": "What's {CHARACTER}'s best combo in combat?", "slots": {}},
+    {"template": "When should {CHARACTER} use their Channel Divinity?", "slots": {}},
+    {"template": "How can {CHARACTER} protect the party better?", "slots": {}},
+    {"template": "Should {CHARACTER} save their spell slots?", "slots": {}},
+    {"template": "What's the best target for {CHARACTER}'s attack?", "slots": {}},
+    {"template": "How should {CHARACTER} use their bonus action this turn?", "slots": {}},
 ]
 
 # =============================================================================
@@ -845,6 +891,17 @@ OPTIMIZATION_ADVICE_TEMPLATES = [
     {"template": "Best nova damage build?", "slots": {}},
     {"template": "How do I build for survivability?", "slots": {}},
     {"template": "What feats synergize with {feature}?", "slots": {"feature": "feature"}},
+    # {CHARACTER} placeholder templates
+    {"template": "What feat should {CHARACTER} take next?", "slots": {}},
+    {"template": "How can {CHARACTER} optimize their build?", "slots": {}},
+    {"template": "What multiclass would work for {CHARACTER}?", "slots": {}},
+    {"template": "Should {CHARACTER} prioritize Strength or Dexterity?", "slots": {}},
+    {"template": "What's the best magic item for {CHARACTER}?", "slots": {}},
+    {"template": "How can {CHARACTER} increase their damage output?", "slots": {}},
+    {"template": "What spells should {CHARACTER} prepare?", "slots": {}},
+    {"template": "Is {CHARACTER}'s build optimized for combat?", "slots": {}},
+    {"template": "What ASI should {CHARACTER} take at the next level?", "slots": {}},
+    {"template": "How can {CHARACTER} improve their AC?", "slots": {}},
 ]
 
 # =============================================================================
