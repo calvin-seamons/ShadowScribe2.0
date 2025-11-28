@@ -10,6 +10,7 @@ import { useMetadataStore } from '@/lib/stores/metadataStore'
 import { useCharacterStore } from '@/lib/stores/characterStore'
 import { fetchCharacters } from '@/lib/services/api'
 import { Eye, EyeOff, Plus, Sparkles, BookOpen, Scroll, MessageSquare, Users, ArrowLeft, Loader2, ChevronRight } from 'lucide-react'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
@@ -88,6 +89,7 @@ export default function Home() {
                 )}
               </button>
             )}
+            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -216,7 +218,7 @@ interface CharacterSelectViewProps {
 }
 
 function CharacterSelectView({ onSelect, onBack }: CharacterSelectViewProps) {
-  const { characters, setCharacters, loading, setLoading, error, setError } = useCharacterStore()
+  const { characters, setCharacters, isLoading: loading, setLoading, error, setError } = useCharacterStore()
   const [loadAttempted, setLoadAttempted] = useState(false)
 
   useEffect(() => {

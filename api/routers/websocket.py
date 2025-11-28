@@ -3,9 +3,10 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 import json
 import uuid
+import re
 import sys
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List, Optional
 
 # Add project root to path for character builder imports
 project_root = Path(__file__).parent.parent.parent
@@ -19,6 +20,67 @@ from api.database.repositories.feedback_repo import FeedbackRepository
 from src.character_creation.async_character_builder import AsyncCharacterBuilder
 
 router = APIRouter()
+
+
+def apply_entity_placeholders(
+    query: str, 
+    character_name: str, 
+    entities: Optional[List[dict]]
+) -> str:
+    """
+    Replace entity names with placeholder tokens for training generalization.
+    
+    Replaces:
+    - CHARACTER: The player character name
+    - PARTY_MEMBER: Other party members  
+    - NPC: Non-player characters
+    
+    Uses case-insensitive matching and replaces longer names first.
+    """
+    replacements = []
+    
+    # Always add character_name as CHARACTER
+    if character_name:
+        replacements.append((character_name, '{CHARACTER}'))
+        # Add first name and 4-char nickname
+        parts = character_name.split()
+        if len(parts) > 0:
+            first_name = parts[0]
+            if first_name != character_name:
+                replacements.append((first_name, '{CHARACTER}'))
+            if len(first_name) > 4:
+                replacements.append((first_name[:4], '{CHARACTER}'))
+    
+    # Add entities from extraction
+    if entities:
+        for entity in entities:
+            entity_type = entity.get('type', '')
+            entity_text = entity.get('text', '') or entity.get('name', '')
+            
+            if not entity_text:
+                continue
+            
+            placeholder = None
+            if entity_type == 'CHARACTER':
+                placeholder = '{CHARACTER}'
+            elif entity_type == 'PARTY_MEMBER':
+                placeholder = '{PARTY_MEMBER}'
+            elif entity_type == 'NPC':
+                placeholder = '{NPC}'
+            
+            if placeholder:
+                replacements.append((entity_text, placeholder))
+    
+    # Sort by length descending (replace longer names first)
+    replacements.sort(key=lambda x: len(x[0]), reverse=True)
+    
+    # Apply case-insensitive replacements
+    result = query
+    for original_text, placeholder in replacements:
+        pattern = re.compile(re.escape(original_text), re.IGNORECASE)
+        result = pattern.sub(placeholder, result)
+    
+    return result
 
 # Active WebSocket connections
 active_connections: Dict[str, WebSocket] = {}
@@ -81,8 +143,8 @@ async def websocket_endpoint(websocket: WebSocket):
         if event_type == 'routing_metadata':
             current_routing_info['tools_needed'] = data.get('tools_needed', [])
             current_routing_info['backend'] = data.get('classifier_backend', 'local')
-        elif event_type == 'entities_metadata':
-            current_routing_info['entities'] = data.get('entities', [])
+            # Capture extracted entities with text/type for training data
+            current_routing_info['entities'] = data.get('extracted_entities', [])
         elif event_type == 'classifier_comparison':
             # Capture local classifier timing if available
             if 'local' in data:
@@ -169,8 +231,15 @@ async def websocket_endpoint(websocket: WebSocket):
                                     for e in current_routing_info['entities']
                                 ]
                             
+                            # Apply placeholder substitution for training generalization
+                            query_with_placeholders = apply_entity_placeholders(
+                                user_message, 
+                                character_name, 
+                                entities_data
+                            )
+                            
                             feedback_record = RoutingFeedback(
-                                user_query=user_message,
+                                user_query=query_with_placeholders,
                                 character_name=character_name,
                                 campaign_id=campaign_id,
                                 predicted_tools=current_routing_info['tools_needed'],

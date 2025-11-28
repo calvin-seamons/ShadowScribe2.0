@@ -29,6 +29,9 @@ from .rag.session_notes.session_types import QueryEngineResult
 # Import EntitySearchEngine for new architecture
 from .utils.entity_search_engine import EntitySearchEngine
 
+# Import tool intentions from single source of truth
+from .rag.tool_intentions import get_fallback_intention
+
 # Import Gazetteer-based entity extraction
 from .classifiers.gazetteer_ner import GazetteerEntityExtractor, Entity
 
@@ -280,15 +283,10 @@ class CentralEngine:
         if new_tools_needed:
             print(f"🔧 DEBUG: Step 4.5 - Adding fallback tools with entities: {new_tools_needed}")
             for tool in new_tools_needed:
-                # Add tool with a generic intention based on tool type
-                intention_map = {
-                    "character_data": "inventory_info",
-                    "session_notes": "general_history", 
-                    "rulebook": "general_info"
-                }
+                # Add tool with fallback intention from single source of truth
                 tool_selector_output.tools_needed.append({
                     "tool": tool,
-                    "intention": intention_map.get(tool, "general_info"),
+                    "intention": get_fallback_intention(tool),
                     "confidence": 0.75
                 })
             print(f"🔧 DEBUG: Updated tools needed: {tool_selector_output.tools_needed}")
@@ -386,11 +384,23 @@ class CentralEngine:
         for e in entity_extractor_output.entities[:5]:  # Show first 5
             print(f"   - {e.get('name')} ({e.get('type')}, conf={e.get('confidence', 1.0):.2f})")
         
-        # Emit routing metadata
+        # Emit routing metadata with a COPY of tools_needed
+        # We copy here because Step 4.5 will mutate the list with entity-based fallbacks,
+        # but for feedback/training we want to capture only what the classifier predicted
         if metadata_callback:
             await metadata_callback('routing_metadata', {
-                'tools_needed': tool_selector_output.tools_needed,
-                'classifier_backend': 'local' if self.use_local_routing else 'llm'
+                'tools_needed': [dict(t) for t in tool_selector_output.tools_needed],
+                'classifier_backend': 'local' if self.use_local_routing else 'llm',
+                # Include entity extraction for feedback/training (with text, type, etc.)
+                'extracted_entities': [
+                    {
+                        'name': e.get('name', ''),
+                        'text': e.get('text', ''),
+                        'type': e.get('type', ''),
+                        'confidence': e.get('confidence', 1.0)
+                    }
+                    for e in (entity_extractor_output.entities or [])
+                ]
             })
         
         # Step 2: Derive selected tools from tool selector output
@@ -433,15 +443,10 @@ class CentralEngine:
         if new_tools_needed:
             print(f"🔧 DEBUG: Step 4.5 - Adding fallback tools with entities: {new_tools_needed}")
             for tool in new_tools_needed:
-                # Add tool with a generic intention based on tool type
-                intention_map = {
-                    "character_data": "inventory_info",
-                    "session_notes": "general_history", 
-                    "rulebook": "general_info"
-                }
+                # Add tool with fallback intention from single source of truth
                 tool_selector_output.tools_needed.append({
                     "tool": tool,
-                    "intention": intention_map.get(tool, "general_info"),
+                    "intention": get_fallback_intention(tool),
                     "confidence": 0.75
                 })
             print(f"🔧 DEBUG: Updated tools needed: {tool_selector_output.tools_needed}")

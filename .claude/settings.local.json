@@ -10,7 +10,12 @@
       "Bash(python scripts/generate_dataset.py:*)",
       "Bash(python3:*)",
       "Bash(uv run python:*)",
-      "Skill(frontend-design)"
+      "Skill(frontend-design)",
+      "Skill(frontend-design:frontend-design)",
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

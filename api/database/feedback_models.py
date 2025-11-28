@@ -5,6 +5,9 @@ import uuid
 
 from api.database.connection import Base
 
+# Import tool intentions from single source of truth
+from src.rag.tool_intentions import TOOL_INTENTIONS, is_valid_intention, get_fallback_intention
+
 
 class RoutingFeedback(Base):
     """
@@ -77,6 +80,8 @@ class RoutingFeedback(Base):
             "intent": "character_info"
         }
         
+        Note: user_query already has placeholders applied at storage time.
+        
         If user corrected, uses corrected_tools. Otherwise uses predicted_tools.
         Returns a list (one example per tool selected).
         """
@@ -85,81 +90,80 @@ class RoutingFeedback(Base):
         
         for tool_info in tools:
             examples.append({
-                'query': self.user_query,
+                'query': self.user_query,  # Already has placeholders from storage
                 'tool': tool_info['tool'],
                 'intent': tool_info['intention'],
                 'is_correction': self.corrected_tools is not None
             })
         
         return examples
+    
+    def _apply_placeholders(self, query: str) -> str:
+        """
+        Replace entity names with placeholder tokens for training generalization.
+        
+        Replaces:
+        - CHARACTER: The player character name
+        - PARTY_MEMBER: Other party members
+        - NPC: Non-player characters
+        
+        Uses case-insensitive matching and replaces longer names first
+        to avoid partial replacement issues.
+        """
+        import re
+        
+        # Build replacement map: {text_lower: (original_text, placeholder)}
+        replacements = []
+        
+        # Always add character_name as CHARACTER (it's always present)
+        if self.character_name:
+            replacements.append((self.character_name, '{CHARACTER}'))
+            # Also add first name and common nicknames
+            # e.g., "Duskryn Nightwarden" -> match "Duskryn" and "Dusk"
+            parts = self.character_name.split()
+            if len(parts) > 0:
+                first_name = parts[0]
+                if first_name != self.character_name:
+                    replacements.append((first_name, '{CHARACTER}'))
+                # Common 4-char nickname pattern
+                if len(first_name) > 4:
+                    nick = first_name[:4]
+                    replacements.append((nick, '{CHARACTER}'))
+        
+        # Add entities from predicted_entities
+        if self.predicted_entities:
+            for entity in self.predicted_entities:
+                entity_type = entity.get('type', '')
+                # Use 'text' if available, fallback to 'name' for legacy records
+                entity_text = entity.get('text', '') or entity.get('name', '')
+                
+                if not entity_text:
+                    continue
+                
+                # Map entity types to placeholders (character-type entities only)
+                placeholder = None
+                if entity_type == 'CHARACTER':
+                    placeholder = '{CHARACTER}'
+                elif entity_type == 'PARTY_MEMBER':
+                    placeholder = '{PARTY_MEMBER}'
+                elif entity_type == 'NPC':
+                    placeholder = '{NPC}'
+                
+                if placeholder:
+                    replacements.append((entity_text, placeholder))
+        
+        # Sort by length descending to replace longer names first
+        # (e.g., "Duskryn Nightwarden" before "Duskryn")
+        replacements.sort(key=lambda x: len(x[0]), reverse=True)
+        
+        # Apply replacements with case-insensitive matching
+        result = query
+        for original_text, placeholder in replacements:
+            # Use word boundaries to avoid partial matches within words
+            pattern = re.compile(re.escape(original_text), re.IGNORECASE)
+            result = pattern.sub(placeholder, result)
+        
+        return result
 
-
-# Available tools and their valid intentions for the feedback UI
-TOOL_INTENTIONS = {
-    'character_data': [
-        'character_info',
-        'combat_info', 
-        'inventory_info',
-        'spell_info',
-        'ability_check',
-        'backstory_info',
-        'feature_info',
-        'skill_info',
-        'class_info',
-        'general_info'
-    ],
-    'session_notes': [
-        'recent_events',
-        'npc_info',
-        'location_info',
-        'quest_info',
-        'party_info',
-        'combat_history',
-        'relationship_info',
-        'item_history',
-        'plot_info',
-        'world_lore',
-        'general_history',
-        'faction_info',
-        'timeline_info',
-        'decision_history',
-        'character_development',
-        'session_summary',
-        'encounter_info',
-        'treasure_info',
-        'death_info',
-        'milestone_info'
-    ],
-    'rulebook': [
-        'spell_rules',
-        'combat_rules',
-        'class_rules',
-        'race_rules',
-        'skill_rules',
-        'equipment_rules',
-        'magic_item_rules',
-        'monster_rules',
-        'condition_rules',
-        'ability_rules',
-        'action_rules',
-        'movement_rules',
-        'rest_rules',
-        'death_rules',
-        'multiclass_rules',
-        'feat_rules',
-        'adventuring_rules',
-        'downtime_rules',
-        'crafting_rules',
-        'general_info',
-        'creature_info',
-        'environment_rules',
-        'social_rules',
-        'treasure_rules',
-        'variant_rules',
-        'optional_rules',
-        'dm_rules',
-        'character_creation_rules',
-        'leveling_rules',
-        'background_rules'
-    ]
-}
+# TOOL_INTENTIONS is imported from src.rag.tool_intentions (single source of truth)
+# Re-exported here for backward compatibility with existing imports

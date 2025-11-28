@@ -13,7 +13,7 @@ interface CharacterSelectorProps {
 }
 
 export default function CharacterSelector({ selectedCharacter, onSelectCharacter }: CharacterSelectorProps) {
-  const { characters, setCharacters, setLoading, setError, loading, error } = useCharacterStore()
+  const { characters, setCharacters, setLoading, setError, isLoading: loading, error } = useCharacterStore()
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {

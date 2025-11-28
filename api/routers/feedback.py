@@ -10,13 +10,14 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from api.database.connection import get_db
-from api.database.feedback_models import RoutingFeedback, TOOL_INTENTIONS
+from api.database.feedback_models import RoutingFeedback
 from api.database.repositories.feedback_repo import FeedbackRepository
 from api.schemas.feedback import (
     RoutingRecord, RoutingRecordResponse, FeedbackSubmission,
     ToolIntentionOptions, TrainingExportRequest, TrainingExportResponse,
     TrainingExample, FeedbackStats
 )
+from src.rag.tool_intentions import TOOL_INTENTIONS, is_valid_intention
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
@@ -120,12 +121,12 @@ async def submit_feedback(
             if correction.tool not in TOOL_INTENTIONS:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid tool: {correction.tool}"
+                    detail=f"Invalid tool: {correction.tool}. Valid tools: {list(TOOL_INTENTIONS.keys())}"
                 )
-            if correction.intention not in TOOL_INTENTIONS[correction.tool]:
+            if not is_valid_intention(correction.tool, correction.intention):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid intention '{correction.intention}' for tool '{correction.tool}'"
+                    detail=f"Invalid intention '{correction.intention}' for tool '{correction.tool}'. Valid intentions: {TOOL_INTENTIONS[correction.tool]}"
                 )
     
     updated = await repo.submit_feedback(

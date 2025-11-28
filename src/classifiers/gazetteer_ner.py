@@ -269,7 +269,11 @@ class GazetteerEntityExtractor:
             first_name = char_name.split()[0] if char_name else None
             aliases = {}
             if first_name and first_name.lower() != char_name.lower():
-                aliases[char_name] = [first_name]
+                char_aliases = [first_name]
+                # Add 4-char truncated nickname if first name is long enough (e.g., "Dusk" from "Duskryn")
+                if len(first_name) > 4:
+                    char_aliases.append(first_name[:4])
+                aliases[char_name] = char_aliases
             counts['CHARACTER'] = self.add_entities([char_name], 'CHARACTER', aliases)
         
         # Add entities from session notes

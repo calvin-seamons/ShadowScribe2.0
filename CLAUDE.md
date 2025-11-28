@@ -22,7 +22,18 @@ Then executes appropriate RAG routers and generates streaming responses with Son
 
 ## Build, Test & Run Commands
 
-### Docker (Recommended)
+### Management Script (Recommended - Cross-Platform)
+```bash
+uv run python manage.py start      # Start all services
+uv run python manage.py stop       # Stop all services
+uv run python manage.py status     # Show service status
+uv run python manage.py logs       # View all logs
+uv run python manage.py logs -f api   # Follow API logs
+uv run python manage.py health     # Check service health
+uv run python manage.py demo -q "What is my AC?"  # Quick demo test
+```
+
+### Docker (Alternative)
 ```bash
 docker-compose up -d              # Start all services
 docker-compose logs -f api        # View API logs
@@ -62,7 +73,7 @@ python scripts/run_inspector.py
 Always use absolute imports and run from project root:
 ```python
 # Correct
-from src.utils.character_manager import CharacterManager
+from src.rag.character.character_manager import CharacterManager
 from src.rag.character.character_types import Character
 
 # Wrong

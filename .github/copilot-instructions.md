@@ -41,6 +41,26 @@ if anthropic_key:
 
 ## Critical Development Patterns
 
+### Application Management (manage.py)
+The project includes a cross-platform management script at the project root:
+```bash
+# Start/stop services
+uv run python manage.py start      # Start all Docker services
+uv run python manage.py stop       # Stop all services
+uv run python manage.py restart    # Restart all services
+
+# Monitoring
+uv run python manage.py status     # Show service status
+uv run python manage.py health     # Check service health
+uv run python manage.py logs       # View all logs
+uv run python manage.py logs -f api   # Follow specific service logs
+
+# Development
+uv run python manage.py demo -q "What is my AC?"  # Quick demo test
+uv run python manage.py shell      # Interactive Python shell
+uv run python manage.py migrate    # Run database migrations
+```
+
 ### Running Python Scripts (ESSENTIAL)
 **ALWAYS use `uv run` to execute Python scripts and modules**:
 ```bash
@@ -89,7 +109,7 @@ uv run python -m scripts.run_manager
 **Use absolute imports in all files:**
 ```python
 # Correct imports
-from src.utils.character_manager import CharacterManager
+from src.rag.character.character_manager import CharacterManager
 from src.rag.character.character_types import Character
 
 # NOT: from .character_manager import CharacterManager
@@ -162,7 +182,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Use absolute imports
-from src.utils.character_manager import CharacterManager
+from src.rag.character.character_manager import CharacterManager
 from src.rag.character.character_types import Character
 
 def main():
