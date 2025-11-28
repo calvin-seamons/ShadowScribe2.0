@@ -56,11 +56,22 @@ class CentralEngine:
     
     def __init__(self, llm_clients: Dict[str, LLMClient], prompt_manager, 
                  character=None, rulebook_storage=None, campaign_session_notes=None,
-                 entity_search_engine=None):
-        """Initialize with LLM clients and prompt manager."""
+                 entity_search_engine=None, use_local_routing: bool = False):
+        """Initialize with LLM clients and prompt manager.
+        
+        Args:
+            llm_clients: Dictionary of LLM client instances
+            prompt_manager: CentralPromptManager instance
+            character: Character object (optional)
+            rulebook_storage: RulebookStorage instance (optional)
+            campaign_session_notes: CampaignSessionNotesStorage instance (optional)
+            entity_search_engine: EntitySearchEngine instance (optional)
+            use_local_routing: If True, use local classifier for routing instead of LLM
+        """
         self.llm_clients = llm_clients
         self.prompt_manager = prompt_manager
         self.config = get_config()
+        self.use_local_routing = use_local_routing
         
         # Store data sources for entity resolution
         self.character = character
@@ -81,9 +92,9 @@ class CentralEngine:
         # Conversation history tracking
         self.conversation_history: List[Dict[str, str]] = []
         
-        # Initialize local classifier if enabled for comparison logging
+        # Initialize local classifier if enabled for comparison logging or local routing
         self.local_classifier = None
-        if self.config.comparison_logging or self.config.use_local_classifier:
+        if self.config.comparison_logging or self.config.use_local_classifier or use_local_routing:
             self._init_local_classifier()
     
     def _init_entity_extractor(self) -> Optional[GazetteerEntityExtractor]:
@@ -150,10 +161,20 @@ class CentralEngine:
     
     @classmethod
     def create_from_config(cls, prompt_manager, character=None, 
-                          rulebook_storage=None, campaign_session_notes=None):
-        """Create CentralEngine instance using default configuration."""
+                          rulebook_storage=None, campaign_session_notes=None,
+                          use_local_routing: bool = False):
+        """Create CentralEngine instance using default configuration.
+        
+        Args:
+            prompt_manager: CentralPromptManager instance
+            character: Character object (optional)
+            rulebook_storage: RulebookStorage instance (optional)
+            campaign_session_notes: CampaignSessionNotesStorage instance (optional)
+            use_local_routing: If True, use local classifier for routing instead of LLM
+        """
         llm_clients = LLMClientFactory.create_default_clients()
-        return cls(llm_clients, prompt_manager, character, rulebook_storage, campaign_session_notes)
+        return cls(llm_clients, prompt_manager, character, rulebook_storage, campaign_session_notes,
+                   use_local_routing=use_local_routing)
     
     def add_conversation_turn(self, role: str, content: str):
         """Add a turn to the conversation history.
@@ -313,37 +334,55 @@ class CentralEngine:
         # Add user query to conversation history
         self.add_conversation_turn("user", user_query)
         
-        # Step 1: Make parallel LLM calls + local classifier (if enabled)
-        print("🔧 DEBUG: Step 1 - Tool selector LLM + Gazetteer entity extraction")
+        # Step 1: Route using either LLM or local classifier
+        if self.use_local_routing:
+            print("🔧 DEBUG: Step 1 - LOCAL CLASSIFIER routing + Gazetteer entity extraction")
+        else:
+            print("🔧 DEBUG: Step 1 - Tool selector LLM + Gazetteer entity extraction")
         step1_start = time.time()
         
         # Extract entities using Gazetteer (fast, synchronous)
         entity_extractor_output = self._extract_entities_gazetteer(user_query)
         
-        # Build list of async tasks
-        tasks = [
-            self._call_tool_selector(user_query, character_name)
-        ]
-        
-        # Add local classifier task if enabled for comparison
-        run_local_comparison = self.config.comparison_logging and self.local_classifier is not None
-        if run_local_comparison:
-            tasks.append(self._run_local_classifier(user_query))
-        
-        # Run all tasks in parallel
-        results = await asyncio.gather(*tasks)
-        
-        tool_selector_output = results[0]
-        local_classifier_result = results[1] if run_local_comparison else None
+        # Use local classifier for routing if enabled
+        if self.use_local_routing and self.local_classifier:
+            # Run local classifier directly for routing
+            local_result = await self._run_local_classifier(user_query)
+            if local_result:
+                tool_selector_output = ToolSelectorOutput(tools_needed=local_result.tools_needed)
+                print(f"🧠 LOCAL ROUTING (⏱️ {local_result.inference_time_ms:.1f}ms):")
+                for tool in local_result.tools_needed:
+                    conf = tool.get('confidence', 0)
+                    print(f"   - {tool['tool']}: {tool['intention']} ({conf:.1%})")
+            else:
+                print("⚠️ Local classifier failed, falling back to LLM routing")
+                tool_selector_output = await self._call_tool_selector(user_query, character_name)
+            local_classifier_result = None  # No comparison needed
+        else:
+            # Build list of async tasks for LLM routing
+            tasks = [
+                self._call_tool_selector(user_query, character_name)
+            ]
+            
+            # Add local classifier task if enabled for comparison
+            run_local_comparison = self.config.comparison_logging and self.local_classifier is not None
+            if run_local_comparison:
+                tasks.append(self._run_local_classifier(user_query))
+            
+            # Run all tasks in parallel
+            results = await asyncio.gather(*tasks)
+            
+            tool_selector_output = results[0]
+            local_classifier_result = results[1] if run_local_comparison else None
+            
+            # Log comparison if enabled
+            if run_local_comparison and local_classifier_result:
+                await self._log_classifier_comparison(
+                    user_query, tool_selector_output, entity_extractor_output, 
+                    local_classifier_result, metadata_callback
+                )
         
         timing['routing_and_entities'] = (time.time() - step1_start) * 1000  # Convert to ms
-        
-        # Log comparison if enabled
-        if run_local_comparison and local_classifier_result:
-            await self._log_classifier_comparison(
-                user_query, tool_selector_output, entity_extractor_output, 
-                local_classifier_result, metadata_callback
-            )
         
         print(f"🔧 DEBUG: Tool selector returned {len(tool_selector_output.tools_needed)} tools")
         print(f"🔧 DEBUG: Gazetteer extracted {len(entity_extractor_output.entities)} entities")
@@ -1025,7 +1064,8 @@ class CentralEngine:
             elif tool == "rulebook" and self.rulebook_router:
                 try:
                     intention_enum = RulebookQueryIntent(intention.lower())
-                    results["rulebook"], _ = self.rulebook_router.query(
+                    # Store as tuple to match what get_final_response_prompt expects
+                    results["rulebook"] = self.rulebook_router.query(
                         intention=intention_enum,
                         user_query=user_query,
                         entities=entities,

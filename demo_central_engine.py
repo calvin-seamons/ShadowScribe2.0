@@ -30,16 +30,24 @@ from src.rag.session_notes.session_notes_storage import SessionNotesStorage
 class InteractiveCentralEngineDemo:
     """Interactive demo that shows routing decisions and performance"""
     
-    def __init__(self, verbose: bool = True):
+    def __init__(self, verbose: bool = True, routing_mode: str = "llm"):
         """Initialize the demo with CentralEngine
         
         Args:
             verbose: Whether to show detailed initialization output
+            routing_mode: "llm" (default), "local", or "compare"
         """
         self.verbose = verbose
+        self.routing_mode = routing_mode
         
         if verbose:
             print("🚀 Initializing ShadowScribe2.0 Central Engine...")
+            if routing_mode == "local":
+                print("   🧠 Using LOCAL MODEL for routing (no LLM router calls)")
+            elif routing_mode == "compare":
+                print("   🔬 Using COMPARE mode (LLM routing + local comparison)")
+            else:
+                print("   ☁️  Using LLM for routing")
         
         # Load config
         self.config = get_config()
@@ -99,13 +107,26 @@ class InteractiveCentralEngineDemo:
         self.context_assembler = ContextAssembler()
         self.prompt_manager = CentralPromptManager(self.context_assembler)
         
+        # Configure comparison logging based on routing mode
+        if routing_mode == "compare":
+            self.config.comparison_logging = True
+        else:
+            # For local or llm mode, disable comparison
+            self.config.comparison_logging = False
+        
         # Create central engine using config with storage components
+        use_local_routing = (routing_mode == "local")
         self.engine = CentralEngine.create_from_config(
             self.prompt_manager,
             character=character,
             rulebook_storage=rulebook_storage,
-            campaign_session_notes=main_campaign
+            campaign_session_notes=main_campaign,
+            use_local_routing=use_local_routing
         )
+        
+        # Store references for local routing
+        self.character = character
+        self.campaign_session_notes = main_campaign
         
         if verbose:
             print(f"   LLM Clients available: {list(self.engine.llm_clients.keys())}")
@@ -312,17 +333,26 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Ask a single question
+  # Ask a single question (default: compare LLM vs local routing)
   python demo_central_engine.py -q "What is Duskryn's alignment?"
+  
+  # Use LOCAL model for routing (faster, no LLM router calls)
+  python demo_central_engine.py -q "What is my AC?" --routing local
+  
+  # Use LLM only for routing (no local comparison)
+  python demo_central_engine.py -q "What is my AC?" --routing llm
+  
+  # Compare LLM and local routing (default)
+  python demo_central_engine.py -q "What is my AC?" --routing compare
   
   # Ask multiple questions in sequence (maintains context)
   python demo_central_engine.py -q "What is my AC?" -q "What about my HP?"
   
-  # Run in interactive mode (default)
+  # Run in interactive mode
   python demo_central_engine.py
   
   # Run quietly with minimal output
-  python demo_central_engine.py -q "What spells can I cast?" --quiet
+  python demo_central_engine.py -q "What spells can I cast?" --quiet --routing local
         """
     )
     parser.add_argument(
@@ -336,6 +366,12 @@ Examples:
         help="Minimal output - just show responses without details"
     )
     parser.add_argument(
+        "--routing",
+        choices=["llm", "local", "compare"],
+        default="compare",
+        help="Routing mode: 'llm' (LLM only), 'local' (local model only), 'compare' (LLM + local comparison, default)"
+    )
+    parser.add_argument(
         "--no-test",
         action="store_true",
         help="Skip the auto-test query on startup"
@@ -343,8 +379,11 @@ Examples:
     
     args = parser.parse_args()
     try:
-        # Initialize demo with appropriate verbosity
-        demo = InteractiveCentralEngineDemo(verbose=not args.quiet)
+        # Initialize demo with appropriate verbosity and routing mode
+        demo = InteractiveCentralEngineDemo(
+            verbose=not args.quiet,
+            routing_mode=args.routing
+        )
         
         # Handle command-line queries
         if args.query:
