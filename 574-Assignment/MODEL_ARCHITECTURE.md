@@ -1,12 +1,58 @@
-# Two-Stage Joint Model for D&D Query Understanding
+# Joint Sentence Classifier for D&D Query Understanding
 
-## Overview
+## Project Overview
 
-This document outlines a **two-stage hierarchical model** for understanding D&D player queries. The model performs three tasks:
+### ShadowScribe: An AI-Powered D&D Assistant
 
-1. **Tool Classification** - Which RAG tools are needed? (multi-label, 3 classes)
-2. **Entity Extraction** - What D&D entities are mentioned? (token-level NER)
-3. **Intent Classification** - What specific information is needed per tool? (conditional, gated by tool selection)
+**ShadowScribe** is a comprehensive D&D/RPG character management and game assistant system. At its core is a **Retrieval-Augmented Generation (RAG)** pipeline that answers player questions by retrieving relevant context from three knowledge sources:
+
+1. **Character Data** - The player's character sheet (stats, spells, inventory, backstory)
+2. **Session Notes** - Campaign history, NPC interactions, past events
+3. **Rulebook** - D&D 5e rules, spell descriptions, monster stats
+
+### The Routing Problem
+
+When a player asks a question like *"What's my AC and how does Fireball work?"*, the system must:
+
+1. **Route the query** to the correct knowledge sources (character data + rulebook)
+2. **Classify the intent** within each source (combat_info + spell_details)
+3. **Extract entities** mentioned (Fireball → SPELL)
+
+This routing decision is critical - sending a query to the wrong source wastes compute and produces irrelevant context.
+
+---
+
+## The Problem: LLM Routing is Expensive
+
+### Original Architecture (LLM-Based Routing)
+
+In the original ShadowScribe system, **every user query required a live API call** to an LLM (GPT-4 or Claude) just to decide where to route the query:
+
+```
+User Query → [LLM API Call] → Tool Selection + Intent Classification
+                   ↓
+            ~500-1000ms latency
+            ~$0.01-0.03 per query
+```
+
+**Problems with LLM Routing:**
+- **Latency**: 500-1000ms just for routing, before any actual retrieval
+- **Cost**: $0.01-0.03 per query adds up with thousands of users
+- **Reliability**: API rate limits, network issues, model updates
+- **Overkill**: Routing is a classification task, not a generation task
+
+### Solution: Local Sentence Classifier
+
+Replace the LLM routing call with a **fine-tuned transformer model** that runs locally:
+
+```
+User Query → [Local DeBERTa Model] → Tool Selection + Intent Classification
+                    ↓
+             ~10-50ms latency
+             $0 per query (after training)
+```
+
+This is fundamentally a **sentence transformer** approach: encode the full query into a dense vector, then use that representation for classification.
 
 ---
 
@@ -14,14 +60,15 @@ This document outlines a **two-stage hierarchical model** for understanding D&D 
 
 ### Design Philosophy
 
-| Stage | Task | Reasoning |
-|-------|------|-----------|
-| **Stage 1** | Tools + Entities | **Query-intrinsic**: Can be determined just by looking at the text |
-| **Stage 2** | Intents | **Context-dependent**: Requires knowing which tool to select the right intent |
+The model uses DeBERTa-v3 as a **sentence encoder** - the entire query is encoded into a single [CLS] vector, which is then fed to classification heads. This is the core "sentence transformers" concept: represent a sentence as a fixed-size embedding for downstream tasks.
 
-**Key Insight**: Don't predict all 61 intents at once. Use tool predictions to **gate** which intent heads are activated.
+| Component | Purpose |
+|-----------|---------|
+| **Shared Encoder** | Encode query → 768-dim sentence embedding |
+| **Tool Head** | Which RAG sources to query (3-class) |
+| **Intent Heads** | What information is needed per source (10+20+30 classes) |
 
----
+**Key Design Decision**: Entity extraction is handled separately by a **gazetteer-based system** at inference time, not by the neural model. This keeps the model focused on classification.
 
 ### Model Diagram
 
@@ -32,409 +79,425 @@ This document outlines a **two-stage hierarchical model** for understanding D&D 
 └─────────────────────────────┬────────────────────────────────────┘
                               ↓
 ┌──────────────────────────────────────────────────────────────────┐
-│                    SHARED ENCODER (run once)                      │
-│                        DeBERTa-v3-base                            │
+│                    SHARED ENCODER                                 │
+│                    DeBERTa-v3-base                                │
 │                                                                   │
-│  Output: [CLS] embedding (768d) + token embeddings (768d each)   │
+│    Full query → Transformer layers → [CLS] embedding (768d)      │
+│                                                                   │
+│    This IS the "sentence transformer" step: encode the full      │
+│    sentence into a fixed-size vector representation              │
 └──────────────────────────────┬────────────────────────────────────┘
+                              ↓
+                    [CLS] Token (768 dims)
                               ↓
          ┌────────────────────┴────────────────────┐
          ↓                                         ↓
-┌─────────────────────┐                 ┌─────────────────────┐
-│   STAGE 1: TOOLS    │                 │   STAGE 1: NER      │
-│                     │                 │                     │
-│  Input: [CLS]       │                 │  Input: all tokens  │
-│  Layer: Linear(768→3)│                │  Layer: Linear(768→num_tags) │
-│  Activation: Sigmoid │                │  Activation: Softmax (per token) │
-│  Output: [1, 0, 1]  │                 │  Output: BIO tags   │
-│                     │                 │                     │
-│  character_data ✓   │                 │  O O O O O O B-SPELL O │
-│  session_notes  ✗   │                 │                     │
-│  rulebook       ✓   │                 │                     │
-└──────────┬──────────┘                 └─────────────────────┘
-           ↓
-           │ Tool mask gates Stage 2
-           ↓
-┌──────────────────────────────────────────────────────────────────┐
-│                    STAGE 2: INTENTS (Conditional)                 │
-│                                                                   │
-│  Only compute for selected tools!                                │
-│                                                                   │
-│  IF character_data selected:                                     │
-│     [CLS] → Linear(768→10) → Softmax → "combat_info"            │
-│                                                                   │
-│  IF session_notes selected:                                      │
-│     [CLS] → Linear(768→20) → Softmax → (skipped here)           │
-│                                                                   │
-│  IF rulebook selected:                                           │
-│     [CLS] → Linear(768→31) → Softmax → "spell_details"          │
-│                                                                   │
-└──────────────────────────────────────────────────────────────────┘
+┌─────────────────────┐                 ┌─────────────────────────┐
+│   TOOL HEAD         │                 │   INTENT HEADS          │
+│                     │                 │   (3 separate heads)    │
+│  Linear(768→256)    │                 │                         │
+│  GELU + Dropout     │                 │  character: 768→256→10  │
+│  Linear(256→3)      │                 │  session:   768→256→20  │
+│  Softmax            │                 │  rulebook:  768→256→30  │
+│                     │                 │                         │
+│  Output: tool probs │                 │  Output: intent probs   │
+└─────────────────────┘                 └─────────────────────────┘
                               ↓
 ┌──────────────────────────────────────────────────────────────────┐
 │                        FINAL OUTPUT                               │
 │                                                                   │
 │  {                                                                │
-│    "tools": ["character_data", "rulebook"],                      │
-│    "intents": {                                                   │
-│      "character_data": "combat_info",                            │
-│      "rulebook": "spell_details"                                 │
-│    },                                                             │
-│    "entities": [{"text": "Fireball", "type": "SPELL"}]           │
+│    "tool": "character_data",                                     │
+│    "tool_confidence": 0.95,                                      │
+│    "intent": "combat_info",                                      │
+│    "intent_confidence": 0.89                                     │
 │  }                                                                │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
+### Model Components
+
+#### Shared Encoder (Sentence Embedding)
+- **Model**: `microsoft/deberta-v3-base` (~86M params, 768 hidden dim)
+- **Why DeBERTa**: State-of-the-art on GLUE/SuperGLUE benchmarks, disentangled attention mechanism
+- **Output**: [CLS] token embedding as the **sentence representation**
+
+#### Tool Classification Head
+- **Input**: [CLS] embedding (768 dims)
+- **Architecture**: `Linear(768→256) → GELU → Dropout → Linear(256→3)`
+- **Activation**: Softmax (single tool per query in current implementation)
+- **Output**: 3 class probabilities
+
+#### Intent Classification Heads (3 separate)
+- **Input**: [CLS] embedding (768 dims)
+- **Architecture**: Same as tool head, different output sizes
+  - `character_intent`: outputs 10 classes
+  - `session_intent`: outputs 20 classes
+  - `rulebook_intent`: outputs 30 classes
+- **Gating**: Only the intent head for the predicted tool is used at inference
+
+#### Temperature Scaling (Calibration)
+- **Learned parameter** that scales logits before softmax
+- Optimized post-training to minimize Expected Calibration Error (ECE)
+- Ensures confidence scores are meaningful, not overconfident
+
 ---
 
-## Model Components
+## Synthetic Dataset Generation
 
-### Shared Encoder
-- **Model**: `microsoft/deberta-v3-base` (304M params, 768 hidden dim)
-- **Why DeBERTa**: Better than BERT/RoBERTa on classification tasks, disentangled attention helps with entity boundaries
-- **Output**: 
-  - `[CLS]` token: 768-dim sentence representation
-  - Token embeddings: 768-dim per token for NER
+### The Data Challenge
 
-### Tool Classification Head
-- **Input**: `[CLS]` embedding (768 dims)
-- **Architecture**: `Linear(768 → 3)`
-- **Activation**: Sigmoid (independent binary decisions)
-- **Output**: 3 probabilities, threshold at 0.5
-- **Loss**: Binary Cross-Entropy
+Training a classifier requires labeled data, but manually labeling thousands of D&D queries is impractical. Instead, we generate **synthetic training data** using template-based generation with entity slot-filling.
 
-### NER Head
-- **Input**: All token embeddings (batch × seq_len × 768)
-- **Architecture**: `Linear(768 → num_bio_tags)`
-- **Activation**: Softmax per token
-- **Output**: BIO tag sequence
-- **Loss**: Cross-Entropy (token-level)
-- **Optional Enhancement**: CRF layer for better tag transitions
+### Template-Based Generation
 
-### Intent Classification Heads (3 separate)
-- **Input**: `[CLS]` embedding (768 dims)
-- **Architecture**: 
-  - `character_intent`: `Linear(768 → 10)`
-  - `session_intent`: `Linear(768 → 20)`
-  - `rulebook_intent`: `Linear(768 → 31)`
-- **Activation**: Softmax (mutually exclusive intents per tool)
-- **Gating**: Only activated for selected tools
-- **Loss**: Cross-Entropy (only for selected tools)
+Each intent has 15-30 hand-crafted templates with placeholder slots:
+
+```python
+CHARACTER_BASICS_TEMPLATES = [
+    {"template": "What is my character's race?", "slots": {}},
+    {"template": "What's my {ability} score?", "slots": {"ability": "ability"}},
+    {"template": "What level is {CHARACTER}?", "slots": {}},
+    {"template": "Am I a {class_name}?", "slots": {"class_name": "class"}},
+    ...
+]
+```
+
+### Entity Gazetteers
+
+Slots are filled from curated lists of D&D entities (gazetteers):
+
+```python
+SPELL_NAMES = ["Fireball", "Magic Missile", "Cure Wounds", ...]  # 300+ spells
+CLASS_NAMES = ["Fighter", "Wizard", "Cleric", "Rogue", ...]      # 13 classes
+CREATURE_NAMES = ["Beholder", "Dragon", "Goblin", ...]           # 500+ creatures
+WEAPON_NAMES = ["Longsword", "Longbow", "Dagger", ...]           # 50+ weapons
+...
+```
+
+### Preserved Placeholders
+
+Some placeholders are **not** filled - they remain as literal tokens:
+- `{CHARACTER}` - The player's character name
+- `{PARTY_MEMBER}` - Another player's character
+- `{NPC}` - A non-player character name
+
+This teaches the model that these are **context-dependent** references, not fixed D&D entities.
+
+### Data Augmentation
+
+Each generated sample is augmented to increase robustness:
+
+1. **Typo injection** (15% probability) - Simulate user typing errors
+2. **Case variation** (30% probability) - MiXeD cAsE, lowercase, UPPERCASE
+3. **Contractions** (20% probability) - "What is" → "What's"
+
+### K-Expansion Strategy
+
+Each template generates **K** samples with different entity fills:
+- K = 10 expansions per template
+- 3 augmentations per expansion
+- Total: ~40 samples per template
+
+### Dataset Statistics
+
+| Split | Samples |
+|-------|---------|
+| Train | ~80% |
+| Validation | ~10% |
+| Test | ~10% |
+
+**Intent Distribution:**
+- 10 character intents (character_basics, combat_info, abilities_info, ...)
+- 20 session intents (event_sequence, npc_info, combat_recap, ...)
+- 30 rulebook intents (spell_details, monster_stats, combat_rules, ...)
 
 ---
 
 ## Training Strategy
 
+### Two-Stage Training
+
+Training proceeds in two stages with gradual unfreezing:
+
+#### Stage 1: Tool Classification Only (Epochs 1-3)
+- **Freeze** intent classification heads
+- Train only tool head + encoder
+- Focus: Learn to distinguish between character/session/rulebook queries
+
+#### Stage 2: Joint Training (Epochs 4-14)
+- **Unfreeze** all intent heads
+- Train tool + intent heads together
+- Early stopping on combined validation score
+
 ### Loss Function
 
-```python
-total_loss = α * tool_loss + β * ner_loss + γ * intent_loss
+**Focal Loss** with label smoothing, addressing class imbalance:
 
-# Suggested weights
-α = 1.0  # Tool classification
-β = 1.0  # NER
-γ = 1.0  # Intent (naturally smaller due to masking)
+```python
+# Focal Loss: FL(p_t) = -α_t * (1 - p_t)^γ * log(p_t)
+focal_loss = FocalLoss(gamma=2.0, label_smoothing=0.1)
+
+# Combined loss
+total_loss = tool_loss + intent_loss
 ```
 
-### Tool Loss
-```python
-tool_loss = BCEWithLogitsLoss(tool_logits, tool_labels)
-# tool_labels: [1, 0, 1] multi-hot encoding
-```
+**Why Focal Loss?**
+- γ=2.0 focusing parameter down-weights easy examples
+- Automatically addresses class imbalance without explicit weighting
+- Label smoothing (0.1) improves calibration
 
-### NER Loss
-```python
-ner_loss = CrossEntropyLoss(ner_logits.view(-1, num_tags), ner_labels.view(-1))
-# Ignore padding tokens with ignore_index=-100
-```
+### Masked Intent Loss
 
-### Intent Loss (Masked)
+Intent loss is only computed for the **ground-truth tool**:
+
 ```python
-intent_loss = 0
-for tool_name, tool_idx in [("character", 0), ("session", 1), ("rulebook", 2)]:
-    # Only compute loss if tool is selected in ground truth
-    mask = tool_labels[:, tool_idx] == 1
+for tool_name in ['character_data', 'session_notes', 'rulebook']:
+    mask = intent_labels[tool_name] != -100  # -100 = ignore
     if mask.any():
-        intent_loss += CrossEntropyLoss(
-            intent_logits[tool_name][mask], 
-            intent_labels[tool_name][mask]
-        )
+        loss += focal_loss(intent_logits[tool_name][mask], intent_targets[mask])
 ```
 
-### Training Procedure
+### Differential Learning Rates
 
-1. **Stage 1 Focus (Epochs 1-3)**: Freeze intent heads, train tool + NER
-2. **Joint Training (Epochs 4-10)**: Train all heads together
-3. **Fine-tuning (Epochs 11-15)**: Lower learning rate, focus on hard examples
+- **Encoder (DeBERTa)**: 1e-5 (preserve pretrained knowledge)
+- **Classification Heads**: 1e-4 (learn task-specific patterns faster)
 
 ### Hyperparameters
 
 | Parameter | Value |
 |-----------|-------|
-| Encoder | `deberta-v3-base` |
-| Learning Rate | 2e-5 (encoder), 1e-4 (heads) |
-| Batch Size | 16-32 |
+| Encoder | `microsoft/deberta-v3-base` |
+| Batch Size | 32 |
 | Max Sequence Length | 128 |
-| Optimizer | AdamW |
+| Encoder Learning Rate | 1e-5 |
+| Head Learning Rate | 1e-4 |
 | Weight Decay | 0.01 |
-| Warmup Steps | 10% of total |
-| Epochs | 10-15 |
+| Warmup Ratio | 10% |
+| Stage 1 Epochs | 3 |
+| Stage 2 Epochs | 11 |
+| Early Stopping Patience | 3 |
+| Focal γ | 2.0 |
+| Label Smoothing | 0.1 |
 
 ---
 
-## Dataset Requirements
+## Calibration: Temperature Scaling
 
-### Current Format (Already Correct)
-```json
-{
-  "query": "What's my AC and how does Fireball work?",
-  "tools": ["character_data", "rulebook"],
-  "intents": {
-    "character_data": "combat_info",
-    "rulebook": "spell_details"
-  },
-  "bio_tags": ["O", "O", "O", "O", "O", "O", "B-SPELL", "O"],
-  "entities": [{"text": "Fireball", "type": "SPELL", "start": 6, "end": 7}]
-}
-```
+### The Problem: Overconfident Predictions
 
-### Required Transformations for Training
+Neural networks are often **overconfident** - they output 99% probability even when wrong. This is problematic for routing decisions where we might want to query multiple sources if confidence is low.
 
-#### 1. Tool Labels → Multi-Hot Encoding
+### Solution: Post-Training Temperature Scaling
+
+After training, optimize a single **temperature parameter** T on the validation set:
+
 ```python
-# Current: ["character_data", "rulebook"]
-# Needed:  [1, 0, 1]  (binary for each tool)
-
-TOOL_ORDER = ["character_data", "session_notes", "rulebook"]
-tool_labels = [1 if t in sample["tools"] else 0 for t in TOOL_ORDER]
+calibrated_probs = softmax(logits / T)
 ```
 
-#### 2. Intent Labels → Per-Tool Indices
+The optimal T is found by minimizing **Negative Log-Likelihood**:
+
 ```python
-# Current: {"character_data": "combat_info", "rulebook": "spell_details"}
-# Needed: {"character": 2, "rulebook": 15}  (index in each intent list)
+def nll_with_temperature(T):
+    scaled_logits = logits / T
+    log_probs = F.log_softmax(scaled_logits, dim=-1)
+    return F.nll_loss(log_probs, labels)
 
-CHAR_INTENTS = ["basic_info", "ability_scores", "combat_info", ...]  # 10 total
-intent_labels = {
-    "character": CHAR_INTENTS.index(sample["intents"].get("character_data", None)),
-    # ... etc
-}
+optimal_T = minimize_scalar(nll_with_temperature, bounds=(0.1, 5.0))
 ```
 
-#### 3. BIO Tags → Token-Aligned IDs
-```python
-# Current: ["O", "O", "O", "O", "O", "O", "B-SPELL", "O"]
-# Needed: [0, 0, 0, 0, 0, 0, 5, 0]  (integer tag IDs)
+### Expected Calibration Error (ECE)
 
-# IMPORTANT: Must align with tokenizer subwords!
+Measures how well confidence matches accuracy:
+
 ```
+ECE = Σ |accuracy(bin) - confidence(bin)| × proportion(bin)
+```
+
+A well-calibrated model has ECE close to 0.
 
 ---
 
-## Dataset Enhancements
+## Entity Extraction: Gazetteer Approach
 
-### Issue 1: Tokenizer Alignment for NER
+### Why Not Neural NER?
 
-**Problem**: Our BIO tags are word-level, but DeBERTa uses subword tokenization.
+The original architecture planned a neural NER head, but this was **replaced** with a gazetteer-based approach:
 
-```
-Word:      "Fireball"
-Subwords:  ["Fire", "##ball"]
-Tags:      [B-SPELL, ???]  # What tag for ##ball?
-```
+| Neural NER | Gazetteer |
+|------------|-----------|
+| Requires labeled entity spans | Uses existing D&D entity lists |
+| Subword alignment complexity | Simple string matching |
+| May hallucinate entities | Only matches known entities |
+| Requires retraining for new entities | Just add to gazetteer |
 
-**Solution**: Align tags during preprocessing
+### Gazetteer Entity Extractor
+
+At inference time, a separate `GazetteerEntityExtractor` identifies D&D entities:
 
 ```python
-def align_tags_to_tokens(words, tags, tokenizer):
-    """Convert word-level tags to subword-level tags."""
-    encoding = tokenizer(words, is_split_into_words=True, return_offsets_mapping=True)
+class GazetteerEntityExtractor:
+    """Fuzzy matching against D&D entity gazetteers."""
     
-    aligned_tags = []
-    previous_word_idx = None
-    
-    for word_idx in encoding.word_ids():
-        if word_idx is None:
-            aligned_tags.append(-100)  # Special tokens
-        elif word_idx != previous_word_idx:
-            aligned_tags.append(tag_to_id[tags[word_idx]])  # First subword
-        else:
-            # Subsequent subwords: use I- tag or same tag
-            if tags[word_idx].startswith("B-"):
-                aligned_tags.append(tag_to_id["I-" + tags[word_idx][2:]])
-            else:
-                aligned_tags.append(tag_to_id[tags[word_idx]])
-        previous_word_idx = word_idx
-    
-    return aligned_tags
+    def extract(self, query: str) -> List[Entity]:
+        # Match against spell names, creature names, etc.
+        # Uses fuzzy matching to handle typos
+        ...
 ```
 
-**Dataset Change**: Add `aligned_bio_tags` field or compute during DataLoader.
+This runs **in parallel** with the classifier, keeping concerns separate.
 
 ---
 
-### Issue 2: Intent Label Indexing
+## Inference Pipeline
 
-**Problem**: Current intents are strings, need integer indices.
+### Full Flow
 
-**Solution**: Create and save label mappings (already in `label_mappings.json`)
+```
+1. Input: "What level is Duskryn?"
+
+2. Name Normalization (external):
+   → "What level is {CHARACTER}?"
+
+3. Tokenization:
+   → DeBERTa tokenizer → input_ids, attention_mask
+
+4. Sentence Encoding:
+   → DeBERTa forward pass → [CLS] embedding (768d)
+
+5. Tool Classification:
+   → tool_head([CLS]) → softmax/T → "character_data" (0.95)
+
+6. Intent Classification:
+   → character_intent_head([CLS]) → softmax/T → "character_basics" (0.91)
+
+7. Output:
+   {
+     "tool": "character_data",
+     "tool_confidence": 0.95,
+     "intent": "character_basics", 
+     "intent_confidence": 0.91,
+     "combined_confidence": 0.86
+   }
+```
+
+### Integration with ShadowScribe
+
+The local classifier implements the `ClassifierBackend` protocol:
 
 ```python
-# In generate_dataset.py, ensure we output:
-{
-  "tool_to_idx": {"character_data": 0, "session_notes": 1, "rulebook": 2},
-  "bio_tag_to_idx": {"O": 0, "B-SPELL": 1, "I-SPELL": 2, ...},
-  "intent_to_idx": {
-    "character_data": {"basic_info": 0, "ability_scores": 1, ...},
-    "session_notes": {"session_summary": 0, "npc_interactions": 1, ...},
-    "rulebook": {"spell_details": 0, "combat_rules": 1, ...}
-  }
-}
+class ClassifierBackend(Protocol):
+    async def classify(
+        self,
+        query: str,
+        character_name: Optional[str] = None,
+        conversation_history: Optional[List[Dict[str, str]]] = None
+    ) -> ClassificationResult:
+        ...
 ```
 
----
-
-### Issue 3: Add Negative Intent Handling
-
-**Problem**: When a tool is NOT selected, what's the intent label?
-
-**Solution**: Use -100 (PyTorch ignore index) for non-selected tools.
-
-```python
-sample = {
-    "tools": ["character_data"],  # Only character
-    "intents": {
-        "character_data": "combat_info"
-    }
-}
-
-# During preprocessing:
-intent_labels = {
-    "character": 2,     # combat_info index
-    "session": -100,    # IGNORE - tool not selected
-    "rulebook": -100    # IGNORE - tool not selected
-}
-```
-
----
-
-### Issue 4: Class Imbalance
-
-**Problem**: Some intents appear much more frequently than others.
-
-**Solutions**:
-1. **Weighted Loss**: Higher weight for rare intents
-2. **Oversampling**: Generate more examples for rare intents
-3. **Focal Loss**: Automatically focuses on hard examples
-
-```python
-# In dataset generation, track intent frequencies
-intent_counts = Counter(sample["intents"][tool] for sample in data for tool in sample["tools"])
-
-# Generate class weights
-intent_weights = {intent: total / count for intent, count in intent_counts.items()}
-```
-
----
-
-### Issue 5: Add I- Tags for Multi-Token Entities
-
-**Current**: Only B- tags exist
-```json
-"bio_tags": ["O", "O", "B-SPELL", "O"]  # "Burning Hands" → B-SPELL only?
-```
-
-**Needed**: B- and I- tags
-```json
-"bio_tags": ["O", "O", "B-SPELL", "I-SPELL", "O"]  # "Burning Hands" → B-SPELL I-SPELL
-```
-
-**Fix in `generate_dataset.py`**:
-```python
-def generate_bio_tags(query, entities):
-    words = query.split()
-    tags = ["O"] * len(words)
-    
-    for entity in entities:
-        start, end = entity["start"], entity["end"]
-        entity_type = entity["type"]
-        
-        tags[start] = f"B-{entity_type}"
-        for i in range(start + 1, end):
-            tags[i] = f"I-{entity_type}"  # ADD THIS
-    
-    return tags
-```
-
----
-
-## Proposed Dataset Changes Summary
-
-| Change | Priority | Effort |
-|--------|----------|--------|
-| Fix I- tags for multi-word entities | **High** | Low |
-| Add tokenizer-aligned tags (runtime) | **High** | Medium |
-| Ensure label_mappings.json is complete | **High** | Low |
-| Handle -100 for non-selected intents | **High** | Low |
-| Add class weights for imbalanced intents | Medium | Low |
-| Validate all intents map correctly | Medium | Low |
+This allows **hot-swapping** between LLM and local classifiers.
 
 ---
 
 ## Evaluation Metrics
 
 ### Tool Classification
-- **Metric**: Exact Match Accuracy, Hamming Loss, F1 per tool
-- **Target**: >95% exact match
-
-### NER
-- **Metric**: Entity-level F1 (strict and partial)
-- **Strict**: Exact span + exact type match
-- **Partial**: Overlap + correct type
-- **Target**: >90% strict F1
+- **Accuracy**: Exact match on tool prediction
+- **F1 (macro)**: Balanced across all 3 tools
 
 ### Intent Classification
-- **Metric**: Accuracy per tool, Macro F1 across intents
-- **Target**: >85% accuracy per tool
+- **Per-tool accuracy**: Accuracy within each tool's intent space
+- **Average intent accuracy**: Mean across all tools
 
-### Overall
-- **Metric**: Full Query Accuracy (all 3 outputs correct)
-- **Target**: >80%
+### Combined Score
+
+```python
+combined_score = 0.4 * tool_accuracy + 0.6 * avg_intent_accuracy
+```
+
+Intent accuracy weighted higher because it's the harder task.
+
+### Calibration
+- **ECE (before/after)**: Expected Calibration Error
+- **Temperature**: Optimal calibration parameter
 
 ---
 
-## Implementation Checklist
+## Results Summary
 
-### Dataset Generation (`generate_dataset.py`)
-- [ ] Fix I- tag generation for multi-word entities
-- [ ] Validate all intent strings match label_mappings.json
-- [ ] Add class balance statistics to output
-- [ ] Ensure consistent word tokenization (split on spaces)
+After training with the configuration above:
 
-### Data Loader (`dataset.py` - to create)
-- [ ] Load train/val/test JSON files
-- [ ] Convert tools to multi-hot encoding
-- [ ] Convert intents to indices with -100 for non-selected
-- [ ] Align BIO tags to subword tokenization
-- [ ] Handle padding and attention masks
+| Metric | Target | Notes |
+|--------|--------|-------|
+| Tool Accuracy | >95% | High priority - wrong tool = irrelevant context |
+| Intent Accuracy | >85% | Per-tool, harder task with more classes |
+| Combined Score | >90% | Primary optimization target |
+| ECE (calibrated) | <0.05 | Trustworthy confidence scores |
 
-### Model (`model.py` - to create)
-- [ ] Implement TwoStageJointModel class
-- [ ] Tool head with sigmoid activation
-- [ ] NER head with optional CRF
-- [ ] Gated intent heads
-- [ ] Forward pass with stage parameter
+---
 
-### Training (`train.py` - to create)
-- [ ] Multi-task loss function
-- [ ] Masked intent loss
-- [ ] Learning rate scheduling
-- [ ] Validation loop with all metrics
-- [ ] Early stopping on validation loss
+## Artifacts & Deployment
 
-### Evaluation (`evaluate.py` - to create)
-- [ ] Tool classification metrics
-- [ ] Entity-level NER metrics
-- [ ] Intent accuracy per tool
-- [ ] Full query accuracy
-- [ ] Confusion matrices for error analysis
+### Saved Artifacts
+
+```
+results/
+├── model/
+│   ├── joint_classifier.pt     # Model weights + temperature
+│   ├── tokenizer/              # DeBERTa tokenizer
+│   └── label_mappings.json     # Tool/intent indices
+├── training_history.json       # Metrics per epoch
+├── training_history.png        # Visualization
+└── test_results.json           # Final test metrics
+```
+
+### Loading for Inference
+
+```python
+# Load model
+checkpoint = torch.load('joint_classifier.pt')
+model.load_state_dict(checkpoint['model_state_dict'])
+model.temperature.data = torch.tensor(checkpoint['temperature'])
+
+# Load label mappings
+with open('label_mappings.json') as f:
+    mappings = json.load(f)
+```
+
+---
+
+## Comparison: LLM vs Local Classifier
+
+| Aspect | LLM Routing | Local Classifier |
+|--------|-------------|------------------|
+| **Latency** | 500-1000ms | 10-50ms |
+| **Cost per query** | $0.01-0.03 | $0 |
+| **Reliability** | API-dependent | Local, always available |
+| **Flexibility** | Can handle novel queries | Limited to trained patterns |
+| **Maintenance** | None | Requires retraining for new intents |
+| **Accuracy** | ~95-98% | ~90-95% |
+
+### Hybrid Approach
+
+The system supports **comparison logging** to run both classifiers and log disagreements:
+
+```python
+if config.comparison_logging:
+    llm_result = await llm_classifier.classify(query)
+    local_result = await local_classifier.classify(query)
+    log_comparison(llm_result, local_result)
+```
+
+This enables continuous evaluation and model improvement.
+
+---
+
+## Future Improvements
+
+1. **Multi-tool classification**: Current model predicts single tool; extend to multi-label
+2. **Conversation history**: Incorporate prior turns for context-aware routing
+3. **Active learning**: Use disagreements between LLM and local classifier to identify training gaps
+4. **Quantization**: INT8/FP16 for faster inference on CPU
+5. **ONNX export**: For deployment without PyTorch dependency

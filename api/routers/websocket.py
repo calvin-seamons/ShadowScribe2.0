@@ -24,14 +24,46 @@ active_connections: Dict[str, WebSocket] = {}
 
 @router.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time chat."""
+    """WebSocket endpoint for real-time chat.
+    
+    Uses local model for routing and Gazetteer NER for entity extraction.
+    Entity extraction depends on the selected character and campaign.
+    
+    Message Types (Client -> Server):
+        - message: Send a chat message
+          {
+            "type": "message",
+            "message": "What is my AC?",
+            "character_name": "Duskryn Nightwarden",
+            "campaign_id": "main_campaign"  // optional, defaults to "main_campaign"
+          }
+        - clear_history: Clear conversation history
+          {
+            "type": "clear_history",
+            "character_name": "Duskryn Nightwarden",
+            "campaign_id": "main_campaign"  // optional
+          }
+        - ping: Keep-alive ping
+    
+    Message Types (Server -> Client):
+        - message_received: Acknowledgment that message was received
+        - response_chunk: Streamed response chunk
+        - response_complete: Response streaming finished
+        - error: Error occurred
+        - history_cleared: Conversation history cleared
+        - routing_metadata: Which tools were selected
+        - entities_metadata: Entities extracted from query
+        - context_sources: Sources used for response
+        - performance_metrics: Timing information
+        - pong: Keep-alive response
+    """
     await websocket.accept()
     
     connection_id = str(uuid.uuid4())
     active_connections[connection_id] = websocket
     
-    # Initialize chat service
-    chat_service = ChatService()
+    # Initialize chat service with local routing enabled
+    chat_service = ChatService(use_local_routing=True)
     
     async def emit_metadata(event_type: str, data: dict):
         """Callback to emit metadata events to the client."""
@@ -55,13 +87,15 @@ async def websocket_endpoint(websocket: WebSocket):
             
             if message_type == 'clear_history':
                 character_name = message_data.get('character_name')
+                campaign_id = message_data.get('campaign_id', 'main_campaign')
                 if character_name:
-                    chat_service.clear_conversation_history(character_name)
+                    chat_service.clear_conversation_history(character_name, campaign_id)
                     await websocket.send_json({'type': 'history_cleared'})
                 continue
             
             user_message = message_data.get('message')
             character_name = message_data.get('character_name')
+            campaign_id = message_data.get('campaign_id', 'main_campaign')
             
             # Validate input
             if not user_message or not character_name:
@@ -79,6 +113,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 async for chunk in chat_service.process_query_stream(
                     user_message, 
                     character_name,
+                    campaign_id=campaign_id,
                     metadata_callback=emit_metadata
                 ):
                     await websocket.send_json({
