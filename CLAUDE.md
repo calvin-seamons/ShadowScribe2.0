@@ -112,8 +112,24 @@ ANTHROPIC_API_KEY=sk-ant-...
 1. **Delete obsolete code** - no commented-out code or legacy cruft
 2. **No backward compatibility** unless required for data persistence
 3. **Name code as fundamental** - no `_new`, `_v2` suffixes
-4. **Let things fail** - don't over-engineer error handling
-5. **Clean up test files** - delete temporary scripts after use
+4. **No fallback measures** - don't hide bugs with silent fallbacks or defensive error handling
+5. **Let things fail loudly** - if something is broken, crash immediately so we can fix the root cause:
+   - Never use bare `except:` or `except Exception:` to swallow errors
+   - Don't provide default values for things that should exist
+   - Only catch specific, expected exceptions you can handle meaningfully
+   - Prefer crashes during development over silent bugs
+6. **Clean up test files** - delete temporary scripts after use
+7. **Proactively delete legacy code** - when you encounter outdated code, remove it:
+   - Orphaned test files from old experiments
+   - Unused modules and dead code paths
+   - Files with `DEPRECATED`, `OLD`, `LEGACY`, or `TODO: remove` markers
+   - Code that doesn't fit the current architecture
+   - Don't ask permission, don't comment out - just delete cleanly
+8. **Config is the source of truth** - never hardcode or override config values:
+   - All settings belong in `src/config.py` class defaults
+   - Functions/classes should read from `get_config()`, not accept override parameters
+   - Environment variables can override config, but class defaults are authoritative
+   - Never duplicate default values in multiple places
 
 ## Frontend Architecture
 

@@ -11,9 +11,11 @@ from typing import Dict
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from api.database.connection import get_db
+from api.database.connection import get_db, AsyncSessionLocal
 from api.services.chat_service import ChatService
 from api.services.dndbeyond_service import DndBeyondService
+from api.database.feedback_models import RoutingFeedback
+from api.database.repositories.feedback_repo import FeedbackRepository
 from src.character_creation.async_character_builder import AsyncCharacterBuilder
 
 router = APIRouter()
@@ -62,11 +64,30 @@ async def websocket_endpoint(websocket: WebSocket):
     connection_id = str(uuid.uuid4())
     active_connections[connection_id] = websocket
     
-    # Initialize chat service with local routing enabled
-    chat_service = ChatService(use_local_routing=True)
+    # Initialize chat service - routing mode determined by config
+    chat_service = ChatService()
+    
+    # Track current query's routing info for feedback collection
+    current_routing_info = {
+        'tools_needed': None,
+        'entities': None,
+        'backend': 'local',
+        'inference_time_ms': None
+    }
     
     async def emit_metadata(event_type: str, data: dict):
-        """Callback to emit metadata events to the client."""
+        """Callback to emit metadata events to the client and capture for feedback."""
+        # Capture routing info for feedback collection
+        if event_type == 'routing_metadata':
+            current_routing_info['tools_needed'] = data.get('tools_needed', [])
+            current_routing_info['backend'] = data.get('classifier_backend', 'local')
+        elif event_type == 'entities_metadata':
+            current_routing_info['entities'] = data.get('entities', [])
+        elif event_type == 'classifier_comparison':
+            # Capture local classifier timing if available
+            if 'local' in data:
+                current_routing_info['inference_time_ms'] = data['local'].get('inference_time_ms')
+        
         await websocket.send_json({
             'type': event_type,
             'data': data
@@ -108,6 +129,11 @@ async def websocket_endpoint(websocket: WebSocket):
             # Send acknowledgment
             await websocket.send_json({'type': 'message_received'})
             
+            # Reset routing info for this query
+            current_routing_info['tools_needed'] = None
+            current_routing_info['entities'] = None
+            current_routing_info['inference_time_ms'] = None
+            
             # Stream response from CentralEngine
             try:
                 async for chunk in chat_service.process_query_stream(
@@ -123,6 +149,46 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 # Send completion signal
                 await websocket.send_json({'type': 'response_complete'})
+                
+                # Record routing decision for feedback collection
+                if current_routing_info['tools_needed']:
+                    try:
+                        async with AsyncSessionLocal() as db:
+                            repo = FeedbackRepository(db)
+                            
+                            # Convert entities to serializable format
+                            entities_data = None
+                            if current_routing_info['entities']:
+                                entities_data = [
+                                    {
+                                        'name': e.get('name', ''),
+                                        'text': e.get('text', ''),
+                                        'type': e.get('type', ''),
+                                        'confidence': e.get('confidence', 1.0)
+                                    }
+                                    for e in current_routing_info['entities']
+                                ]
+                            
+                            feedback_record = RoutingFeedback(
+                                user_query=user_message,
+                                character_name=character_name,
+                                campaign_id=campaign_id,
+                                predicted_tools=current_routing_info['tools_needed'],
+                                predicted_entities=entities_data,
+                                classifier_backend=current_routing_info['backend'],
+                                classifier_inference_time_ms=current_routing_info['inference_time_ms']
+                            )
+                            
+                            created = await repo.create(feedback_record)
+                            await db.commit()
+                            
+                            # Send feedback ID to client for later feedback submission
+                            await websocket.send_json({
+                                'type': 'feedback_id',
+                                'data': {'id': created.id}
+                            })
+                    except Exception as e:
+                        print(f"Failed to record routing feedback: {e}")
                 
             except Exception as e:
                 await websocket.send_json({

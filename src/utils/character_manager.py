@@ -13,6 +13,8 @@ from datetime import datetime
 from dataclasses import asdict
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import dacite
+
 from src.rag.character.character_types import Character
 
 
@@ -58,28 +60,86 @@ class CharacterManager:
         if not db_character:
             return None
         
-        # Convert database model to Character dataclass
-        from src.rag.character.character_types import (
-            CharacterBase, PhysicalCharacteristics, AbilityScores, CombatStats,
-            BackgroundInfo, PersonalityTraits, Backstory, Organization,
-            Ally, Enemy, Proficiency, DamageModifier, PassiveScores,
-            Senses, ActionEconomy, FeaturesAndTraits, Inventory, SpellList,
-            ObjectivesAndContracts
-        )
-        
         data = db_character.data
         
-        # Reconstruct Character from JSON data
-        # Most fields can be reconstructed using dacite or manual construction
-        # Lists and optional fields need special handling
-        character = Character(
+        # Use dacite for proper nested dataclass reconstruction
+        # This handles all nested dataclasses (BackstorySection, FamilyBackstory, etc.)
+        config = dacite.Config(
+            check_types=False,  # Allow flexible type matching
+            cast=[datetime],    # Cast datetime strings to datetime objects
+        )
+        
+        # Handle datetime fields that may be stored as ISO strings
+        if data.get('created_date') and isinstance(data['created_date'], str):
+            data['created_date'] = datetime.fromisoformat(data['created_date'])
+        if data.get('last_updated') and isinstance(data['last_updated'], str):
+            data['last_updated'] = datetime.fromisoformat(data['last_updated'])
+        
+        try:
+            character = dacite.from_dict(
+                data_class=Character,
+                data=data,
+                config=config
+            )
+            return character
+        except Exception as e:
+            print(f"[CharacterManager] Error reconstructing character from database: {e}")
+            # Fall back to legacy reconstruction
+            return self._legacy_load_character_from_db(data)
+    
+    def _legacy_load_character_from_db(self, data: dict) -> Character:
+        """Legacy fallback for character reconstruction without dacite."""
+        from src.rag.character.character_types import (
+            CharacterBase, PhysicalCharacteristics, AbilityScores, CombatStats,
+            BackgroundInfo, PersonalityTraits, Backstory, BackstorySection,
+            FamilyBackstory, Organization, Ally, Enemy, Proficiency, 
+            DamageModifier, PassiveScores, Senses, ActionEconomy, 
+            FeaturesAndTraits, Inventory, SpellList, ObjectivesAndContracts
+        )
+        
+        # Helper to reconstruct Backstory with nested dataclasses
+        def reconstruct_backstory(bs_data):
+            if not bs_data:
+                return None
+            
+            # Reconstruct sections
+            sections = []
+            for section_data in bs_data.get('sections', []):
+                if isinstance(section_data, dict):
+                    sections.append(BackstorySection(**section_data))
+                else:
+                    sections.append(section_data)
+            
+            # Reconstruct family_backstory
+            fb_data = bs_data.get('family_backstory', {})
+            if fb_data:
+                fb_sections = []
+                for section_data in fb_data.get('sections', []):
+                    if isinstance(section_data, dict):
+                        fb_sections.append(BackstorySection(**section_data))
+                    else:
+                        fb_sections.append(section_data)
+                family_backstory = FamilyBackstory(
+                    parents=fb_data.get('parents', ''),
+                    sections=fb_sections
+                )
+            else:
+                family_backstory = FamilyBackstory(parents='', sections=[])
+            
+            return Backstory(
+                title=bs_data.get('title', ''),
+                family_backstory=family_backstory,
+                sections=sections
+            )
+        
+        return Character(
             character_base=CharacterBase(**data['character_base']),
             characteristics=PhysicalCharacteristics(**data['characteristics']),
             ability_scores=AbilityScores(**data['ability_scores']),
             combat_stats=CombatStats(**data['combat_stats']),
             background_info=BackgroundInfo(**data['background_info']),
             personality=PersonalityTraits(**data['personality']),
-            backstory=Backstory(**data['backstory']) if data.get('backstory') else None,
+            backstory=reconstruct_backstory(data.get('backstory')),
             organizations=[Organization(**org) for org in data.get('organizations', [])],
             allies=[Ally(**ally) for ally in data.get('allies', [])],
             enemies=[Enemy(**enemy) for enemy in data.get('enemies', [])],
@@ -93,11 +153,9 @@ class CharacterManager:
             spell_list=SpellList(**data['spell_list']) if data.get('spell_list') else None,
             objectives_and_contracts=ObjectivesAndContracts(**data['objectives_and_contracts']) if data.get('objectives_and_contracts') else None,
             notes=data.get('notes', {}),
-            created_date=datetime.fromisoformat(data['created_date']) if data.get('created_date') else None,
-            last_updated=datetime.fromisoformat(data['last_updated']) if data.get('last_updated') else datetime.now()
+            created_date=datetime.fromisoformat(data['created_date']) if data.get('created_date') and isinstance(data['created_date'], str) else data.get('created_date'),
+            last_updated=datetime.fromisoformat(data['last_updated']) if data.get('last_updated') and isinstance(data['last_updated'], str) else datetime.now()
         )
-        
-        return character
     
     async def save_character_to_db(self, character: Character) -> str:
         """

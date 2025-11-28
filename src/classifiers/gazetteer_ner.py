@@ -116,6 +116,20 @@ class GazetteerEntityExtractor:
         'trait', 'traits', 'proficiency', 'proficiencies', 'proficient',
         'resistance', 'resistances', 'immunity', 'immunities', 'vulnerable',
         'advantage', 'disadvantage', 'succeed', 'fail', 'success', 'failure',
+        # Common verbs that match creature names (e.g., 'work' -> 'worg')
+        'work', 'works', 'working', 'worked',
+        'know', 'knows', 'knowing', 'knew', 'known',
+        'help', 'helps', 'helping', 'helped',
+        'like', 'likes', 'liking', 'liked',
+        'make', 'makes', 'making', 'made',
+        'take', 'takes', 'taking', 'took', 'taken',
+        'give', 'gives', 'giving', 'gave', 'given',
+        'tell', 'tells', 'telling', 'told',
+        'find', 'finds', 'finding', 'found',
+        'come', 'comes', 'coming', 'came',
+        'want', 'wants', 'wanting', 'wanted',
+        'look', 'looks', 'looking', 'looked',
+        'think', 'thinks', 'thinking', 'thought',
     }
     
     def __init__(self, cache_path: Path, min_similarity: float = 0.85):
@@ -171,6 +185,9 @@ class GazetteerEntityExtractor:
         """
         Add entities dynamically at runtime.
         
+        Also automatically adds first-name/short-name aliases for multi-word names
+        to improve matching (e.g., "Duskryn" -> "Duskryn Nightwarden").
+        
         Args:
             names: List of canonical entity names to add
             entity_type: The entity type (CHARACTER, NPC, PARTY_MEMBER, etc.)
@@ -187,7 +204,31 @@ class GazetteerEntityExtractor:
             self.gazetteers[canonical.lower()] = (canonical, entity_type)
             added += 1
             
-            # Add any aliases for this entity
+            # Auto-generate first-name alias for multi-word names
+            # This helps match "Duskryn" to "Duskryn Nightwarden"
+            # Also handles apostrophes/hyphens like "Ghul'Vor" -> "Ghul", "Shar-Kai" -> "Shar"
+            words = canonical.split()
+            if len(words) >= 2:
+                first_word = words[0]
+                # Only add if first word is significant (4+ chars, not common word)
+                if len(first_word) >= 4 and first_word.lower() not in self.skip_words:
+                    # Check it's not already in gazetteer with different meaning
+                    if first_word.lower() not in self.gazetteers:
+                        self.gazetteers[first_word.lower()] = (canonical, entity_type)
+                        added += 1
+            
+            # Handle apostrophe/hyphen names (e.g., "Ghul'Vor" -> "Ghul", "Shar-Kai" -> "Shar")
+            if "'" in canonical or "-" in canonical:
+                parts = re.split(r"['\"'-]", canonical)
+                if len(parts) >= 2:
+                    first_part = parts[0].strip()
+                    if len(first_part) >= 3 and first_part.lower() not in self.skip_words:
+                        # Add first part as alias pointing to canonical
+                        if first_part.lower() not in self.gazetteers:
+                            self.gazetteers[first_part.lower()] = (canonical, entity_type)
+                            added += 1
+            
+            # Add any explicit aliases for this entity
             if aliases and canonical in aliases:
                 for alias in aliases[canonical]:
                     if alias and alias.strip():
@@ -393,7 +434,11 @@ class GazetteerEntityExtractor:
         return entities
     
     def _find_fuzzy_matches(self, text: str, exact_spans: List[Tuple[int, int]]) -> List[Entity]:
-        """Find fuzzy matches for words not already matched."""
+        """Find fuzzy matches for words not already matched.
+        
+        Uses aggressive matching to avoid missing entities - prefer over-matching
+        to under-matching since the LLM can filter irrelevant context.
+        """
         entities = []
         
         # Tokenize into words with positions
@@ -408,7 +453,7 @@ class GazetteerEntityExtractor:
                 continue
             words.append((word, start, end))
         
-        # Build phrases (1-3 words)
+        # Build phrases (1-4 words for better NPC name matching)
         phrases = []
         for i in range(len(words)):
             phrases.append(words[i])
@@ -423,33 +468,57 @@ class GazetteerEntityExtractor:
                 w3, s3, e3 = words[i+2]
                 if s2 - e1 <= 2 and s3 - e2 <= 2:
                     phrases.append((f"{w1} {w2} {w3}", s1, e3))
+            if i + 3 < len(words):
+                w1, s1, e1 = words[i]
+                w2, s2, e2 = words[i+1]
+                w3, s3, e3 = words[i+2]
+                w4, s4, e4 = words[i+3]
+                if s2 - e1 <= 2 and s3 - e2 <= 2 and s4 - e3 <= 2:
+                    phrases.append((f"{w1} {w2} {w3} {w4}", s1, e4))
         
         # Check each phrase against gazetteers
         for phrase, start, end in phrases:
-            if len(phrase) < 4:
+            # Allow shorter single words for proper nouns (capitalized)
+            is_capitalized = phrase[0].isupper() if phrase else False
+            min_len = 3 if is_capitalized else 4
+            
+            if len(phrase) < min_len:
                 continue
-            if ' ' not in phrase and len(phrase) < 5:
+            if ' ' not in phrase and len(phrase) < 4 and not is_capitalized:
                 continue
             
-            best_match: Optional[Tuple[str, str]] = None
+            best_match: Optional[Tuple[str, str, float]] = None
             best_score = 0.0
             
             for name_lower, (canonical, entity_type) in self.gazetteers.items():
+                # More permissive length ratio check
                 len_ratio = len(phrase) / len(name_lower) if len(name_lower) > 0 else 0
-                if len_ratio < 0.6 or len_ratio > 1.7:
+                if len_ratio < 0.4 or len_ratio > 2.5:
                     continue
-                    
+                
+                # Full fuzzy similarity
                 score = self._similarity(phrase, name_lower)
+                
+                # Also check if phrase is a prefix/suffix of entity name (word-level)
+                phrase_words = phrase.lower().split()
+                name_words = name_lower.split()
+                
+                # Check if first word of phrase matches first word of entity
+                if phrase_words and name_words:
+                    first_word_sim = self._similarity(phrase_words[0], name_words[0])
+                    if first_word_sim >= 0.85:
+                        score = max(score, first_word_sim * 0.9)
+                
                 if score >= self.min_similarity and score > best_score:
                     best_score = score
-                    best_match = (canonical, entity_type)
+                    best_match = (canonical, entity_type, score)
             
             if best_match:
                 entities.append(Entity(
                     text=phrase,
                     canonical=best_match[0],
                     type=best_match[1],
-                    confidence=best_score,
+                    confidence=best_match[2],
                     start=start,
                     end=end
                 ))

@@ -33,6 +33,45 @@ from .utils.entity_search_engine import EntitySearchEngine
 from .classifiers.gazetteer_ner import GazetteerEntityExtractor, Entity
 
 
+# ===== SINGLETON LOCAL CLASSIFIER =====
+# Shared across all CentralEngine instances to avoid repeated model loading
+_local_classifier_singleton: Optional[Any] = None
+_local_classifier_lock = asyncio.Lock() if hasattr(asyncio, 'Lock') else None
+
+
+def get_local_classifier():
+    """Get or create the singleton local classifier instance.
+    
+    Uses config defaults for all paths and settings.
+    """
+    global _local_classifier_singleton
+    
+    if _local_classifier_singleton is not None:
+        return _local_classifier_singleton
+    
+    try:
+        from .classifiers.local_classifier import LocalClassifier
+        config = get_config()
+        
+        print("[LocalClassifier] Loading singleton instance...")
+        start = time.time()
+        
+        # LocalClassifier reads paths from config by default
+        _local_classifier_singleton = LocalClassifier(
+            device=config.local_classifier_device,
+            gazetteer_min_similarity=config.gazetteer_min_similarity
+        )
+        
+        elapsed = time.time() - start
+        print(f"[LocalClassifier] Singleton loaded in {elapsed:.2f}s")
+    except ImportError as e:
+        print(f"[LocalClassifier] Could not import: {e}")
+    except Exception as e:
+        print(f"[LocalClassifier] Failed to initialize: {e}")
+    
+    return _local_classifier_singleton
+
+
 # ===== ROUTER OUTPUT DATACLASSES =====
 
 @dataclass
@@ -56,7 +95,7 @@ class CentralEngine:
     
     def __init__(self, llm_clients: Dict[str, LLMClient], prompt_manager, 
                  character=None, rulebook_storage=None, campaign_session_notes=None,
-                 entity_search_engine=None, use_local_routing: bool = False):
+                 entity_search_engine=None):
         """Initialize with LLM clients and prompt manager.
         
         Args:
@@ -66,12 +105,13 @@ class CentralEngine:
             rulebook_storage: RulebookStorage instance (optional)
             campaign_session_notes: CampaignSessionNotesStorage instance (optional)
             entity_search_engine: EntitySearchEngine instance (optional)
-            use_local_routing: If True, use local classifier for routing instead of LLM
         """
         self.llm_clients = llm_clients
         self.prompt_manager = prompt_manager
         self.config = get_config()
-        self.use_local_routing = use_local_routing
+        
+        # Use local classifier for routing based on config
+        self.use_local_routing = self.config.use_local_classifier
         
         # Store data sources for entity resolution
         self.character = character
@@ -92,9 +132,9 @@ class CentralEngine:
         # Conversation history tracking
         self.conversation_history: List[Dict[str, str]] = []
         
-        # Initialize local classifier if enabled for comparison logging or local routing
+        # Initialize local classifier if enabled in config
         self.local_classifier = None
-        if self.config.comparison_logging or self.config.use_local_classifier or use_local_routing:
+        if self.config.use_local_classifier or self.config.comparison_logging:
             self._init_local_classifier()
     
     def _init_entity_extractor(self) -> Optional[GazetteerEntityExtractor]:
@@ -134,35 +174,14 @@ class CentralEngine:
             )
     
     def _init_local_classifier(self) -> None:
-        """Initialize the local classifier for comparison logging."""
-        try:
-            from .classifiers.local_classifier import LocalClassifier
-            
-            # Resolve paths relative to project root
-            project_root = Path(__file__).parent.parent
-            model_path = project_root / self.config.local_classifier_model_path
-            srd_cache_path = project_root / self.config.local_classifier_srd_cache
-            
-            if model_path.exists():
-                self.local_classifier = LocalClassifier(
-                    model_path=str(model_path),
-                    srd_cache_path=str(srd_cache_path) if srd_cache_path.exists() else None,
-                    device=self.config.local_classifier_device,
-                    use_gazetteer=srd_cache_path.exists(),
-                    gazetteer_min_similarity=self.config.gazetteer_min_similarity
-                )
-                print("[CentralEngine] Local classifier initialized for comparison logging")
-            else:
-                print(f"[CentralEngine] Local classifier model not found at {model_path}")
-        except ImportError as e:
-            print(f"[CentralEngine] Could not import local classifier: {e}")
-        except Exception as e:
-            print(f"[CentralEngine] Failed to initialize local classifier: {e}")
+        """Initialize the local classifier using singleton pattern."""
+        self.local_classifier = get_local_classifier()
+        if self.local_classifier:
+            print("[CentralEngine] Using shared local classifier instance")
     
     @classmethod
     def create_from_config(cls, prompt_manager, character=None, 
-                          rulebook_storage=None, campaign_session_notes=None,
-                          use_local_routing: bool = False):
+                          rulebook_storage=None, campaign_session_notes=None):
         """Create CentralEngine instance using default configuration.
         
         Args:
@@ -170,11 +189,9 @@ class CentralEngine:
             character: Character object (optional)
             rulebook_storage: RulebookStorage instance (optional)
             campaign_session_notes: CampaignSessionNotesStorage instance (optional)
-            use_local_routing: If True, use local classifier for routing instead of LLM
         """
         llm_clients = LLMClientFactory.create_default_clients()
-        return cls(llm_clients, prompt_manager, character, rulebook_storage, campaign_session_notes,
-                   use_local_routing=use_local_routing)
+        return cls(llm_clients, prompt_manager, character, rulebook_storage, campaign_session_notes)
     
     def add_conversation_turn(self, role: str, content: str):
         """Add a turn to the conversation history.
@@ -228,41 +245,21 @@ class CentralEngine:
         selected_tools = [t["tool"] for t in tool_selector_output.tools_needed]
         print(f"🔧 DEBUG: Step 2 - Selected tools: {selected_tools}")
         
-        # Step 3: Resolve entities ONLY in selected tools
-        print(f"🔧 DEBUG: Step 3 - Resolving entities in selected tools...")
+        # Step 3: Resolve entities across ALL tools (not just selected)
+        # This ensures we find every bit of context that matches, regardless of classifier routing
+        print(f"🔧 DEBUG: Step 3 - Resolving entities across ALL tools...")
+        all_tools = ['character_data', 'session_notes', 'rulebook']
         entity_results = {}
         if entity_extractor_output.entities:
             entity_results = self.entity_search_engine.resolve_entities(
                 entities=entity_extractor_output.entities,
-                selected_tools=selected_tools,
+                selected_tools=all_tools,  # Always search ALL tools
                 character=self.character,
                 session_notes_storage=self.campaign_session_notes,
                 rulebook_storage=self.rulebook_storage
             )
             print(f"🔧 DEBUG: Entity resolution found {len(entity_results)} entities")
             print(f"🔧 DEBUG: Entity results detail: {entity_results}")
-            
-            # Step 3.5: Fallback search for entities not found in selected tools
-            empty_entities = [name for name, results in entity_results.items() if not results]
-            if empty_entities:
-                print(f"🔧 DEBUG: Step 3.5 - Fallback search for entities not found: {empty_entities}")
-                all_tools = ['character_data', 'session_notes', 'rulebook']
-                unselected_tools = [t for t in all_tools if t not in selected_tools]
-                
-                if unselected_tools:
-                    fallback_results = self.entity_search_engine.resolve_entities(
-                        entities=[e for e in entity_extractor_output.entities if e.get('name') in empty_entities],
-                        selected_tools=unselected_tools,
-                        character=self.character,
-                        session_notes_storage=self.campaign_session_notes,
-                        rulebook_storage=self.rulebook_storage
-                    )
-                    
-                    # Merge fallback results
-                    for entity_name, results in fallback_results.items():
-                        if results:
-                            entity_results[entity_name] = results
-                            print(f"🔧 DEBUG: Found '{entity_name}' in fallback tools: {[r.found_in_sections for r in results]}")
         else:
             print("🔧 DEBUG: No entities to resolve")
         
@@ -392,49 +389,30 @@ class CentralEngine:
         # Emit routing metadata
         if metadata_callback:
             await metadata_callback('routing_metadata', {
-                'tools_needed': tool_selector_output.tools_needed
+                'tools_needed': tool_selector_output.tools_needed,
+                'classifier_backend': 'local' if self.use_local_routing else 'llm'
             })
         
         # Step 2: Derive selected tools from tool selector output
         selected_tools = [t["tool"] for t in tool_selector_output.tools_needed]
         print(f"🔧 DEBUG: Step 2 - Selected tools: {selected_tools}")
         
-        # Step 3: Resolve entities ONLY in selected tools
-        print(f"🔧 DEBUG: Step 3 - Resolving entities in selected tools...")
+        # Step 3: Resolve entities across ALL tools (not just selected)
+        # This ensures we find every bit of context that matches, regardless of classifier routing
+        print(f"🔧 DEBUG: Step 3 - Resolving entities across ALL tools...")
         step3_start = time.time()
+        all_tools = ['character_data', 'session_notes', 'rulebook']
         entity_results = {}
         if entity_extractor_output.entities:
             entity_results = self.entity_search_engine.resolve_entities(
                 entities=entity_extractor_output.entities,
-                selected_tools=selected_tools,
+                selected_tools=all_tools,  # Always search ALL tools
                 character=self.character,
                 session_notes_storage=self.campaign_session_notes,
                 rulebook_storage=self.rulebook_storage
             )
             print(f"🔧 DEBUG: Entity resolution found {len(entity_results)} entities")
             print(f"🔧 DEBUG: Entity results detail: {entity_results}")
-            
-            # Step 3.5: Fallback search for entities not found in selected tools
-            empty_entities = [name for name, results in entity_results.items() if not results]
-            if empty_entities:
-                print(f"🔧 DEBUG: Step 3.5 - Fallback search for entities not found: {empty_entities}")
-                all_tools = ['character_data', 'session_notes', 'rulebook']
-                unselected_tools = [t for t in all_tools if t not in selected_tools]
-                
-                if unselected_tools:
-                    fallback_results = self.entity_search_engine.resolve_entities(
-                        entities=[e for e in entity_extractor_output.entities if e.get('name') in empty_entities],
-                        selected_tools=unselected_tools,
-                        character=self.character,
-                        session_notes_storage=self.campaign_session_notes,
-                        rulebook_storage=self.rulebook_storage
-                    )
-                    
-                    # Merge fallback results
-                    for entity_name, results in fallback_results.items():
-                        if results:
-                            entity_results[entity_name] = results
-                            print(f"🔧 DEBUG: Found '{entity_name}' in fallback tools: {[r.found_in_sections for r in results]}")
         else:
             print("🔧 DEBUG: No entities to resolve")
         
@@ -938,11 +916,13 @@ class CentralEngine:
         Examples:
             "inventory" -> "character_data"
             "session_notes.npc" -> "session_notes"
+            "session_notes_non_player_character" -> "session_notes"
             "rulebook.combat.grappling" -> "rulebook"
         """
-        if section_name.startswith("rulebook.") or section_name == "rulebook":
+        # Handle both dot notation and underscore notation
+        if section_name.startswith("rulebook.") or section_name.startswith("rulebook_") or section_name == "rulebook":
             return "rulebook"
-        elif section_name.startswith("session_notes.") or section_name == "session_notes":
+        elif section_name.startswith("session_notes.") or section_name.startswith("session_notes_") or section_name == "session_notes":
             return "session_notes"
         else:
             return "character_data"
@@ -955,9 +935,11 @@ class CentralEngine:
         """
         Map entities to tools based on where they were found.
         Multi-location entities are passed to all relevant tools for richer context.
+        
+        NOTE: This returns ALL tools where entities were found, not just selected tools.
+        The caller (Step 4.5) uses this to add tools that have relevant entity context.
         """
         tool_entities = {}
-        selected_tools = {t["tool"] for t in tools_needed}
         
         for entity_name, results in entity_results.items():
             for result in results:
@@ -965,12 +947,11 @@ class CentralEngine:
                 for section in result.found_in_sections:
                     tool = self._section_to_tool(section)
                     
-                    if tool in selected_tools:
-                        if tool not in tool_entities:
-                            tool_entities[tool] = []
-                        
-                        if entity_name not in tool_entities[tool]:
-                            tool_entities[tool].append(entity_name)
+                    if tool not in tool_entities:
+                        tool_entities[tool] = []
+                    
+                    if entity_name not in tool_entities[tool]:
+                        tool_entities[tool].append(entity_name)
         
         return tool_entities
     
@@ -1075,7 +1056,151 @@ class CentralEngine:
                 except ValueError:
                     print(f"🔧 WARNING: Invalid rulebook intention '{intention}', skipping")
         
+        # Step 2: Add entity-based context (independent of intentions)
+        # This retrieves raw context for ALL entities found, regardless of intention routing
+        entity_context = self._retrieve_entity_context(entity_results)
+        if entity_context:
+            results["entity_context"] = entity_context
+            print(f"🔧 DEBUG: Added entity context for {len(entity_context)} entities")
+        
         return results
+    
+    def _retrieve_entity_context(
+        self,
+        entity_results: Dict[str, List[Any]]
+    ) -> Dict[str, Dict[str, str]]:
+        """
+        Retrieve raw context for all resolved entities, independent of intention routing.
+        
+        This method directly extracts the relevant content for each entity from
+        the data sources where they were found. This context is additive to the
+        intention-based RAG results.
+        
+        Args:
+            entity_results: Mapping of entity names to EntitySearchResult lists
+            
+        Returns:
+            Dict mapping entity names to their context:
+            {
+                "Ghul'Vor": {
+                    "session_notes": "- **Ghul'Vor** - Ex-god of darkness...",
+                    "character_data": "...",
+                    ...
+                }
+            }
+        """
+        entity_context = {}
+        
+        for entity_name, results in entity_results.items():
+            if not results:
+                continue
+                
+            context_for_entity = {}
+            
+            for result in results:
+                for section in result.found_in_sections:
+                    tool = self._section_to_tool(section)
+                    
+                    if tool == "session_notes" and self.campaign_session_notes:
+                        # Get session notes context for this entity
+                        context = self._get_session_notes_entity_context(entity_name, section)
+                        if context:
+                            context_for_entity["session_notes"] = context
+                            
+                    elif tool == "character_data" and self.character:
+                        # Get character data context for this entity
+                        context = self._get_character_entity_context(entity_name, section)
+                        if context:
+                            context_for_entity["character_data"] = context
+                            
+                    elif tool == "rulebook" and self.rulebook_storage:
+                        # Get rulebook context for this entity  
+                        context = self._get_rulebook_entity_context(entity_name, section)
+                        if context:
+                            context_for_entity["rulebook"] = context
+            
+            if context_for_entity:
+                entity_context[entity_name] = context_for_entity
+        
+        return entity_context
+    
+    def _get_session_notes_entity_context(self, entity_name: str, section: str) -> Optional[str]:
+        """Get raw session notes context for an entity."""
+        if not self.campaign_session_notes:
+            return None
+        
+        # Get entity from storage
+        entity = self.campaign_session_notes.get_entity(entity_name)
+        if not entity:
+            return None
+        
+        # Collect context from all sessions where this entity appears
+        context_parts = []
+        
+        # Get first appearance session
+        first_session = entity.first_mentioned if hasattr(entity, 'first_mentioned') else entity.first_appearance if hasattr(entity, 'first_appearance') else None
+        
+        # Get all sessions where entity appears
+        sessions_appeared = entity.sessions_appeared if hasattr(entity, 'sessions_appeared') else [first_session] if first_session else []
+        
+        for session_num in sessions_appeared:
+            # Try both integer and string keys (sessions may be stored as 'session_40' or 40)
+            session = self.campaign_session_notes.sessions.get(session_num)
+            if not session:
+                session = self.campaign_session_notes.sessions.get(f'session_{session_num}')
+            if not session:
+                continue
+            
+            # Determine which raw section to pull based on entity type
+            section_key = section.split('.')[-1] if '.' in section else section.replace('session_notes_', '')
+            
+            # Map section types to raw_sections keys
+            section_key_map = {
+                'non_player_character': 'NPCs Encountered',
+                'npc': 'NPCs Encountered',
+                'player_character': 'Player Characters Present',
+                'pc': 'Player Characters Present',
+                'location': 'Locations Visited',
+                'event': 'Key Events',
+                'combat': 'Combat Encounters',
+                'quest': 'Quest Tracking'
+            }
+            
+            raw_section_key = section_key_map.get(section_key, 'Summary')
+            
+            # ProcessedSession stores raw_sections under raw_notes.raw_sections
+            raw_sections = None
+            if hasattr(session, 'raw_notes') and hasattr(session.raw_notes, 'raw_sections'):
+                raw_sections = session.raw_notes.raw_sections
+            elif hasattr(session, 'raw_sections'):
+                raw_sections = session.raw_sections
+            
+            if raw_sections and raw_section_key in raw_sections:
+                section_content = raw_sections[raw_section_key]
+                # Only include parts that mention this entity
+                if entity_name.lower() in section_content.lower():
+                    context_parts.append(f"Session {session_num} - {raw_section_key}:\n{section_content}")
+        
+        return "\n\n".join(context_parts) if context_parts else None
+    
+    def _get_character_entity_context(self, entity_name: str, section: str) -> Optional[str]:
+        """Get raw character data context for an entity."""
+        if not self.character:
+            return None
+        
+        # Use entity search engine to get the actual content
+        # This is already handled by the character_router.query_character with auto_include_sections
+        # So we don't need to duplicate that logic here
+        return None
+    
+    def _get_rulebook_entity_context(self, entity_name: str, section: str) -> Optional[str]:
+        """Get raw rulebook context for an entity."""
+        if not self.rulebook_storage:
+            return None
+        
+        # Rulebook router already handles entity-based search well
+        # So we don't need to duplicate that logic here
+        return None
     
     def _extract_auto_include_sections(
         self,

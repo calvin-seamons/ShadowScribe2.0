@@ -110,13 +110,15 @@ class RAGConfig:
     local_model_device: str = "cpu"  # or "cuda" if GPU available
     
     # Local Classifier Settings (Joint Classifier Model)
-    use_local_classifier: bool = False  # Use local model instead of LLM for routing
+    # When True, uses fast local DeBERTa model for routing instead of LLM API calls
+    use_local_classifier: bool = True  # Default to local model for fast routing
     local_classifier_model_path: str = "574-Assignment/models/joint_classifier"
-    local_classifier_srd_cache: str = "574-Assignment/data/srd_cache"
+    local_classifier_srd_cache: str = "src/classifiers/data/srd_cache"
     local_classifier_device: str = "auto"  # auto, cuda, mps, cpu
     local_classifier_tool_threshold: float = 0.5  # Confidence threshold for tool selection
-    gazetteer_min_similarity: float = 0.80  # Minimum similarity for gazetteer NER matching
-    comparison_logging: bool = True  # Log both LLM and local classifier results for comparison
+    gazetteer_min_similarity: float = 0.70  # Minimum similarity for gazetteer NER matching (lower = more permissive)
+    # comparison_logging runs BOTH LLM and local classifier - useful for debugging but adds latency
+    comparison_logging: bool = False  # Disable by default for faster responses
     
     def __post_init__(self):
         """Validate API keys after initialization"""
@@ -138,64 +140,83 @@ class RAGConfig:
     
     @classmethod
     def from_env(cls) -> 'RAGConfig':
-        """Create config from environment variables with defaults"""
+        """Create config from environment variables, using class defaults as fallbacks.
+        
+        Environment variables can override any setting, but class defaults are
+        the source of truth. If you need to change a default, change it in the
+        class definition above, not here.
+        """
+        # Get class defaults for fallback values
+        defaults = cls.__dataclass_fields__
+        
+        def get_default(field_name: str):
+            """Get the default value for a field."""
+            field = defaults[field_name]
+            return field.default if field.default is not field.default_factory else field.default_factory()
+        
+        def env_or_default(env_var: str, field_name: str, cast=str):
+            """Get env var or fall back to class default."""
+            val = os.getenv(env_var)
+            if val is None:
+                return get_default(field_name)
+            if cast == bool:
+                return val.lower() == 'true'
+            return cast(val)
+        
         return cls(
-            # API Keys
+            # API Keys (no defaults - must come from environment)
             openai_api_key=os.getenv('OPENAI_API_KEY'),
             anthropic_api_key=os.getenv('ANTHROPIC_API_KEY'),
             
             # LLM Provider Settings
-            primary_llm_provider=os.getenv('RAG_PRIMARY_LLM_PROVIDER', 'anthropic'),
-            router_llm_provider=os.getenv('RAG_ROUTER_LLM_PROVIDER', 'anthropic'),
-            final_response_llm_provider=os.getenv('RAG_FINAL_LLM_PROVIDER', 'anthropic'),
+            primary_llm_provider=env_or_default('RAG_PRIMARY_LLM_PROVIDER', 'primary_llm_provider'),
+            router_llm_provider=env_or_default('RAG_ROUTER_LLM_PROVIDER', 'router_llm_provider'),
+            final_response_llm_provider=env_or_default('RAG_FINAL_LLM_PROVIDER', 'final_response_llm_provider'),
             
-            # Model Settings - Updated defaults
-            openai_router_model=os.getenv('RAG_OPENAI_ROUTER_MODEL', 'gpt-4o-mini'),
-            openai_final_model=os.getenv('RAG_OPENAI_FINAL_MODEL', 'gpt-4o'),
-            anthropic_router_model=os.getenv('RAG_ANTHROPIC_ROUTER_MODEL', 'claude-haiku-4-5'),
-            anthropic_final_model=os.getenv('RAG_ANTHROPIC_FINAL_MODEL', 'claude-sonnet-4-5'),
+            # Model Settings
+            openai_router_model=env_or_default('RAG_OPENAI_ROUTER_MODEL', 'openai_router_model'),
+            openai_final_model=env_or_default('RAG_OPENAI_FINAL_MODEL', 'openai_final_model'),
+            anthropic_router_model=env_or_default('RAG_ANTHROPIC_ROUTER_MODEL', 'anthropic_router_model'),
+            anthropic_final_model=env_or_default('RAG_ANTHROPIC_FINAL_MODEL', 'anthropic_final_model'),
             
             # Embedding and Query Settings
-            embedding_model=os.getenv('RAG_EMBEDDING_MODEL', 'text-embedding-3-small'),
+            embedding_model=env_or_default('RAG_EMBEDDING_MODEL', 'embedding_model'),
             
             # LLM Generation Settings
-            router_temperature=float(os.getenv('RAG_ROUTER_TEMPERATURE', '0.3')),
-            router_max_tokens=int(os.getenv('RAG_ROUTER_MAX_TOKENS', '2000')),
-            router_max_completion_tokens=int(os.getenv('RAG_ROUTER_MAX_COMPLETION_TOKENS', '2000')),
-            final_temperature=float(os.getenv('RAG_FINAL_TEMPERATURE', '0.7')),
-            final_max_tokens=int(os.getenv('RAG_FINAL_MAX_TOKENS', '2000')),
-            final_max_completion_tokens=int(os.getenv('RAG_FINAL_MAX_COMPLETION_TOKENS', '2000')),
+            router_temperature=env_or_default('RAG_ROUTER_TEMPERATURE', 'router_temperature', float),
+            router_max_tokens=env_or_default('RAG_ROUTER_MAX_TOKENS', 'router_max_tokens', int),
+            router_max_completion_tokens=env_or_default('RAG_ROUTER_MAX_COMPLETION_TOKENS', 'router_max_completion_tokens', int),
+            final_temperature=env_or_default('RAG_FINAL_TEMPERATURE', 'final_temperature', float),
+            final_max_tokens=env_or_default('RAG_FINAL_MAX_TOKENS', 'final_max_tokens', int),
+            final_max_completion_tokens=env_or_default('RAG_FINAL_MAX_COMPLETION_TOKENS', 'final_max_completion_tokens', int),
             
-            max_results=int(os.getenv('RAG_MAX_RESULTS', '10')),
-            entity_boost_weight=float(os.getenv('RAG_ENTITY_BOOST_WEIGHT', '0.25')),
-            context_hint_weight=float(os.getenv('RAG_CONTEXT_HINT_WEIGHT', '0.15')),
-            embedding_cache_size=int(os.getenv('RAG_CACHE_SIZE', '1000')),
-            local_model_device=os.getenv('RAG_LOCAL_DEVICE', 'cpu'),
+            max_results=env_or_default('RAG_MAX_RESULTS', 'max_results', int),
+            entity_boost_weight=env_or_default('RAG_ENTITY_BOOST_WEIGHT', 'entity_boost_weight', float),
+            context_hint_weight=env_or_default('RAG_CONTEXT_HINT_WEIGHT', 'context_hint_weight', float),
+            embedding_cache_size=env_or_default('RAG_CACHE_SIZE', 'embedding_cache_size', int),
+            local_model_device=env_or_default('RAG_LOCAL_DEVICE', 'local_model_device'),
             
             # Local Classifier Settings
-            use_local_classifier=os.getenv('RAG_USE_LOCAL_CLASSIFIER', 'false').lower() == 'true',
-            local_classifier_model_path=os.getenv('RAG_LOCAL_CLASSIFIER_MODEL_PATH', '574-Assignment/models/joint_classifier'),
-            local_classifier_srd_cache=os.getenv('RAG_LOCAL_CLASSIFIER_SRD_CACHE', '574-Assignment/data/srd_cache'),
-            local_classifier_device=os.getenv('RAG_LOCAL_CLASSIFIER_DEVICE', 'auto'),
-            local_classifier_tool_threshold=float(os.getenv('RAG_LOCAL_CLASSIFIER_TOOL_THRESHOLD', '0.5')),
-            gazetteer_min_similarity=float(os.getenv('RAG_GAZETTEER_MIN_SIMILARITY', '0.80')),
-            comparison_logging=os.getenv('RAG_COMPARISON_LOGGING', 'true').lower() == 'true'
+            use_local_classifier=env_or_default('RAG_USE_LOCAL_CLASSIFIER', 'use_local_classifier', bool),
+            local_classifier_model_path=env_or_default('RAG_LOCAL_CLASSIFIER_MODEL_PATH', 'local_classifier_model_path'),
+            local_classifier_srd_cache=env_or_default('RAG_LOCAL_CLASSIFIER_SRD_CACHE', 'local_classifier_srd_cache'),
+            local_classifier_device=env_or_default('RAG_LOCAL_CLASSIFIER_DEVICE', 'local_classifier_device'),
+            local_classifier_tool_threshold=env_or_default('RAG_LOCAL_CLASSIFIER_TOOL_THRESHOLD', 'local_classifier_tool_threshold', float),
+            gazetteer_min_similarity=env_or_default('RAG_GAZETTEER_MIN_SIMILARITY', 'gazetteer_min_similarity', float),
+            comparison_logging=env_or_default('RAG_COMPARISON_LOGGING', 'comparison_logging', bool)
         )
     
     @classmethod
     def from_defaults(cls) -> 'RAGConfig':
-        """Create config using class defaults, only overriding with environment for API keys"""
-        # Get API keys from environment first
-        openai_key = os.getenv('OPENAI_API_KEY')
-        anthropic_key = os.getenv('ANTHROPIC_API_KEY')
+        """Create config using class defaults - config is the source of truth.
         
-        # Create instance with defaults, including the API keys
-        config = cls(
-            openai_api_key=openai_key,
-            anthropic_api_key=anthropic_key
+        Only injects API keys from environment since they shouldn't be in code.
+        All other settings come from the class defaults defined above.
+        """
+        return cls(
+            openai_api_key=os.getenv('OPENAI_API_KEY'),
+            anthropic_api_key=os.getenv('ANTHROPIC_API_KEY')
         )
-        
-        return config
     
     def get_embedding_dimensions(self) -> int:
         """Get the expected embedding dimensions for the current model"""

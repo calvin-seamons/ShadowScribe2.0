@@ -386,6 +386,19 @@ IMPORTANT: Return valid JSON only. Empty array [] if no entities found. No expla
                 if session_content:
                     context_sections.append("CAMPAIGN HISTORY:\n" + "\n\n".join(session_content))
         
+        # Process entity-based context (independent of intentions)
+        if "entity_context" in raw_results and raw_results["entity_context"]:
+            entity_context = raw_results["entity_context"]
+            entity_content = []
+            
+            for entity_name, sources in entity_context.items():
+                for source_type, content in sources.items():
+                    if content:
+                        entity_content.append(f"INFORMATION ABOUT {entity_name.upper()}:\n{content}")
+            
+            if entity_content:
+                context_sections.append("ENTITY DETAILS:\n" + "\n\n".join(entity_content))
+        
         # Assemble the full context
         full_context = "\n\n".join(context_sections) if context_sections else "No relevant data found."
         

@@ -28,20 +28,19 @@ class ChatService:
     Gazetteer-based NER for entity extraction. Entity extraction
     automatically includes character names, party members, NPCs,
     and other entities from the selected campaign's session notes.
+    
+    Routing behavior is controlled by config.use_local_classifier.
     """
     
-    def __init__(self, use_local_routing: bool = True):
+    def __init__(self):
         """Initialize chat service with CentralEngine.
         
-        Args:
-            use_local_routing: If True (default), use local model for routing.
-                             If False, use LLM for routing decisions.
+        Routing mode is determined by config.use_local_classifier.
         """
         self._engines: Dict[str, CentralEngine] = {}
         self._rulebook_storage = None
         self._session_notes_storage_instance = None
         self._campaign_caches: Dict[str, any] = {}  # Cache for campaign session notes
-        self._use_local_routing = use_local_routing
         self._initialize_storage()
     
     def _initialize_storage(self):
@@ -122,17 +121,17 @@ class ChatService:
             context_assembler = ContextAssembler()
             prompt_manager = CentralPromptManager(context_assembler)
             
-            # Create engine with local routing enabled by default
-            # Gazetteer NER is always used for entity extraction (it's the default)
+            # Create engine - routing mode determined by config.use_local_classifier
             engine = CentralEngine.create_from_config(
                 prompt_manager,
                 character=character,
                 rulebook_storage=self._rulebook_storage,
-                campaign_session_notes=campaign_session_notes,
-                use_local_routing=self._use_local_routing
+                campaign_session_notes=campaign_session_notes
             )
             
-            routing_mode = "LOCAL MODEL" if self._use_local_routing else "LLM"
+            from src.config import get_config
+            config = get_config()
+            routing_mode = "LOCAL MODEL" if config.use_local_classifier else "LLM"
             print(f"[ChatService] Created engine for {character_name} in {campaign_id}")
             print(f"[ChatService] Routing: {routing_mode}, Entity extraction: GAZETTEER NER")
             

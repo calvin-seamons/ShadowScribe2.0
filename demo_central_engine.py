@@ -114,14 +114,19 @@ class InteractiveCentralEngineDemo:
             # For local or llm mode, disable comparison
             self.config.comparison_logging = False
         
+        # Override use_local_classifier based on routing mode
+        if routing_mode == "local":
+            self.config.use_local_classifier = True
+        elif routing_mode == "llm":
+            self.config.use_local_classifier = False
+        # "compare" mode keeps whatever is in config
+        
         # Create central engine using config with storage components
-        use_local_routing = (routing_mode == "local")
         self.engine = CentralEngine.create_from_config(
             self.prompt_manager,
             character=character,
             rulebook_storage=rulebook_storage,
-            campaign_session_notes=main_campaign,
-            use_local_routing=use_local_routing
+            campaign_session_notes=main_campaign
         )
         
         # Store references for local routing

@@ -42,7 +42,7 @@ class JointClassifier(DebertaV2PreTrainedModel):
     """
     Joint Tool + Intent Classifier using DeBERTa-v3.
     
-    Architecture matches the training notebook:
+    Architecture matches the trained model:
     - Shared DeBERTa encoder
     - Tool classification head (3 classes)
     - Per-tool intent heads (character: 10, session: 20, rulebook: 30)
@@ -66,6 +66,9 @@ class JointClassifier(DebertaV2PreTrainedModel):
         # Dropout
         classifier_dropout = getattr(config, 'classifier_dropout', 0.1)
         self.dropout = nn.Dropout(classifier_dropout)
+        
+        # Learnable temperature for calibration (scalar)
+        self.temperature = nn.Parameter(torch.tensor(1.0))
         
         # Tool classification head
         self.tool_head = nn.Sequential(
@@ -95,31 +98,27 @@ class JointClassifier(DebertaV2PreTrainedModel):
             nn.Linear(config.hidden_size, num_rulebook_intents)
         )
         
-        # Temperature for calibration (scalar parameter, set from checkpoint)
-        self.temperature = nn.Parameter(torch.tensor(1.0))
-        
         self.post_init()
     
-    def forward(self, input_ids=None, attention_mask=None):
+    def forward(self, input_ids=None, attention_mask=None, **kwargs):
         """
-        Forward pass.
+        Forward pass matching training notebook.
         
         Returns:
-            tool_logits: (batch, num_tools)
-            intent_logits: dict mapping tool name -> (batch, num_intents)
+            tuple of (tool_logits, intent_logits_dict) where intent_logits_dict has
+            keys 'character', 'session_notes', 'rulebook'
         """
         outputs = self.deberta(input_ids, attention_mask=attention_mask)
         
-        # Get [CLS] token output
-        cls_output = outputs.last_hidden_state[:, 0, :]
-        cls_output = self.dropout(cls_output)
+        # Get [CLS] token representation
+        cls_output = self.dropout(outputs.last_hidden_state[:, 0, :])
         
         # Tool logits
         tool_logits = self.tool_head(cls_output)
         
-        # Intent logits for all tools
+        # Intent logits for all tools (using same keys as training notebook)
         intent_logits = {
-            'character_data': self.character_intent_head(cls_output),
+            'character': self.character_intent_head(cls_output),
             'session_notes': self.session_intent_head(cls_output),
             'rulebook': self.rulebook_intent_head(cls_output),
         }
@@ -141,9 +140,6 @@ class LocalClassifier:
         INFERENCE: "What level is Duskryn?" → normalize → "What level is {CHARACTER}?" → Classify
     """
     
-    # Default model path relative to project root
-    DEFAULT_MODEL_PATH = Path(__file__).parent.parent.parent / "574-Assignment" / "models" / "joint_classifier"
-    
     def __init__(
         self,
         model_path: Optional[str] = None,
@@ -156,15 +152,27 @@ class LocalClassifier:
         Initialize the local classifier.
         
         Args:
-            model_path: Path to the trained model directory. If None, uses default path.
-            srd_cache_path: Path to SRD cache for gazetteer NER.
+            model_path: Path to the trained model directory. If None, uses config default.
+            srd_cache_path: Path to SRD cache for gazetteer NER. If None, uses config default.
             device: Device to use ('auto', 'cuda', 'mps', 'cpu')
             use_gazetteer: Whether to use gazetteer NER for entity extraction.
             gazetteer_min_similarity: Minimum similarity for gazetteer matching.
         """
-        self.model_path = Path(model_path) if model_path else self.DEFAULT_MODEL_PATH
-        self.srd_cache_path = Path(srd_cache_path) if srd_cache_path else None
-        self.use_gazetteer = use_gazetteer
+        from src.config import get_config
+        config = get_config()
+        
+        # Use config defaults if not provided
+        project_root = Path(__file__).parent.parent.parent
+        if model_path:
+            self.model_path = Path(model_path)
+        else:
+            self.model_path = project_root / config.local_classifier_model_path
+        
+        if srd_cache_path:
+            self.srd_cache_path = Path(srd_cache_path)
+        else:
+            self.srd_cache_path = project_root / config.local_classifier_srd_cache
+        
         self.gazetteer_min_similarity = gazetteer_min_similarity
         
         # Determine device
@@ -185,7 +193,9 @@ class LocalClassifier:
         self._load_mappings()
         self._load_model()
         
-        if use_gazetteer and srd_cache_path:
+        # Load gazetteer if enabled and cache exists
+        self.use_gazetteer = use_gazetteer and self.srd_cache_path.exists()
+        if self.use_gazetteer:
             self._load_gazetteer()
         else:
             self.gazetteer_ner = None
@@ -218,14 +228,23 @@ class LocalClassifier:
     
     def _load_model(self) -> None:
         """Load the trained model, tokenizer, and checkpoint."""
-        # Load tokenizer
+        # Load tokenizer - try local first, fall back to HuggingFace
         tokenizer_path = self.model_path / 'tokenizer'
-        print(f"[LocalClassifier] Loading tokenizer from {tokenizer_path}")
-        self.tokenizer = DebertaV2TokenizerFast.from_pretrained(str(tokenizer_path))
+        try:
+            if tokenizer_path.exists():
+                print(f"[LocalClassifier] Loading tokenizer from {tokenizer_path}")
+                self.tokenizer = DebertaV2TokenizerFast.from_pretrained(str(tokenizer_path))
+            else:
+                raise FileNotFoundError("No local tokenizer")
+        except Exception as e:
+            print(f"[LocalClassifier] Local tokenizer failed ({e}), using HuggingFace")
+            self.tokenizer = DebertaV2TokenizerFast.from_pretrained('microsoft/deberta-v3-base')
         
-        # Load checkpoint (always load to CPU first, then move to device)
-        # This avoids MPS float64 compatibility issues
+        # Load checkpoint
         checkpoint_path = self.model_path / 'joint_classifier.pt'
+        if not checkpoint_path.exists():
+            raise FileNotFoundError(f"No checkpoint found at {checkpoint_path}")
+        
         print(f"[LocalClassifier] Loading checkpoint from {checkpoint_path}")
         checkpoint = torch.load(checkpoint_path, map_location='cpu')
         
@@ -251,11 +270,8 @@ class LocalClassifier:
             num_rulebook_intents=self.num_intents_per_tool['rulebook']
         )
         
-        # Load state dict
+        # Load state dict (includes calibrated temperature)
         self.model.load_state_dict(checkpoint['model_state_dict'])
-        
-        # Set calibrated temperature
-        self.model.temperature.data = torch.tensor([self.calibrated_temperature])
         
         self.model.to(self.device)
         self.model.eval()
@@ -400,22 +416,23 @@ class LocalClassifier:
         input_ids = encoding['input_ids'].to(self.device)
         attention_mask = encoding['attention_mask'].to(self.device)
         
-        # Run inference
+        # Run inference (matching training notebook predict() function)
         with torch.no_grad():
             tool_logits, intent_logits_dict = self.model(input_ids, attention_mask)
             
-            # Apply temperature scaling for calibrated confidence
-            temp = self.model.temperature.item()
-            tool_probs = F.softmax(tool_logits / temp, dim=-1)
+            # Align dict keys (notebook uses 'character', we need 'character_data')
+            if 'character' in intent_logits_dict:
+                intent_logits_dict['character_data'] = intent_logits_dict['character']
             
-            # Get best tool
+            # Apply temperature scaling for calibrated probabilities
+            tool_probs = F.softmax(tool_logits / self.model.temperature, dim=-1)
             tool_pred = torch.argmax(tool_probs, dim=-1).item()
             tool_conf = tool_probs[0, tool_pred].item()
             tool_name = self.idx_to_tool[tool_pred]
             
-            # Get intent for predicted tool
+            # Get intent logits for predicted tool
             intent_logits = intent_logits_dict[tool_name]
-            intent_probs = F.softmax(intent_logits / temp, dim=-1)
+            intent_probs = F.softmax(intent_logits / self.model.temperature, dim=-1)
             intent_pred = torch.argmax(intent_probs, dim=-1).item()
             intent_conf = intent_probs[0, intent_pred].item()
             intent_name = self.idx_to_intent_per_tool[tool_name][intent_pred]
@@ -435,10 +452,15 @@ class LocalClassifier:
         character_name: Optional[str] = None,
         character_aliases: Optional[List[str]] = None,
         party_members: Optional[List[str]] = None,
-        known_npcs: Optional[List[str]] = None
+        known_npcs: Optional[List[str]] = None,
+        tool_threshold: Optional[float] = None
     ) -> ClassificationResult:
         """
         Synchronous prediction returning ClassificationResult for integration.
+        
+        Returns ALL tools with confidence above the threshold, each with their
+        best intent. This allows multi-tool queries like "What spells do I have
+        and how does fireball work?" to route to both character_data AND rulebook.
         
         Args:
             query: The user's query text
@@ -446,21 +468,23 @@ class LocalClassifier:
             character_aliases: Optional list of character aliases/nicknames
             party_members: Optional list of party member names
             known_npcs: Optional list of known NPC names
+            tool_threshold: Confidence threshold for tool selection (uses config default if None)
             
         Returns:
             ClassificationResult with tools_needed, tool_confidences, entities
         """
-        start_time = time.time()
+        from src.config import get_config
+        config = get_config()
+        threshold = tool_threshold if tool_threshold is not None else config.local_classifier_tool_threshold
         
-        # Get single classification result
-        result = self.classify_single(query, character_name, character_aliases, party_members, known_npcs)
+        start_time = time.time()
         
         # Normalize names to placeholders
         normalized_query = self._normalize_names(
             query, character_name, character_aliases, party_members, known_npcs
         )
         
-        # Tokenize and get all tool confidences
+        # Tokenize
         encoding = self.tokenizer(
             normalized_query,
             max_length=self.max_length,
@@ -473,21 +497,61 @@ class LocalClassifier:
         attention_mask = encoding['attention_mask'].to(self.device)
         
         with torch.no_grad():
-            tool_logits, _ = self.model(input_ids, attention_mask)
+            tool_logits, intent_logits_dict = self.model(input_ids, attention_mask)
+            
+            # Align dict keys (notebook uses 'character', we need 'character_data')
+            if 'character' in intent_logits_dict:
+                intent_logits_dict['character_data'] = intent_logits_dict['character']
+            
             temp = self.model.temperature.item()
             tool_probs = F.softmax(tool_logits / temp, dim=-1)[0]
         
+        # Get confidence for all tools
         tool_confidences = {
             self.idx_to_tool[i]: float(tool_probs[i].item())
             for i in range(len(self.tools))
         }
         
-        # Build tools_needed list (single tool for now)
-        tools_needed = [{
-            'tool': result.tool,
-            'intention': result.intent,
-            'confidence': result.tool_confidence
-        }]
+        # Build tools_needed list with ALL tools above threshold
+        tools_needed = []
+        for tool_idx in range(len(self.tools)):
+            tool_name = self.idx_to_tool[tool_idx]
+            tool_conf = float(tool_probs[tool_idx].item())
+            
+            if tool_conf >= threshold:
+                # Get best intent for this tool
+                with torch.no_grad():
+                    intent_logits = intent_logits_dict[tool_name]
+                    intent_probs = F.softmax(intent_logits / temp, dim=-1)
+                    intent_pred = torch.argmax(intent_probs, dim=-1).item()
+                    intent_name = self.idx_to_intent_per_tool[tool_name][intent_pred]
+                
+                tools_needed.append({
+                    'tool': tool_name,
+                    'intention': intent_name,
+                    'confidence': tool_conf
+                })
+        
+        # Sort by confidence descending
+        tools_needed.sort(key=lambda x: x['confidence'], reverse=True)
+        
+        # Fallback: if no tools above threshold, include the best one anyway
+        if not tools_needed:
+            best_tool_idx = torch.argmax(tool_probs).item()
+            best_tool_name = self.idx_to_tool[best_tool_idx]
+            best_tool_conf = float(tool_probs[best_tool_idx].item())
+            
+            with torch.no_grad():
+                intent_logits = intent_logits_dict[best_tool_name]
+                intent_probs = F.softmax(intent_logits / temp, dim=-1)
+                intent_pred = torch.argmax(intent_probs, dim=-1).item()
+                intent_name = self.idx_to_intent_per_tool[best_tool_name][intent_pred]
+            
+            tools_needed.append({
+                'tool': best_tool_name,
+                'intention': intent_name,
+                'confidence': best_tool_conf
+            })
         
         # Extract entities using gazetteer NER (if available)
         entities = []

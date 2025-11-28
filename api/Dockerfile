@@ -14,6 +14,15 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install PyTorch (CPU version for smaller image) and transformers for local classifier
+RUN pip install --no-cache-dir \
+    torch --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir \
+    transformers==4.36.0 \
+    safetensors \
+    sentencepiece \
+    protobuf
+
 # Install FastAPI-specific dependencies
 RUN pip install --no-cache-dir \
     fastapi==0.104.1 \
